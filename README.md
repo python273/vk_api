@@ -8,4 +8,4 @@ To install vk_api:
 
 .. code-block:: bash
 
-    $ easy_install requests
+    $ easy_install vk_api
