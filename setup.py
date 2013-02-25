@@ -3,7 +3,7 @@
 
 from distutils.core import setup
 setup(name='vk_api',
-      version='4.0',
+      version='4.1',
       description='Module to use the API VKontakte',
       author='Kirill Python',
       author_email='mikeking568@gmail.com',
