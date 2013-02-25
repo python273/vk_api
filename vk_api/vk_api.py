@@ -139,10 +139,6 @@ class VkApi():
         else:
             return response['response']
 
-    def load(self, url, data={}, headers={}):
-        response = self.http.post(url, data, headers=headers).text
-        return response
-
 
 def find(reg, string):
     """ Поиск по регулярке """

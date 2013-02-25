@@ -1,9 +1,8 @@
 vk_api
 ======
 
-Installation
+vk_api - модуль для использования API сайта ВКонтакте (vk.com). Пример использоания в файле example.py
+
+Установка
 ------------
-
-To install vk_api:
-
     $ easy_install vk_api
