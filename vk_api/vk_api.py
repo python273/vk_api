@@ -61,7 +61,10 @@ class VkApi():
             self.settings['remixsid'] = remixsid
 
             # Нужно в авторизации через api_login
-            self.settings['forapilogin'] = {'p': self.http.cookies['p'], 'l': self.http.cookies['l']}
+            self.settings['forapilogin'] = {
+                'p': self.http.cookies['p'],
+                'l': self.http.cookies['l']
+                }
 
             self.sid = remixsid
             return True
@@ -86,6 +89,7 @@ class VkApi():
 
     def api_login(self):
         """ Получение токена через Desktop приложение """
+
         url = 'https://oauth.vk.com/authorize'
         data = {
             'client_id': self.app_id,
@@ -102,7 +106,7 @@ class VkApi():
         response = self.http.post(url, data)
 
         if not 'access_token' in response.url:
-            url = find('approve.*?location\.href = "(.*?)";', response.text)[0]
+            url = regexp('approve.*?location\.href = "(.*?)";', response.text)[0]
             response = self.http.get(url)
 
         if 'access_token' in response.url:
@@ -119,6 +123,7 @@ class VkApi():
 
     def check_token(self):
         """ Прверка access_token на валидность """
+
         if self.token.get('access_token'):
             try:
                 self.method('isAppUser')
@@ -140,15 +145,12 @@ class VkApi():
             return response['response']
 
 
-def find(reg, string):
+def regexp(reg, string):
     """ Поиск по регулярке """
 
     reg = re.compile(reg, re.IGNORECASE | re.DOTALL)
     reg = reg.findall(string)
-    if reg:
-        return reg
-    else:
-        return False
+    return reg
 
 
 class vk_api_error(Exception):
