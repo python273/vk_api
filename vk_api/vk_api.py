@@ -106,7 +106,7 @@ class VkApi():
         response = self.http.post(url, data)
 
         if not 'access_token' in response.url:
-            url = regexp('approve.*?location\.href = "(.*?)";', response.text)[0]
+            url = regexp(r'location\.href = "(.*?)"\+addr;', response.text)[0]
             response = self.http.get(url)
 
         if 'access_token' in response.url:
