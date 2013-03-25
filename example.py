@@ -9,8 +9,8 @@ __contact__ = "https://vk.com/python273"
 
 
 def main():
-    login = u''
-    password = u''
+    login = u'python@vk.com'
+    password = u'mypassword'
 
     try:
         vk = vk_api.VkApi(login, password)  # Авторизируемся
@@ -22,7 +22,7 @@ def main():
         'count': 1  # Получаем только одно сообщение
         }
     response = vk.method('wall.get', values)  # С использованием метода wall.get
-    print response[1]['text']
+    print response[1]['text']  # Печатаем текст последнего поста со стены
 
 if __name__ == '__main__':
     main()
