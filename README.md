@@ -2,13 +2,11 @@ vk_api
 ======
 
 vk_api - модуль для использования API сайта ВКонтакте (vk.com). Пример использоания в файле example.py
+С вопросами или советами можете [написать автору в ВК](https://vk.com/im?sel=183433824).
 
 Установка
 ------------
-    $ easy_install vk_api
-
-Или скачиваем в ZIP и выполняем в папке
-
-    $ python setup.py install
+    $ pip install vk_api
 
 Для работы необходим модуль [Requests](https://github.com/kennethreitz/requests)
+    $ pip install requests
