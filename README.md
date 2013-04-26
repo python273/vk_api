@@ -9,6 +9,7 @@ vk_api - модуль для использования API сайта ВКон�
 ------------
     $ easy_install vk_api
 или
+
     $ pip install git+git://github.com/python273/vk_api.git
 
 Для работы необходим модуль [Requests](https://github.com/kennethreitz/requests)
