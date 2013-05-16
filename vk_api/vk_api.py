@@ -7,9 +7,10 @@ cj_from_dict = requests.utils.cookiejar_from_dict
 
 
 class VkApi():
-    def __init__(self, login=None, password=None, sid=None, token=None,
-                    auth_in_api=True, app_id=2895443, scope=2097151,
-                    proxies={}):
+    def __init__(self,
+                 login=None, password=None, auth_in_api=True,
+                 sid=None, token=None,
+                 app_id=2895443, scope=2097151, proxies={}):
 
         self.login = login
         self.password = password
@@ -23,9 +24,8 @@ class VkApi():
         self.http = requests.Session()
         self.http.proxies = proxies  # Ставим прокси если есть
         self.http.headers = {  # Притворимся браузером
-            'User-agent': 'Opera/9.80 (Windows NT 6.1; WOW64; U; ru) Presto/2.10.289 Version/12.00'
-            }
-        self.http.verify = False  # Сертификаты не будем проверять
+            'User-agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:20.0) Gecko/20100101 Firefox/20.0'
+        }
 
         if login and password:  # Oh...
             self.sid = self.settings['remixsid']
@@ -50,7 +50,7 @@ class VkApi():
             'captcha_key': captcha_key,
             'email': self.login,
             'pass': self.password
-            }
+        }
 
         if 'remixsid' in self.http.cookies:
             self.http.cookies.pop('remixsid')
@@ -64,7 +64,7 @@ class VkApi():
             self.settings['forapilogin'] = {
                 'p': self.http.cookies['p'],
                 'l': self.http.cookies['l']
-                }
+            }
 
             self.sid = remixsid
             return True
@@ -80,7 +80,7 @@ class VkApi():
                 'remixsid': self.sid,
                 'remixlang': '0',
                 'remixsslsid': '1'
-                })
+            })
 
             response = self.http.post(url).json()
 
@@ -95,7 +95,7 @@ class VkApi():
             'client_id': self.app_id,
             'scope': self.scope,
             'response_type': 'token',
-            }
+        }
 
         cookies = {}
         cookies.update(self.settings['forapilogin'])

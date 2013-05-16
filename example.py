@@ -20,7 +20,7 @@ def main():
 
     values = {
         'count': 1  # Получаем только одно сообщение
-        }
+    }
     response = vk.method('wall.get', values)  # С использованием метода wall.get
     print response[1]['text']  # Печатаем текст последнего поста со стены
 
