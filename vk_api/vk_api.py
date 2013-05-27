@@ -54,7 +54,8 @@ class VkApi():
 
         if 'remixsid' in self.http.cookies:
             self.http.cookies.pop('remixsid')
-        response = self.http.post(url, data)
+
+        response = self.http.post(url, data, verify=False)
 
         if 'remixsid' in self.http.cookies:
             remixsid = self.http.cookies['remixsid']
@@ -82,7 +83,8 @@ class VkApi():
                 'remixsslsid': '1'
             })
 
-            response = self.http.post(url).json()
+            response = self.http.post(url, verify=False)
+            response = response.json
 
             if response['user']['id'] != -1:
                 return response
@@ -103,11 +105,11 @@ class VkApi():
         cookies = cj_from_dict(cookies)
         self.http.cookies = cookies
 
-        response = self.http.post(url, data)
+        response = self.http.post(url, data, verify=False)
 
         if not 'access_token' in response.url:
             url = regexp(r'location\.href = "(.*?)"\+addr;', response.text)[0]
-            response = self.http.get(url)
+            response = self.http.get(url, verify=False)
 
         if 'access_token' in response.url:
             params = response.url.split('#')[1].split('&')
@@ -138,7 +140,7 @@ class VkApi():
         url = 'https://api.vk.com/method/%s' % method
         data.update({'access_token': self.token['access_token']})
 
-        response = self.http.post(url, data).json()
+        response = self.http.post(url, data, verify=False).json
         if 'error' in response:
             raise api_error(response['error'])
         else:
