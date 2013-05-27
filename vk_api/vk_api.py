@@ -8,9 +8,9 @@ cj_from_dict = requests.utils.cookiejar_from_dict
 
 class VkApi():
     def __init__(self,
-                 login=None, password=None, auth_in_api=True,
+                 login=None, password=None,
                  sid=None, token=None,
-                 app_id=2895443, scope=2097151, proxies={}):
+                 app_id=2895443, scope=2097151, proxies=None):
 
         self.login = login
         self.password = password
@@ -26,6 +26,7 @@ class VkApi():
         self.http.headers = {  # Притворимся браузером
             'User-agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:20.0) Gecko/20100101 Firefox/20.0'
         }
+        self.http.verify = False
 
         if login and password:  # Oh...
             self.sid = self.settings['remixsid']
@@ -34,10 +35,9 @@ class VkApi():
             if not self.check_sid():
                 if not self.vk_login():
                     raise authorization_error('Authorization error (bad password)')
-            if auth_in_api:
-                if not self.check_token():
-                    if not self.api_login():
-                        raise authorization_error('Authorization error (api)')
+            if not self.check_token():
+                if not self.api_login():
+                    raise authorization_error('Authorization error (api)')
 
     def vk_login(self, captcha_sid='', captcha_key=''):
         """ Авторизцаия ВКонтакте с получением cookies remixsid """
@@ -135,7 +135,7 @@ class VkApi():
     def method(self, method, data={}):
         """ Использование методов API """
 
-        url = 'https://api.vk.com/method/%s' % (method)
+        url = 'https://api.vk.com/method/%s' % method
         data.update({'access_token': self.token['access_token']})
 
         response = self.http.post(url, data).json()
