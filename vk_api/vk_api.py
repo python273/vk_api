@@ -68,8 +68,12 @@ class VkApi():
 
             self.sid = remixsid
             return True
+
         elif 'sid=' in response.url:
             raise authorization_error('Authorization error (capcha)')
+
+        elif 'security_check' in response.url:
+            raise authorization_error('Authorization error (enter number)')
 
     def check_sid(self):
         """ Прверка Cookies remixsid на валидность """

@@ -14,15 +14,15 @@ def main():
 
     try:
         vk = vk_api.VkApi(login, password)  # Авторизируемся
-    except vk_api.authorization_error, error_msg:
-        print error_msg  # В случае ошибки выведем сообщение
+    except vk_api.authorization_error as error_msg:
+        print(error_msg)  # В случае ошибки выведем сообщение
         return  # и выйдем
 
     values = {
         'count': 1  # Получаем только одно сообщение
     }
     response = vk.method('wall.get', values)  # С использованием метода wall.get
-    print response[1]['text']  # Печатаем текст последнего поста со стены
+    print(response[1]['text'])  # Печатаем текст последнего поста со стены
 
 if __name__ == '__main__':
     main()
