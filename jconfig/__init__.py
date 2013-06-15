@@ -1,6 +1,11 @@
 __author__ = "Kirill Python"
-__version__ = "1.0"
+__version__ = "1.1"
 __email__ = "mikeking568@gmail.com"
 __contact__ = "https://vk.com/python273"
 
-from jconfig import *
+
+import sys
+if sys.version_info[0] == 2:
+    from jconfig import *
+else:
+    from .jconfig import *
