@@ -1,2 +1,4 @@
 build/
+dist/
 *.pyc
+upload_to_PyPi.py
