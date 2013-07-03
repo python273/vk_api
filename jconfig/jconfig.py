@@ -27,5 +27,8 @@ class config:
             self.update()
             return {}
 
-    def update(self, settings={}):
-        settings = json.dump(settings, open(self.filename, 'w'))
+    def update(self, settings=None):
+        if not settings:
+            settings = {}
+
+        json.dump(settings, open(self.filename, 'w'))

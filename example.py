@@ -5,10 +5,10 @@ __author__ = "Kirill Python"
 __email__ = "mikeking568@gmail.com"
 __contact__ = "https://vk.com/python273"
 
-""" Пример получения последнего сообщения со стены """
-
 
 def main():
+    u""" Пример получения последнего сообщения со стены """
+
     login = u'python@vk.com'
     password = u'mypassword'
 
@@ -21,7 +21,7 @@ def main():
     values = {
         'count': 1  # Получаем только одно сообщение
     }
-    response = vk.method('wall.get', values)  # С использованием метода wall.get
+    response = vk.method('wall.get', values)  # Используем метод wall.get
     print(response[1]['text'])  # Печатаем текст последнего поста со стены
 
 if __name__ == '__main__':
