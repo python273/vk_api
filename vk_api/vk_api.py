@@ -59,7 +59,7 @@ class VkApi():
     def vk_login(self, captcha_sid=None, captcha_key=None):
         u""" Авторизцаия ВКонтакте с получением cookies remixsid """
 
-        url = 'http://login.vk.com/'
+        url = 'https://login.vk.com/'
         values = {
             'act': 'login',
             'utf8': '1',
@@ -107,7 +107,7 @@ class VkApi():
                     'to': ''
                 }
 
-                response = self.http.post('http://vk.com/login.php', values)
+                response = self.http.post('https://vk.com/login.php', values)
 
                 if response.text.split('<!>')[4] == '4':
                     return
@@ -118,7 +118,7 @@ class VkApi():
         u""" Прверка Cookies remixsid на валидность """
 
         if self.sid:
-            url = 'http://vk.com/feed2.php'
+            url = 'https://vk.com/feed2.php'
             self.http.cookies.update({
                 'remixsid': self.sid,
                 'remixlang': '0',
@@ -133,7 +133,7 @@ class VkApi():
     def api_login(self):
         u""" Получение токена через Desktop приложение """
 
-        url = 'http://oauth.vk.com/authorize'
+        url = 'https://oauth.vk.com/authorize'
         values = {
             'client_id': self.app_id,
             'scope': self.scope,
@@ -184,7 +184,7 @@ class VkApi():
 
         """
 
-        url = 'http://api.vk.com/method/%s' % method
+        url = 'https://api.vk.com/method/%s' % method
 
         if not values:
             values = {}

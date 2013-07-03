@@ -2,6 +2,7 @@
 setup.py
 jconfig\__init__.py
 jconfig\jconfig.py
+test\test.py
 vk_api\__init__.py
 vk_api\vk_api.py
 vk_api\upload\__init__.py
