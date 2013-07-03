@@ -1,6 +1,7 @@
-class vk_upload():
+class VkUpload():
     def __init__(self, vk):
         self.vk = vk
+        # https://vk.com/dev/upload_files
 
     def photo(self, aid, photos):
         """ Загрузка изображений в альбом пользователя

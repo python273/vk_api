@@ -1,5 +1,5 @@
 __author__ = "Kirill Python"
-__version__ = "4.4"
+__version__ = "4.5"
 __email__ = "mikeking568@gmail.com"
 __contact__ = "https://vk.com/python273"
 

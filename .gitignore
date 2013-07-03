@@ -1,4 +1,8 @@
 build/
 dist/
+test/
 *.pyc
 upload_to_PyPi.py
+.project
+.pydevproject
+.settings/
