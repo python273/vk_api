@@ -1,9 +1,13 @@
+'''
+@author: Kirill Python
+@contact: http://vk.com/python273
+@license Apache License, Version 2.0, see LICENSE file
+
+Copyright (C) 2013
+'''
+
 # -*- coding: utf-8 -*-
 import vk_api
-
-__author__ = "Kirill Python"
-__email__ = "mikeking568@gmail.com"
-__contact__ = "https://vk.com/python273"
 
 
 def main():
