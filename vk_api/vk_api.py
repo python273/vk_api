@@ -1,31 +1,39 @@
+'''
+@author: Kirill Python
+@contact: http://vk.com/python273
+@license Apache License, Version 2.0, see LICENSE file
+
+Copyright (C) 2013
+'''
+
 # -*- coding: utf-8 -*-
 import jconfig
 import re
 import requests
+import time
 
 
 class VkApi():
     def __init__(self,
                  login=None, password=None, number=None,
                  sid=None, token=None,
-                 app_id=2895443, scope=2097151, proxies=None):
-        u""" Данные для авторизации:
-             login, password
-
-             number - На случай проверки безопасности
-                     Номер: +7 12345678 90
-                     Передавать в number: 12345678
-
-            Для авторизации без логина и пароля:
-             sid, token
-
-            app_id - айди Standalone-приложения
-            scope - права приложения числом
-            proxies - использование прокси
-                    {'http': 'http://127.0.0.1:8888/',
-                    'https' : 'https://127.0.0.1:8888/'}
-
-        """
+                 proxies=None,
+                 version='5.0', app_id=2895443, scope=2097151):
+        '''
+        :param login: Логин ВКонтакте
+        :param password: Пароль ВКонтакте
+        :param number: Номер при проверке безопасности
+                        Номер: +7 12345678 90
+                        number = 12345678
+        :param sid: cookie remixsid
+        :param token: access_token
+        :param proxies: proxy server
+                        {'http': 'http://127.0.0.1:8888/',
+                        'https' : 'https://127.0.0.1:8888/'}
+        :param version: Версия API (default: '5.0')
+        :param app_id: Standalone-приложение (default: 2895443)
+        :param scope: Запрашиваемые права  (default: 2097151)
+        '''
 
         self.login = login
         self.password = password
@@ -33,10 +41,12 @@ class VkApi():
 
         self.sid = sid
         self.token = {'access_token': token}
-        self.settings = jconfig.config(login)
 
+        self.version = version
         self.app_id = app_id
         self.scope = scope
+
+        self.settings = jconfig.config(login)
 
         self.http = requests.Session()
         self.http.proxies = proxies  # Ставим прокси
@@ -57,7 +67,7 @@ class VkApi():
                 self.api_login()
 
     def vk_login(self, captcha_sid=None, captcha_key=None):
-        u""" Авторизцаия ВКонтакте с получением cookies remixsid """
+        ''' Авторизцаия ВКонтакте с получением cookies remixsid '''
 
         url = 'https://login.vk.com/'
         values = {
@@ -115,7 +125,7 @@ class VkApi():
             raise authorization_error('Authorization error (enter number)')
 
     def check_sid(self):
-        u""" Прверка Cookies remixsid на валидность """
+        ''' Прверка Cookies remixsid на валидность '''
 
         if self.sid:
             url = 'https://vk.com/feed2.php'
@@ -131,7 +141,7 @@ class VkApi():
                 return response
 
     def api_login(self):
-        u""" Получение токена через Desktop приложение """
+        ''' Получение токена через Desktop приложение '''
 
         url = 'https://oauth.vk.com/authorize'
         values = {
@@ -163,7 +173,7 @@ class VkApi():
             raise authorization_error('Authorization error (api)')
 
     def check_token(self):
-        u""" Прверка access_token на валидность """
+        ''' Прверка access_token на валидность '''
 
         if self.token.get('access_token'):
             try:
@@ -174,21 +184,24 @@ class VkApi():
             return True
 
     def method(self, method, values=None):
-        u""" Использование методов API
+        ''' Использование методов API
 
             method - название метода
                         'users.get'
 
             values - параметры
                         {'uids': 1}
-
-        """
+        '''
 
         url = 'https://api.vk.com/method/%s' % method
 
         if not values:
             values = {}
-        values.update({'access_token': self.token['access_token']})
+
+        values.update({'v': self.version})
+
+        if self.token:
+            values.update({'access_token': self.token['access_token']})
 
         response = self.http.post(url, values).json()
         if 'error' in response:
@@ -198,7 +211,7 @@ class VkApi():
 
 
 def regexp(reg, string):
-    u""" Поиск по регулярке """
+    ''' Поиск по регулярке '''
 
     reg = re.compile(reg, re.IGNORECASE | re.DOTALL)
     reg = reg.findall(string)
