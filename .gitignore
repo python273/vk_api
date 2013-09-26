@@ -6,3 +6,4 @@ upload_to_PyPi.py
 .project
 .pydevproject
 .settings/
+.idea/

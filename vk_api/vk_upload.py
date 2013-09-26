@@ -9,7 +9,7 @@ Copyright (C) 2013
 # -*- coding: utf-8 -*-
 
 
-class VkUpload():
+class VkUpload(object):
     def __init__(self, vk):
         self.vk = vk
         # https://vk.com/dev/upload_files

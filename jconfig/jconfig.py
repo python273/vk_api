@@ -11,7 +11,7 @@ import os
 import json
 
 
-class config:
+class config(object):
     def __init__(self, section, filename='config'):
         self.section = section  # Секция настроек
         self.filename = filename  # Файл с настройками
