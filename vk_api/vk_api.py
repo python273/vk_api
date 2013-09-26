@@ -10,10 +10,10 @@ Copyright (C) 2013
 import jconfig
 import re
 import requests
-import time
+# import time
 
 
-class VkApi():
+class VkApi(object):
     def __init__(self,
                  login=None, password=None, number=None,
                  sid=None, token=None,
@@ -32,7 +32,7 @@ class VkApi():
                         'https' : 'https://127.0.0.1:8888/'}
         :param version: Версия API (default: '5.0')
         :param app_id: Standalone-приложение (default: 2895443)
-        :param scope: Запрашиваемые права  (default: 2097151)
+        :param scope: Запрашиваемые права (default: 2097151)
         '''
 
         self.login = login
@@ -99,30 +99,32 @@ class VkApi():
             self.sid = remixsid
 
         elif 'sid=' in response.url:
-            raise authorization_error('Authorization error (capcha)')
+            raise authorization_error('Authorization error (capcha)')\
+            # TODO: write me
+            # Capcha handler
+            # Capcha object
         else:
             raise authorization_error('Authorization error (bad password)')
 
-        if 'security_check' in response.url:
-            if self.number:
-                number_hash = regexp(r'security_check.*?hash: \'(.*?)\'\};',
-                                     response.text)[0]
+        if 'security_check' in response.url and self.number:
+            number_hash = regexp(r'security_check.*?hash: \'(.*?)\'\};',
+                                 response.text)[0]
 
-                values = {
-                    'act': 'security_check',
-                    'al': '1',
-                    'al_page': '3',
-                    'code': self.number,
-                    'hash': number_hash,
-                    'to': ''
-                }
+            values = {
+                'act': 'security_check',
+                'al': '1',
+                'al_page': '3',
+                'code': self.number,
+                'hash': number_hash,
+                'to': ''
+            }
 
-                response = self.http.post('https://vk.com/login.php', values)
+            response = self.http.post('https://vk.com/login.php', values)
 
-                if response.text.split('<!>')[4] == '4':
-                    return
+            if response.text.split('<!>')[4] == '4':
+                return
 
-            raise authorization_error('Authorization error (enter number)')
+        raise authorization_error('Authorization error (enter number)')
 
     def check_sid(self):
         ''' Прверка Cookies remixsid на валидность '''
@@ -175,7 +177,7 @@ class VkApi():
     def check_token(self):
         ''' Прверка access_token на валидность '''
 
-        if self.token.get('access_token'):
+        if self.token:
             try:
                 self.method('isAppUser')
             except api_error:
@@ -194,17 +196,20 @@ class VkApi():
         '''
 
         url = 'https://api.vk.com/method/%s' % method
+        values = values or {}
 
-        if not values:
-            values = {}
-
-        values.update({'v': self.version})
+        if not 'v' in values:
+            values.update({'v': self.version})
 
         if self.token:
             values.update({'access_token': self.token['access_token']})
 
         response = self.http.post(url, values).json()
         if 'error' in response:
+            # TODO: write me
+            # Capcha handler
+            # Capcha object
+            # Error #17 handler
             raise api_error(response['error'])
         else:
             return response['response']
@@ -228,3 +233,8 @@ class authorization_error(vk_api_error):
 
 class api_error(vk_api_error):
     pass
+
+
+class capcha():
+    pass
+
