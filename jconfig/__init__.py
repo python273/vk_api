@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 '''
 @author: Kirill Python
 @contact: http://vk.com/python273
