@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 '''
 @author: Kirill Python
 @contact: http://vk.com/python273
@@ -6,26 +8,26 @@
 Copyright (C) 2013
 '''
 
-# -*- coding: utf-8 -*-
 import jconfig
 import re
 import requests
-# import time
+import time
+
+DELAY = 1.0 / 3  # 3 requests per second
 
 
 class VkApi(object):
     def __init__(self,
                  login=None, password=None, number=None,
-                 sid=None, token=None,
+                 token=None,
                  proxies=None,
-                 version='5.0', app_id=2895443, scope=2097151):
+                 version='5.4', app_id=2895443, scope=2097151):
         '''
         :param login: Логин ВКонтакте
         :param password: Пароль ВКонтакте
         :param number: Номер при проверке безопасности
                         Номер: +7 12345678 90
                         number = 12345678
-        :param sid: cookie remixsid
         :param token: access_token
         :param proxies: proxy server
                         {'http': 'http://127.0.0.1:8888/',
@@ -39,7 +41,7 @@ class VkApi(object):
         self.password = password
         self.number = number
 
-        self.sid = sid
+        self.sid = None
         self.token = {'access_token': token}
 
         self.version = version
@@ -55,6 +57,8 @@ class VkApi(object):
                             'Gecko/20100101 Firefox/20.0'
         }
         self.http.verify = False
+
+        self.last_request = 0.0
 
         if login and password:
             self.sid = self.settings['remixsid']
@@ -106,7 +110,24 @@ class VkApi(object):
         else:
             raise authorization_error('Authorization error (bad password)')
 
-        if 'security_check' in response.url and self.number:
+        if 'security_check' in response.url:
+            self.security_check(response)
+
+    def security_check(self, url=None, response=None):
+        if url:
+            response = self.http.get(url)
+
+        # Проверяем, является ли логин номером
+        if not self.number:
+            phone_postfix = regexp(r'class="phone_postfix">(.*?)</span>',
+                                   response.text)
+
+            phone_postfix = phone_postfix[0].strip()
+
+            if self.login[-len(phone_postfix):] == phone_postfix:
+                self.number = self.login
+
+        if self.number:
             number_hash = regexp(r'security_check.*?hash: \'(.*?)\'\};',
                                  response.text)[0]
 
@@ -122,9 +143,10 @@ class VkApi(object):
             response = self.http.post('https://vk.com/login.php', values)
 
             if response.text.split('<!>')[4] == '4':
-                return
+                return True
 
-        raise authorization_error('Authorization error (enter number)')
+        raise authorization_error('Security check (enter number)')
+
 
     def check_sid(self):
         ''' Прверка Cookies remixsid на валидность '''
@@ -180,7 +202,7 @@ class VkApi(object):
         if self.token:
             try:
                 self.method('isAppUser')
-            except api_error:
+            except apiError:
                 return False
 
             return True
@@ -188,15 +210,18 @@ class VkApi(object):
     def method(self, method, values=None):
         ''' Использование методов API
 
-            method - название метода
+            param: method - название метода
                         'users.get'
 
-            values - параметры
+            param: values - параметры
                         {'uids': 1}
         '''
-
         url = 'https://api.vk.com/method/%s' % method
-        values = values or {}
+
+        if values:
+            values = values.copy()
+        else:
+            values = {}
 
         if not 'v' in values:
             values.update({'v': self.version})
@@ -204,13 +229,27 @@ class VkApi(object):
         if self.token:
             values.update({'access_token': self.token['access_token']})
 
+        # Ограничение 3 запроса в секунду
+        sleep = DELAY - (time.time() - self.last_request)
+
+        if sleep > 0:
+            time.sleep(sleep)
+
         response = self.http.post(url, values).json()
+        self.last_request = time.time()
+
         if 'error' in response:
             # TODO: write me
             # Capcha handler
             # Capcha object
-            # Error #17 handler
-            raise api_error(response['error'])
+
+            error = apiError(response['error'], self, method, values)
+
+            if error.code == 17:
+                print 'HANDLER 17'
+                # TODO: number handler
+
+            raise error
         else:
             return response['response']
 
@@ -231,10 +270,21 @@ class authorization_error(vk_api_error):
     pass
 
 
-class api_error(vk_api_error):
-    pass
+class apiError(Exception):
+    def __init__(self, error, vk, method, values):
+        self.error = error
+        self.vk = vk
+        self.method = method
+        self.values = values
+        self.code = error['error_code']
+
+    def try_method(self):
+        return self.vk.method(self.method, self.values)
+
+    def __str__(self):
+        return self.error['error_msg']
 
 
-class capcha():
+class Capcha():
     pass
 
