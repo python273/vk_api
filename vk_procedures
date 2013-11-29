@@ -1,0 +1,30 @@
+==========
+CODE: get items x25
+INPUT: max_count, start_offset, params:in_JSON, method, method
+----------
+var max_count = %s;
+var start_offset = %s;
+var my_params = %s;
+
+var params = {"count": max_count} + my_params;
+
+var res = API.%s(params);
+var count = res["count"];
+var items = res["items"];
+
+var offset = max_count;
+
+var i = 1;
+while(i < 25 && offset + max_count < count) {
+    offset = i * max_count + start_offset;
+    params = {"count": max_count, "offset": offset};
+    params = params + my_params;
+
+    res = API.%s(params);
+    items = items + res["items"];
+
+    i = i + 1;
+}
+
+return {"count": count, "items": items, "offset": offset, "end": offset + max_count >= count};
+==========
