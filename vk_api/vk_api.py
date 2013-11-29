@@ -48,7 +48,7 @@ class VkApi(object):
         self.app_id = app_id
         self.scope = scope
 
-        self.settings = jconfig.config(login)
+        self.settings = jconfig.Config(login)
 
         self.http = requests.Session()
         self.http.proxies = proxies  # Ставим прокси
