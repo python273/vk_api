@@ -15,7 +15,7 @@ var items = res["items"];
 var offset = max_count;
 
 var i = 1;
-while(i < 25 && offset + max_count < count) {
+while(i < 25 && offset < count) {
     offset = i * max_count + start_offset;
     params = {"count": max_count, "offset": offset};
     params = params + my_params;
@@ -26,5 +26,5 @@ while(i < 25 && offset + max_count < count) {
     i = i + 1;
 }
 
-return {"count": count, "items": items, "offset": offset, "end": offset + max_count >= count};
+return {"count": count, "items": items, "offset": offset, "end": offset >= count};
 ==========
