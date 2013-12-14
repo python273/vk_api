@@ -11,7 +11,7 @@ Copyright (C) 2013
 
 from distutils.core import setup
 setup(name='vk_api',
-      version='4.6.4',
+      version='4.6.5',
       description='Module to use API vk.com',
       author='Kirill Python',
       author_email='mikeking568@gmail.com',
