@@ -6,15 +6,16 @@ class VkTools(object):
     def __init__(self, vk):
         self.vk = vk
 
-    def get_all_items(self, method, values=None, max_count=200):
+    def get_all(self, method, values=None, max_count=200, key='items'):
         ''' Получить все элементы
-            Работает в методах, где в ответе есть count и items
+            Работает в методах, где в ответе есть items или users
             За один запрос получает max_count * 25 элементов
 
         :param method: метод
         :param values: параметры
         :param max_count: максимальное количество элементов,
                             которое можно получить за один раз
+        :param key: ключ элементов, которые нужно получить
         '''
 
         if values:
@@ -26,13 +27,12 @@ class VkTools(object):
         offset = 0
 
         while True:
-            run_code = code_get_all_items % (max_count, offset, json.dumps(values), method, method)
+            run_code = code_get_all_items % (
+                                        max_count, offset, json.dumps(values),
+                                        key, method, method
+                                    )
 
-            try:
-                response = self.vk.method('execute', {'code': run_code})
-            except Exception as e:
-                print run_code
-                print e
+            response = self.vk.method('execute', {'code': run_code})
 
             items += response['items']
 
@@ -41,16 +41,17 @@ class VkTools(object):
 
             offset = response['offset']
 
-        return {'count': len(items), 'items': items}
+        return {'count': len(items), key: items}
 
-    def get_all_items_slow(self, method, values=None, max_count=200):
+    def get_all_slow(self, method, values=None, max_count=200, key='items'):
         ''' Получить все элементы
-            Работает в методах, где в ответе есть count и items
+            Работает в методах, где в ответе есть count и items или users
 
         :param method: метод
         :param values: параметры
         :param max_count: максимальное количество элементов,
                             которое можно получить за один раз
+        :param key: ключ элементов, которые нужно получить
         '''
 
         if not values:
@@ -62,7 +63,7 @@ class VkTools(object):
 
         response = self.vk.method(method, values)
         count = response['count']
-        items = response['items']
+        items = response[key]
 
         for i in xrange(max_count, count + 1, max_count):
             values.update({
@@ -70,9 +71,9 @@ class VkTools(object):
             })
 
             response = self.vk.method(method, values)
-            items += response['items']
+            items += response[key]
 
-        return {'count': len(items), 'items': items}
+        return {'count': len(items), key: items}
 
 # Полный код в файле vk_procedures
-code_get_all_items = 'var z=%s,x=%s,y=%s,p={"count":z}+y,r=API.%s(p),c=r["count"],j=r["items"],o=0,i=1;while(i<25&&o<c){o=i*z+x;p={"count":z,"offset":o}+y;r=API.%s(p);j=j+r["items"];i=i+1;};return{"count":c,"items":j,"offset":o,"end":o+z>=c};'
+code_get_all_items = 'var z=%s,x=%s,y=%s,k="%s",p={"count":z}+y,r=API.%s(p),c=r["count"],j=r[k],o=0,i=1;while(i<25&&o<c){o=i*z+x;p={"count":z,"offset":o}+y;r=API.%s(p);j=j+r[k];i=i+1;};return{"count":c,"items":j,"offset":o,"end":o+z>=c};'
