@@ -9,7 +9,7 @@ Copyright (C) 2013
 '''
 
 __author__ = "Kirill Python"
-__version__ = "4.6.5"
+__version__ = "4.6.6"
 __email__ = "mikeking568@gmail.com"
 __contact__ = "https://vk.com/python273"
 

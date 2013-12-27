@@ -21,7 +21,7 @@ class VkApi(object):
                  login=None, password=None, number=None,
                  token=None,
                  proxies=None,
-                 version='5.4', app_id=2895443, scope=2097151):
+                 version='5.5', app_id=2895443, scope=2097151):
         '''
         :param login: Логин ВКонтакте
         :param password: Пароль ВКонтакте
