@@ -17,4 +17,4 @@ setup(name='vk_api',
       author_email='mikeking568@gmail.com',
       url='https://github.com/python273/vk_api',
       packages=['vk_api', 'jconfig'],
-     )
+      )

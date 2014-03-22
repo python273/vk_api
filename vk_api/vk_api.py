@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 @author: Kirill Python
 @contact: http://vk.com/python273
@@ -6,11 +7,10 @@
 Copyright (C) 2013
 '''
 
-# -*- coding: utf-8 -*-
+
 import jconfig
 import re
 import requests
-import time
 
 
 class VkApi():
