@@ -20,7 +20,7 @@ NEED_VALIDATION_CODE = 17
 
 class VkApi(object):
     def __init__(self, login=None, password=None, number=None, token=None,
-                 proxies=None, captcha_handler=None,
+                 proxies=None, captcha_handler=None, config_filename=None,
                  api_version='5.21', app_id=2895443, scope=2097151):
         u'''
         :param login: Логин ВКонтакте
@@ -48,7 +48,7 @@ class VkApi(object):
         self.app_id = app_id
         self.scope = scope
 
-        self.settings = jconfig.Config(login)
+        self.settings = jconfig.Config(login, filename=config_filename)
 
         self.http = requests.Session()
         self.http.proxies = proxies  # Ставим прокси
