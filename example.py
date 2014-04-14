@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 '''
 @author: Kirill Python
 @contact: http://vk.com/python273
@@ -6,7 +8,6 @@
 Copyright (C) 2013
 '''
 
-# -*- coding: utf-8 -*-
 import vk_api
 
 
@@ -18,15 +19,18 @@ def main():
 
     try:
         vk = vk_api.VkApi(login, password)  # Авторизируемся
-    except vk_api.authorization_error as error_msg:
+    except vk_api.AuthorizationError as error_msg:
         print(error_msg)  # В случае ошибки выведем сообщение
         return  # и выйдем
 
     values = {
-        'count': 1  # Получаем только одно сообщение
+        'count': 1  # Получаем только один пост
     }
     response = vk.method('wall.get', values)  # Используем метод wall.get
-    print(response[1]['text'])  # Печатаем текст последнего поста со стены
+
+    if response['items']:
+        # Печатаем текст последнего поста со стены
+        print(response['items'][0]['text'])
 
 if __name__ == '__main__':
     main()
