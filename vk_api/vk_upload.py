@@ -5,7 +5,7 @@
 @contact: http://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2013
+Copyright (C) 2014
 '''
 
 
@@ -20,7 +20,7 @@ class VkUpload(object):
         photos = ['photo1.jpg', 'img.png']
                = 'screen.png'
                Максимум 5 фотографий
-        
+
         album_id
         '''
 
@@ -73,7 +73,8 @@ class VkUpload(object):
             values.update({'group_id': group_id})
 
         # Получаем ссылку для загрузки
-        url = self.vk.method('photos.getMessagesUploadServer', values)['upload_url']
+        url = self.vk.method('photos.getMessagesUploadServer', values)
+        url = url['upload_url']
 
         # Загружаем
         photos_files = openPhotos(photos)
@@ -95,6 +96,7 @@ def openPhotos(photos_paths):
         )
 
     return photos
+
 
 def closePhotos(photos):
     for i in photos:
