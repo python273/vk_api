@@ -7,3 +7,4 @@ upload_to_PyPi.py
 .pydevproject
 .settings/
 .idea/
+/testing

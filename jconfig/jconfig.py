@@ -5,7 +5,7 @@
 @contact: http://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2013
+Copyright (C) 2014
 '''
 
 import os

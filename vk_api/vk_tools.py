@@ -1,4 +1,13 @@
 # encoding: utf-8
+
+'''
+@author: Kirill Python
+@contact: http://vk.com/python273
+@license Apache License, Version 2.0, see LICENSE file
+
+Copyright (C) 2014
+'''
+
 import json
 import sys
 
@@ -80,4 +89,8 @@ class VkTools(object):
         return {'count': len(items), key: items}
 
 # Полный код в файле vk_procedures
-code_get_all_items = 'var z=%s,x=%s,y=%s,k="%s",p={"count":z}+y,r=API.%s(p),c=r["count"],j=r[k],o=0,i=1;while(i<25&&o<c){o=i*z+x;p={"count":z,"offset":o}+y;r=API.%s(p);j=j+r[k];i=i+1;};return{"count":c,"items":j,"offset":o,"end":o+z>=c};'
+code_get_all_items = '''
+var z=%s,x=%s,y=%s,k="%s",p={"count":z}+y,r=API.%s(p),c=r["count"],j=r[k],o=0,
+i=1;while(i<25&&o<c){o=i*z+x;p={"count":z,"offset":o}+y;r=API.%s(p);j=j+r[k];i
+=i+1;};return{"count":c,"items":j,"offset":o,"end":o+z>=c};
+'''.replace('\n', '')
