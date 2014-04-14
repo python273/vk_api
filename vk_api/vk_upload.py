@@ -15,7 +15,7 @@ class VkUpload(object):
         # https://vk.com/dev/upload_files
 
     def photo(self, photos, album_id=None, group_id=None):
-        ''' Загрузка изображений в альбом пользователя
+        u''' Загрузка изображений в альбом пользователя
 
         photos = ['photo1.jpg', 'img.png']
                = 'screen.png'
@@ -55,7 +55,7 @@ class VkUpload(object):
         return response
 
     def photoMessages(self, photos, group_id=None):
-        ''' Загрузка изображений в сообщения
+        u''' Загрузка изображений в сообщения
 
         photos = ['photo1.jpg', 'img.png']
                = 'screen.png'

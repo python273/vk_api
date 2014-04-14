@@ -20,7 +20,7 @@ class VkTools(object):
         self.vk = vk
 
     def get_all(self, method, values=None, max_count=200, key='items'):
-        ''' Получить все элементы
+        u''' Получить все элементы
             Работает в методах, где в ответе есть items или users
             За один запрос получает max_count * 25 элементов
 
@@ -57,7 +57,7 @@ class VkTools(object):
         return {'count': len(items), key: items}
 
     def get_all_slow(self, method, values=None, max_count=200, key='items'):
-        ''' Получить все элементы
+        u''' Получить все элементы
             Работает в методах, где в ответе есть count и items или users
 
         :param method: метод
