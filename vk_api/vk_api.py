@@ -32,6 +32,9 @@ class VkApi(object):
         :param proxies: proxy server
                         {'http': 'http://127.0.0.1:8888/',
                         'https': 'https://127.0.0.1:8888/'}
+        :param captcha_handler: функция для обработки капчи
+        :param config_filename: Расположение config файла
+
         :param api_version: Версия API (default: '5.21')
         :param app_id: Standalone-приложение (default: 2895443)
         :param scope: Запрашиваемые права (default: 2097151)
