@@ -9,7 +9,7 @@ Copyright (C) 2014
 '''
 
 __author__ = 'Kirill Python'
-__version__ = '1.1'
+__version__ = '1.2'
 __email__ = 'siberianpython@gmail.com'
 __contact__ = 'https://vk.com/python273'
 
