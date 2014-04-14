@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 '''
 @author: Kirill Python
 @contact: http://vk.com/python273
@@ -6,13 +9,10 @@
 Copyright (C) 2013
 '''
 
-#!/usr/bin/env python
-""" Setup file for vk_api package """
-
 from distutils.core import setup
 setup(name='vk_api',
-      version='4.6',
-      description='Module to use API VKontakte vk.com',
+      version='4.7',
+      description='Module to use API vk.com',
       author='Kirill Python',
       author_email='mikeking568@gmail.com',
       url='https://github.com/python273/vk_api',
