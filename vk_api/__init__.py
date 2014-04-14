@@ -8,10 +8,10 @@
 Copyright (C) 2014
 '''
 
-__author__ = "Kirill Python"
-__version__ = "4.7"
-__email__ = "siberianpython@gmail.com"
-__contact__ = "https://vk.com/python273"
+__author__ = 'Kirill Python'
+__version__ = '4.7'
+__email__ = 'siberianpython@gmail.com'
+__contact__ = 'https://vk.com/python273'
 
 import sys
 

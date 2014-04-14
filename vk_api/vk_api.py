@@ -22,7 +22,7 @@ class VkApi(object):
     def __init__(self, login=None, password=None, number=None, token=None,
                  proxies=None, captcha_handler=None,
                  api_version='5.21', app_id=2895443, scope=2097151):
-        '''
+        u'''
         :param login: Логин ВКонтакте
         :param password: Пароль ВКонтакте
         :param number: Номер для проверке безопасности (указывать, если
@@ -78,7 +78,7 @@ class VkApi(object):
                 self.api_login()
 
     def vk_login(self, captcha_sid=None, captcha_key=None):
-        ''' Авторизцаия ВКонтакте с получением cookies remixsid '''
+        u''' Авторизцаия ВКонтакте с получением cookies remixsid '''
 
         url = 'https://login.vk.com/'
         values = {
@@ -163,7 +163,7 @@ class VkApi(object):
         raise SecurityCheck('Enter number')
 
     def check_sid(self):
-        ''' Прверка Cookies remixsid на валидность '''
+        u''' Прверка Cookies remixsid на валидность '''
 
         if self.sid:
             url = 'https://vk.com/feed2.php'
@@ -179,7 +179,7 @@ class VkApi(object):
                 return response
 
     def api_login(self):
-        ''' Получение токена через Desktop приложение '''
+        u''' Получение токена через Desktop приложение '''
 
         url = 'https://oauth.vk.com/authorize'
         values = {
@@ -211,7 +211,7 @@ class VkApi(object):
             raise AuthorizationError('Authorization error (api)')
 
     def check_token(self):
-        ''' Прверка access_token на валидность '''
+        u''' Прверка access_token на валидность '''
 
         if self.token:
             try:
@@ -222,16 +222,16 @@ class VkApi(object):
             return True
 
     def captcha_handler(self, captcha):
-        ''' http://vk.com/dev/captcha_error '''
+        u''' http://vk.com/dev/captcha_error '''
         pass
 
     def need_validation_handler(self, error):
-        ''' http://vk.com/dev/need_validation '''
+        u''' http://vk.com/dev/need_validation '''
         # TODO: write me
         pass
 
     def method(self, method, values=None, captcha_sid=None, captcha_key=None):
-        '''
+        u'''
         Использование методов API
 
         :param method: метод
@@ -295,7 +295,7 @@ class VkApi(object):
 
 
 def regexp(reg, string):
-    ''' Поиск по регулярке '''
+    u''' Поиск по регулярке '''
 
     reg = re.compile(reg, re.IGNORECASE | re.DOTALL)
     reg = reg.findall(string)
