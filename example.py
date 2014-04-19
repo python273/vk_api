@@ -12,7 +12,7 @@ import vk_api
 
 
 def main():
-    u""" Пример получения последнего сообщения со стены """
+    u''' Пример получения последнего сообщения со стены '''
 
     login = u'python@vk.com'
     password = u'mypassword'

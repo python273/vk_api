@@ -6,15 +6,19 @@
 @contact: http://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2013
+Copyright (C) 2014
 '''
 
 from distutils.core import setup
-setup(name='vk_api',
-      version='4.7',
-      description='Module to use API vk.com',
-      author='Kirill Python',
-      author_email='mikeking568@gmail.com',
-      url='https://github.com/python273/vk_api',
-      packages=['vk_api', 'jconfig'],
-     )
+setup(
+    name='vk_api',
+    version='4.7.1',
+    author='Kirill Python',
+    author_email='siberianpython@gmail.com',
+    url='https://github.com/python273/vk_api',
+    description='Module to use API vk.com',
+    download_url='https://github.com/python273/vk_api/archive/master.zip',
+    license='Apache License, Version 2.0, see LICENSE file',
+
+    packages=['vk_api', 'jconfig'],
+)

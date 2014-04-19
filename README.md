@@ -9,8 +9,8 @@ Python 2 / 3
 
 Установка
 ------------
-    $ easy_install vk_api
+    $ pip install vk_api
 
 Для работы необходим модуль [Requests](https://github.com/kennethreitz/requests)
 
-    $ easy_install requests
+    $ pip install requests

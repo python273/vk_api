@@ -20,9 +20,9 @@ NEED_VALIDATION_CODE = 17
 
 class VkApi(object):
     def __init__(self, login=None, password=None, number=None, token=None,
-                 proxies=None, captcha_handler=None,
+                 proxies=None, captcha_handler=None, config_filename=None,
                  api_version='5.21', app_id=2895443, scope=2097151):
-        '''
+        u'''
         :param login: Логин ВКонтакте
         :param password: Пароль ВКонтакте
         :param number: Номер для проверке безопасности (указывать, если
@@ -32,6 +32,9 @@ class VkApi(object):
         :param proxies: proxy server
                         {'http': 'http://127.0.0.1:8888/',
                         'https': 'https://127.0.0.1:8888/'}
+        :param captcha_handler: Функция для обработки капчи
+        :param config_filename: Расположение config файла
+
         :param api_version: Версия API (default: '5.21')
         :param app_id: Standalone-приложение (default: 2895443)
         :param scope: Запрашиваемые права (default: 2097151)
@@ -48,7 +51,7 @@ class VkApi(object):
         self.app_id = app_id
         self.scope = scope
 
-        self.settings = jconfig.Config(login)
+        self.settings = jconfig.Config(login, filename=config_filename)
 
         self.http = requests.Session()
         self.http.proxies = proxies  # Ставим прокси
@@ -78,7 +81,7 @@ class VkApi(object):
                 self.api_login()
 
     def vk_login(self, captcha_sid=None, captcha_key=None):
-        ''' Авторизцаия ВКонтакте с получением cookies remixsid '''
+        u''' Авторизцаия ВКонтакте с получением cookies remixsid '''
 
         url = 'https://login.vk.com/'
         values = {
@@ -163,7 +166,7 @@ class VkApi(object):
         raise SecurityCheck('Enter number')
 
     def check_sid(self):
-        ''' Прверка Cookies remixsid на валидность '''
+        u''' Прверка Cookies remixsid на валидность '''
 
         if self.sid:
             url = 'https://vk.com/feed2.php'
@@ -179,7 +182,7 @@ class VkApi(object):
                 return response
 
     def api_login(self):
-        ''' Получение токена через Desktop приложение '''
+        u''' Получение токена через Desktop приложение '''
 
         url = 'https://oauth.vk.com/authorize'
         values = {
@@ -211,7 +214,7 @@ class VkApi(object):
             raise AuthorizationError('Authorization error (api)')
 
     def check_token(self):
-        ''' Прверка access_token на валидность '''
+        u''' Прверка access_token на валидность '''
 
         if self.token:
             try:
@@ -222,16 +225,16 @@ class VkApi(object):
             return True
 
     def captcha_handler(self, captcha):
-        ''' http://vk.com/dev/captcha_error '''
+        u''' http://vk.com/dev/captcha_error '''
         pass
 
     def need_validation_handler(self, error):
-        ''' http://vk.com/dev/need_validation '''
+        u''' http://vk.com/dev/need_validation '''
         # TODO: write me
         pass
 
     def method(self, method, values=None, captcha_sid=None, captcha_key=None):
-        '''
+        u'''
         Использование методов API
 
         :param method: метод
@@ -295,7 +298,7 @@ class VkApi(object):
 
 
 def regexp(reg, string):
-    ''' Поиск по регулярке '''
+    u''' Поиск по регулярке '''
 
     reg = re.compile(reg, re.IGNORECASE | re.DOTALL)
     reg = reg.findall(string)
