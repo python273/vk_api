@@ -13,7 +13,11 @@ import json
 
 
 class Config(object):
-    def __init__(self, section, filename='config'):
+    def __init__(self, section, filename=None):
+
+        if not filename:
+            filename = 'config'
+
         self.section = section  # Секция настроек
         self.filename = filename  # Файл с настройками
         self.all = self.parse()  # Все настройки
