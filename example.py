@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
 
-'''
+"""
 @author: Kirill Python
 @contact: http://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
 Copyright (C) 2014
-'''
+"""
 
 import vk_api
 
 
 def main():
-    u''' Пример получения последнего сообщения со стены '''
+    """ Пример получения последнего сообщения со стены """
 
-    login = u'python@vk.com'
-    password = u'mypassword'
+    login, password = 'python@vk.com', 'mypassword'
 
     try:
         vk = vk_api.VkApi(login, password)  # Авторизируемся

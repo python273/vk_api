@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-'''
+"""
 @author: Kirill Python
 @contact: http://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
 Copyright (C) 2014
-'''
+"""
 
 
 class VkUpload(object):
@@ -15,14 +15,14 @@ class VkUpload(object):
         # https://vk.com/dev/upload_files
 
     def photo(self, photos, album_id=None, group_id=None):
-        u''' Загрузка изображений в альбом пользователя
+        """ Загрузка изображений в альбом пользователя
 
         photos = ['photo1.jpg', 'img.png']
                = 'screen.png'
                Максимум 5 фотографий
 
         album_id
-        '''
+        """
 
         if not (album_id and photos):
             return False
@@ -55,12 +55,12 @@ class VkUpload(object):
         return response
 
     def photoMessages(self, photos, group_id=None):
-        u''' Загрузка изображений в сообщения
+        """ Загрузка изображений в сообщения
 
         photos = ['photo1.jpg', 'img.png']
                = 'screen.png'
                Максимум 7(?) фотографий
-        '''
+        """
 
         if not photos:
             return False
