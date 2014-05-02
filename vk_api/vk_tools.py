@@ -1,12 +1,12 @@
 # encoding: utf-8
 
-'''
+"""
 @author: Kirill Python
 @contact: http://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
 Copyright (C) 2014
-'''
+"""
 
 import json
 import sys
@@ -20,7 +20,7 @@ class VkTools(object):
         self.vk = vk
 
     def get_all(self, method, values=None, max_count=200, key='items'):
-        u''' Получить все элементы
+        """ Получить все элементы
             Работает в методах, где в ответе есть items или users
             За один запрос получает max_count * 25 элементов
 
@@ -29,7 +29,7 @@ class VkTools(object):
         :param max_count: максимальное количество элементов,
                             которое можно получить за один раз
         :param key: ключ элементов, которые нужно получить
-        '''
+        """
 
         if values:
             values = values.copy()
@@ -57,7 +57,7 @@ class VkTools(object):
         return {'count': len(items), key: items}
 
     def get_all_slow(self, method, values=None, max_count=200, key='items'):
-        u''' Получить все элементы
+        """ Получить все элементы
             Работает в методах, где в ответе есть count и items или users
 
         :param method: метод
@@ -65,7 +65,7 @@ class VkTools(object):
         :param max_count: максимальное количество элементов,
                             которое можно получить за один раз
         :param key: ключ элементов, которые нужно получить
-        '''
+        """
 
         if not values:
             values = {}
