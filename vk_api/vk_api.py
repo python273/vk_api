@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-'''
+"""
 @author: Kirill Python
 @contact: http://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
 Copyright (C) 2014
-'''
+"""
 
 import jconfig
 import re
@@ -22,7 +22,7 @@ class VkApi(object):
     def __init__(self, login=None, password=None, number=None, token=None,
                  proxies=None, captcha_handler=None, config_filename=None,
                  api_version='5.21', app_id=2895443, scope=2097151):
-        u'''
+        """
         :param login: Логин ВКонтакте
         :param password: Пароль ВКонтакте
         :param number: Номер для проверке безопасности (указывать, если
@@ -38,7 +38,7 @@ class VkApi(object):
         :param api_version: Версия API (default: '5.21')
         :param app_id: Standalone-приложение (default: 2895443)
         :param scope: Запрашиваемые права (default: 2097151)
-        '''
+        """
 
         self.login = login
         self.password = password
@@ -81,7 +81,7 @@ class VkApi(object):
                 self.api_login()
 
     def vk_login(self, captcha_sid=None, captcha_key=None):
-        u''' Авторизцаия ВКонтакте с получением cookies remixsid '''
+        """ Авторизцаия ВКонтакте с получением cookies remixsid """
 
         url = 'https://login.vk.com/'
         values = {
@@ -166,7 +166,7 @@ class VkApi(object):
         raise SecurityCheck('Enter number')
 
     def check_sid(self):
-        u''' Прверка Cookies remixsid на валидность '''
+        """ Прверка Cookies remixsid на валидность """
 
         if self.sid:
             url = 'https://vk.com/feed2.php'
@@ -182,7 +182,7 @@ class VkApi(object):
                 return response
 
     def api_login(self):
-        u''' Получение токена через Desktop приложение '''
+        """ Получение токена через Desktop приложение """
 
         url = 'https://oauth.vk.com/authorize'
         values = {
@@ -214,7 +214,7 @@ class VkApi(object):
             raise AuthorizationError('Authorization error (api)')
 
     def check_token(self):
-        u''' Прверка access_token на валидность '''
+        """ Прверка access_token на валидность """
 
         if self.token:
             try:
@@ -225,23 +225,22 @@ class VkApi(object):
             return True
 
     def captcha_handler(self, captcha):
-        u''' http://vk.com/dev/captcha_error '''
+        """ http://vk.com/dev/captcha_error """
         pass
 
     def need_validation_handler(self, error):
-        u''' http://vk.com/dev/need_validation '''
+        """ http://vk.com/dev/need_validation """
         # TODO: write me
         pass
 
     def method(self, method, values=None, captcha_sid=None, captcha_key=None):
-        u'''
-        Использование методов API
+        """ Использование методов API
 
         :param method: метод
         :param values: параметры
         :param captcha_sid:
         :param captcha_key:
-        '''
+        """
 
         url = 'https://api.vk.com/method/%s' % method
 
@@ -298,7 +297,7 @@ class VkApi(object):
 
 
 def regexp(reg, string):
-    u''' Поиск по регулярке '''
+    """ Поиск по регулярке """
 
     reg = re.compile(reg, re.IGNORECASE | re.DOTALL)
     reg = reg.findall(string)
