@@ -276,7 +276,6 @@ class VkApi(object):
 
             if error_code in self.error_handlers:
                 if error_code == CAPTCHA_ERROR_CODE:
-                    # TODO: wtf
                     error = Captcha(
                         self,
                         error.error['captcha_sid'],
@@ -285,6 +284,8 @@ class VkApi(object):
                         {'values': values},
                         error.error['captcha_img']
                     )
+                    key = error.input()
+                    return error.try_again(key)
 
                 response = self.error_handlers[error_code](error)
 
@@ -367,6 +368,9 @@ class Captcha(Exception):
             self.url = 'http://api.vk.com/captcha.php?sid={}'.format(self.sid)
 
         return self.url
+
+    def input(self):
+        return raw_input("Enter Captcha {0}:\n".format(self.url))
 
     def try_again(self, key):
         self.key = key
