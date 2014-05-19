@@ -96,6 +96,34 @@ class VkUpload(object):
 
         return response
 
+    def document(self, file_path, title=None, tags=None, group_id=None):
+        """ Загрузка документа
+
+        :param file_path: путь к документу
+        :param title: название документа
+        :param tags: метки для поиска
+        :param group_id: идентификатор сообщества (если загрузка идет в группу)
+        """
+
+        values = {}
+        if group_id:
+            values.update({'group_id': group_id})
+
+        url = self.vk.method('docs.getUploadServer', values)['upload_url']
+
+        with open(file_path, 'rb') as file:
+            response = self.vk.http.post(url, files={'file': file}).json()
+
+        if title:
+            response.update({'title': title})
+
+        if tags:
+            response.update({'tags': tags})
+
+        response = self.vk.method('docs.save', response)
+
+        return response
+
 
 def openPhotos(photos_paths):
     photos = {}
