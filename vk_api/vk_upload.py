@@ -14,11 +14,19 @@ class VkUpload(object):
         self.vk = vk
         # https://vk.com/dev/upload_files
 
-    def photo(self, photos, album_id, group_id=None):
+    def photo(self, photos, album_id,
+              latitude=None, longitude=None, caption=None, description=None,
+              group_id=None):
         """ Загрузка изображений в альбом пользователя
 
         :param photos: список путей к изображениям, либо путь к изображению
         :param album_id: идентификатор альбома
+        :param latitude: географическая широта, заданная в градусах
+                            (от -90 до 90)
+        :param longitude: географическая долгота, заданная в градусах
+                            (от -180 до 180)
+        :param caption: текст описания изображения
+        :param description: текст описания альбома
         :param group_id: идентификатор сообщества (если загрузка идет в группу)
         """
 
@@ -26,10 +34,9 @@ class VkUpload(object):
             photos = [photos]
 
         values = {
-            'album_id': album_id
+            'album_id': album_id,
+            'group_id': group_id
         }
-        if group_id:  # Если загружаем в группу
-            values.update({'group_id': group_id})
 
         # Получаем ссылку для загрузки
         url = self.vk.method('photos.getUploadServer', values)['upload_url']
@@ -43,6 +50,13 @@ class VkUpload(object):
         # это не могу к сожалению просто пофиксить
         if not 'album_id' in response:
             response['album_id'] = response['aid']
+
+        response.update({
+            'latitude': latitude,
+            'longitude': longitude,
+            'caption': caption,
+            'description': description
+        })
 
         # Сохраняем фото в альбоме
         response = self.vk.method('photos.save', response)
@@ -81,9 +95,7 @@ class VkUpload(object):
         if type(photos) == str:
             photos = [photos]
 
-        values = {}
-        if group_id:
-            values.update({'group_id': group_id})
+        values = {'group_id': group_id}
 
         response = self.vk.method('photos.getWallUploadServer', values)
         url = response['upload_url']
@@ -105,20 +117,16 @@ class VkUpload(object):
         :param group_id: идентификатор сообщества (если загрузка идет в группу)
         """
 
-        values = {}
-        if group_id:
-            values.update({'group_id': group_id})
-
+        values = {'group_id': group_id}
         url = self.vk.method('docs.getUploadServer', values)['upload_url']
 
         with open(file_path, 'rb') as file:
             response = self.vk.http.post(url, files={'file': file}).json()
 
-        if title:
-            response.update({'title': title})
-
-        if tags:
-            response.update({'tags': tags})
+        response.update({
+            'title': title,
+            'tags': tags
+        })
 
         response = self.vk.method('docs.save', response)
 
