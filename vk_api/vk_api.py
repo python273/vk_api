@@ -163,7 +163,7 @@ class VkApi(object):
             if response.text.split('<!>')[4] == '4':
                 return True
 
-        raise SecurityCheck('Enter number')
+        raise SecurityCheck(phone_prefix, phone_postfix)
 
     def check_sid(self):
         """ Прверка Cookies remixsid на валидность """
@@ -331,7 +331,14 @@ class BadPassword(AuthorizationError):
 
 
 class SecurityCheck(AuthorizationError):
-    pass
+    def __init__(self, phone_prefix, phone_postfix):
+        self.phone_prefix = phone_prefix
+        self.phone_postfix = phone_postfix
+
+    def __str__(self):
+        return 'Security check. Enter number: {}...{}'.format(
+            self.phone_prefix, self.phone_postfix
+        )
 
 
 class ApiError(Exception):
