@@ -14,27 +14,29 @@ class VkUpload(object):
         self.vk = vk
         # https://vk.com/dev/upload_files
 
-    def photo(self, photos, album_id=None, group_id=None):
+    def photo(self, photos, album_id,
+              latitude=None, longitude=None, caption=None, description=None,
+              group_id=None):
         """ Загрузка изображений в альбом пользователя
 
-        photos = ['photo1.jpg', 'img.png']
-               = 'screen.png'
-               Максимум 5 фотографий
-
-        album_id
+        :param photos: список путей к изображениям, либо путь к изображению
+        :param album_id: идентификатор альбома
+        :param latitude: географическая широта, заданная в градусах
+                            (от -90 до 90)
+        :param longitude: географическая долгота, заданная в градусах
+                            (от -180 до 180)
+        :param caption: текст описания изображения
+        :param description: текст описания альбома
+        :param group_id: идентификатор сообщества (если загрузка идет в группу)
         """
 
-        if not (album_id and photos):
-            return False
-
-        if type(photos) == str:  # upload.photo('photo.jpg', ...)
+        if type(photos) == str:
             photos = [photos]
 
         values = {
-            'album_id': album_id
+            'album_id': album_id,
+            'group_id': group_id
         }
-        if group_id:  # Если загружаем в группу
-            values.update({'group_id': group_id})
 
         # Получаем ссылку для загрузки
         url = self.vk.method('photos.getUploadServer', values)['upload_url']
@@ -49,40 +51,84 @@ class VkUpload(object):
         if not 'album_id' in response:
             response['album_id'] = response['aid']
 
+        response.update({
+            'latitude': latitude,
+            'longitude': longitude,
+            'caption': caption,
+            'description': description
+        })
+
         # Сохраняем фото в альбоме
         response = self.vk.method('photos.save', response)
 
         return response
 
-    def photoMessages(self, photos, group_id=None):
+    def photo_messages(self, photos):
         """ Загрузка изображений в сообщения
 
-        photos = ['photo1.jpg', 'img.png']
-               = 'screen.png'
-               Максимум 7(?) фотографий
+        :param photos: список путей к изображениям, либо путь к изображению
         """
 
-        if not photos:
-            return False
-
-        if type(photos) == str:  # upload.photo('photo.jpg', ...)
+        if type(photos) == str:
             photos = [photos]
 
         values = {}
-        if group_id:
-            values.update({'group_id': group_id})
 
-        # Получаем ссылку для загрузки
         url = self.vk.method('photos.getMessagesUploadServer', values)
         url = url['upload_url']
 
-        # Загружаем
         photos_files = openPhotos(photos)
         response = self.vk.http.post(url, files=photos_files)
         closePhotos(photos_files)
 
-        # Сохраняем фото в альбоме
         response = self.vk.method('photos.saveMessagesPhoto', response.json())
+
+        return response
+
+    def photo_wall(self, photos, group_id=None):
+        """ Загрузка изображений на стену пользователя или в группу
+
+        :param photos: список путей к изображениям, либо путь к изображению
+        :param group_id: идентификатор сообщества (если загрузка идет в группу)
+        """
+
+        if type(photos) == str:
+            photos = [photos]
+
+        values = {'group_id': group_id}
+
+        response = self.vk.method('photos.getWallUploadServer', values)
+        url = response['upload_url']
+
+        photos_files = openPhotos(photos)
+        response = self.vk.http.post(url, files=photos_files)
+        closePhotos(photos_files)
+
+        response = self.vk.method('photos.saveWallPhoto', response.json())
+
+        return response
+
+    def document(self, file_path, title=None, tags=None, group_id=None):
+        """ Загрузка документа
+
+        :param file_path: путь к документу
+        :param title: название документа
+        :param tags: метки для поиска
+        :param group_id: идентификатор сообщества (если загрузка идет в группу)
+        """
+
+        values = {'group_id': group_id}
+        url = self.vk.method('docs.getUploadServer', values)['upload_url']
+
+        with open(file_path, 'rb') as file:
+            response = self.vk.http.post(url, files={'file': file}).json()
+
+        response.update({
+            'title': title,
+            'tags': tags
+        })
+
+        response = self.vk.method('docs.save', response)
 
         return response
 
