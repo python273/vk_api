@@ -51,6 +51,9 @@ class VkApi(object):
         self.app_id = app_id
         self.scope = scope
 
+        if not config_filename:
+            config_filename = 'vk_config.json'
+
         self.settings = jconfig.Config(login, filename=config_filename)
 
         self.http = requests.Session()
