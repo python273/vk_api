@@ -296,6 +296,21 @@ class VkApi(object):
             return response['response']
 
 
+def doc(method=None):
+    ''' Открывает документацию на метод или список всех методов
+
+    :param method: метод
+    '''
+
+    if not method:
+        method = 'methods'
+
+    url = 'https://vk.com/dev/{}'.format(method)
+
+    import webbrowser
+    webbrowser.open(url)
+
+
 def regexp(reg, string):
     """ Поиск по регулярке """
 
