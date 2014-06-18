@@ -368,9 +368,9 @@ class ApiError(Exception):
         self.error = error
 
     def try_method(self):
-        ''' Пробует отправить запрос заново
+        """ Пробует отправить запрос заново
 
-        '''
+        """
 
         return self.vk.method(self.method, self.values)
 

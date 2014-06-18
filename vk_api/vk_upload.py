@@ -13,7 +13,7 @@ class VkUpload(object):
     def __init__(self, vk):
         """
 
-        :param vk: объект vk_api
+        :param vk: объект VkApi
         """
 
         self.vk = vk
