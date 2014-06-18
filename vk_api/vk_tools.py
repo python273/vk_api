@@ -11,12 +11,17 @@ Copyright (C) 2014
 import json
 import sys
 
-if sys.version_info[0] == 3:
-    xrange = range
+if sys.version_info[0] != 3:
+    range = xrange
 
 
 class VkTools(object):
     def __init__(self, vk):
+        """
+
+        :param vk: объект vk_api
+        """
+
         self.vk = vk
 
     def get_all(self, method, values=None, max_count=200, key='items'):
@@ -78,7 +83,7 @@ class VkTools(object):
         count = response['count']
         items = response[key]
 
-        for i in xrange(max_count, count + 1, max_count):
+        for i in range(max_count, count + 1, max_count):
             values.update({
                 'offset': i
             })
@@ -89,8 +94,8 @@ class VkTools(object):
         return {'count': len(items), key: items}
 
 # Полный код в файле vk_procedures
-code_get_all_items = '''
+code_get_all_items = """
 var z=%s,x=%s,y=%s,k="%s",p={"count":z}+y,r=API.%s(p),c=r["count"],j=r[k],o=0,
 i=1;while(i<25&&o<c){o=i*z+x;p={"count":z,"offset":o}+y;r=API.%s(p);j=j+r[k];i
 =i+1;};return{"count":c,"items":j,"offset":o,"end":o+z>=c};
-'''.replace('\n', '')
+""".replace('\n', '')

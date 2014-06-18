@@ -11,6 +11,11 @@ Copyright (C) 2014
 
 class VkUpload(object):
     def __init__(self, vk):
+        """
+
+        :param vk: объект vk_api
+        """
+
         self.vk = vk
         # https://vk.com/dev/upload_files
 

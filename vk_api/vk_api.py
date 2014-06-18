@@ -300,10 +300,10 @@ class VkApi(object):
 
 
 def doc(method=None):
-    ''' Открывает документацию на метод или список всех методов
+    """ Открывает документацию на метод или список всех методов
 
     :param method: метод
-    '''
+    """
 
     if not method:
         method = 'methods'
@@ -326,7 +326,7 @@ def code_from_number(phone_prefix, phone_postfix, number):
     prefix_len = len(phone_prefix)
     postfix_len = len(phone_postfix)
 
-    if (prefix_len + postfix_len) > len(number):
+    if (prefix_len + postfix_len) >= len(number):
         return
 
     # Сравниваем начало номера
@@ -368,6 +368,10 @@ class ApiError(Exception):
         self.error = error
 
     def try_method(self):
+        ''' Пробует отправить запрос заново
+
+        '''
+
         return self.vk.method(self.method, self.values)
 
     def __str__(self):
@@ -388,12 +392,21 @@ class Captcha(Exception):
         self.url = url
 
     def get_url(self):
+        """ Возвращает ссылку на изображение капчи
+
+        """
+
         if not self.url:
             self.url = 'http://api.vk.com/captcha.php?sid={}'.format(self.sid)
 
         return self.url
 
     def try_again(self, key):
+        """ Отправляет запрос заново с ответом капчи
+
+        :param key: текст капчи
+        """
+
         self.key = key
 
         self.kwargs.update({
