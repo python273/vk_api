@@ -45,10 +45,9 @@ class VkTools(object):
         offset = 0
 
         while True:
-            run_code = code_get_all_items % (
-                                        max_count, offset, json.dumps(values),
-                                        key, method, method
-                                    )
+            run_code = code_get_all_items % (max_count, offset,
+                                             json.dumps(values), key,
+                                             method, method)
 
             response = self.vk.method('execute', {'code': run_code})
 

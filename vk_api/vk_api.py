@@ -13,7 +13,7 @@ import re
 import requests
 import time
 
-DELAY = 1.0 / 3  # 3 requests per second
+DELAY = 0.36  # 3 requests per second
 CAPTCHA_ERROR_CODE = 14
 NEED_VALIDATION_CODE = 17
 
@@ -59,8 +59,8 @@ class VkApi(object):
         self.http = requests.Session()
         self.http.proxies = proxies  # Ставим прокси
         self.http.headers = {  # Притворимся браузером
-            'User-agent': 'Mozilla/5.0 (Windows NT 6.2; WOW64; rv:28.0) ' \
-                                            'Gecko/20100101 Firefox/28.0'
+            'User-agent': 'Mozilla/5.0 (Windows NT 6.2; WOW64; rv:30.0) '
+            'Gecko/20100101 Firefox/30.0'
         }
         self.http.verify = False
 
@@ -132,7 +132,7 @@ class VkApi(object):
     def security_check(self, url=None, response=None):
         if url:
             response = self.http.get(url)
-            if not 'security_check' in response.url:
+            if 'security_check' not in response.url:
                 return
 
         phone_prefix = regexp(r'label ta_r">(.*?)<',
@@ -199,7 +199,7 @@ class VkApi(object):
 
         response = self.http.post(url, values)
 
-        if not 'access_token' in response.url:
+        if 'access_token' not in response.url:
             url = regexp(r'location\.href = "(.*?)"\+addr;', response.text)[0]
             response = self.http.get(url)
 
@@ -252,7 +252,7 @@ class VkApi(object):
         else:
             values = {}
 
-        if not 'v' in values:
+        if 'v' not in values:
             values.update({'v': self.api_version})
 
         if self.token:
