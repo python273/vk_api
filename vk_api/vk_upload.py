@@ -53,7 +53,7 @@ class VkUpload(object):
 
         # Олег Илларионов:
         # это не могу к сожалению просто пофиксить
-        if not 'album_id' in response:
+        if 'album_id' not in response:
             response['album_id'] = response['aid']
 
         response.update({
