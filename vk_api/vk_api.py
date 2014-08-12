@@ -132,7 +132,7 @@ class VkApi(object):
             if not 'security_check' in response.url:
                 return
 
-        phone_prefix = regexp(r'label ta_r">(.*?)<',
+        phone_prefix = regexp(r'phone_number">(.*?)<',
                               response.text)
         phone_prefix = phone_prefix[0].strip()
 
