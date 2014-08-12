@@ -16,9 +16,17 @@ import time
 DELAY = 0.36  # 3 requests per second
 CAPTCHA_ERROR_CODE = 14
 NEED_VALIDATION_CODE = 17
+HTTP_ERROR_CODE = -1
+
+RE_CAPTCHAID = re.compile(r'sid=(\d+)')
+RE_NUMBER_HASH = re.compile(r'security_check.*?hash: \'(.*?)\'\};')
+RE_TOKEN_URL = re.compile(r'location\.href = "(.*?)"\+addr;')
+RE_PHONE_PREFIX = re.compile(r'phone_number">(.*?)<')
+RE_PHONE_POSTFIX = re.compile(r'phone_postfix">(.*?)<')
 
 
 class VkApi(object):
+
     def __init__(self, login=None, password=None, number=None, token=None,
                  proxies=None, captcha_handler=None, config_filename=None,
                  api_version='5.21', app_id=2895443, scope=2097151):
@@ -116,7 +124,7 @@ class VkApi(object):
             self.sid = remixsid
 
         elif 'sid=' in response.url:
-            captcha_sid = regexp(r'sid=(\d+)', response.url)[0]
+            captcha_sid = search_re(RE_CAPTCHAID, response.url)
             captcha = Captcha(self, captcha_sid, self.vk_login)
 
             if self.error_handlers[CAPTCHA_ERROR_CODE]:
@@ -135,13 +143,8 @@ class VkApi(object):
             if 'security_check' not in response.url:
                 return
 
-        phone_prefix = regexp(r'label ta_r">(.*?)<',
-                              response.text)
-        phone_prefix = phone_prefix[0].strip()
-
-        phone_postfix = regexp(r'phone_postfix">(.*?)<',
-                               response.text)
-        phone_postfix = phone_postfix[0].strip()
+        phone_prefix = search_re(RE_PHONE_PREFIX, response.text).strip()
+        phone_postfix = search_re(RE_PHONE_POSTFIX, response.text).strip()
 
         if self.number:
             code = code_from_number(phone_prefix, phone_postfix, self.number)
@@ -149,8 +152,7 @@ class VkApi(object):
             code = code_from_number(phone_prefix, phone_postfix, self.login)
 
         if code:
-            number_hash = regexp(r'security_check.*?hash: \'(.*?)\'\};',
-                                 response.text)[0]
+            number_hash = search_re(RE_NUMBER_HASH, response.text)
 
             values = {
                 'act': 'security_check',
@@ -200,7 +202,7 @@ class VkApi(object):
         response = self.http.post(url, values)
 
         if 'access_token' not in response.url:
-            url = regexp(r'location\.href = "(.*?)"\+addr;', response.text)[0]
+            url = search_re(RE_TOKEN_URL, response.text)
             response = self.http.get(url)
 
         if 'access_token' in response.url:
@@ -234,6 +236,9 @@ class VkApi(object):
     def need_validation_handler(self, error):
         """ http://vk.com/dev/need_validation """
         # TODO: write me
+        pass
+
+    def http_handler(self, error):
         pass
 
     def method(self, method, values=None, captcha_sid=None, captcha_key=None):
@@ -270,8 +275,19 @@ class VkApi(object):
         if delay > 0:
             time.sleep(delay)
 
-        response = self.http.post(url, values).json()
+        response = self.http.post(url, values)
         self.last_request = time.time()
+
+        if response.ok:
+            response = response.json()
+        else:
+            error = ApiHttpError(self, method, values, response)
+            response = self.http_handler(error)
+
+            if response is not None:
+                return response
+
+            raise error
 
         if 'error' in response:
             error = ApiError(self, method, values, response['error'])
@@ -279,7 +295,7 @@ class VkApi(object):
 
             if error_code in self.error_handlers:
                 if error_code == CAPTCHA_ERROR_CODE:
-                    # TODO: wtf
+
                     error = Captcha(
                         self,
                         error.error['captcha_sid'],
@@ -295,8 +311,8 @@ class VkApi(object):
                     return response
 
             raise error
-        else:
-            return response['response']
+
+        return response['response']
 
 
 def doc(method=None):
@@ -314,12 +330,13 @@ def doc(method=None):
     webbrowser.open(url)
 
 
-def regexp(reg, string):
+def search_re(reg, string):
     """ Поиск по регулярке """
+    m = reg.search(string)
+    groups = m.groups()
 
-    reg = re.compile(reg, re.IGNORECASE | re.DOTALL)
-    reg = reg.findall(string)
-    return reg
+    if groups:
+        return groups[0]
 
 
 def code_from_number(phone_prefix, phone_postfix, number):
@@ -330,6 +347,7 @@ def code_from_number(phone_prefix, phone_postfix, number):
         return
 
     # Сравниваем начало номера
+    # TODO: ignore "+" symbole
     if not number[:prefix_len] == phone_prefix:
         return
 
@@ -349,17 +367,19 @@ class BadPassword(AuthorizationError):
 
 
 class SecurityCheck(AuthorizationError):
+
     def __init__(self, phone_prefix, phone_postfix):
         self.phone_prefix = phone_prefix
         self.phone_postfix = phone_postfix
 
     def __str__(self):
-        return 'Security check. Enter number: {}...{}'.format(
+        return 'Security check. Enter number: {} ... {}'.format(
             self.phone_prefix, self.phone_postfix
         )
 
 
 class ApiError(Exception):
+
     def __init__(self, vk, method, values, error):
         self.vk = vk
         self.method = method
@@ -379,7 +399,27 @@ class ApiError(Exception):
                                 self.error['error_msg'])
 
 
+class ApiHttpError(object):
+
+    def __init__(self, vk, method, values, response):
+        self.vk = vk
+        self.method = method
+        self.values = values
+        self.response = response
+
+    def try_method(self):
+        """ Пробует отправить запрос заново
+
+        """
+
+        return self.vk.method(self.method, self.values)
+
+    def __str__(self):
+        return 'Response code {}'.format(self.response.status_code)
+
+
 class Captcha(Exception):
+
     def __init__(self, vk, captcha_sid,
                  func, args=None, kwargs=None, url=None):
         self.vk = vk
