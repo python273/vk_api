@@ -67,8 +67,8 @@ class VkApi(object):
         self.http = requests.Session()
         self.http.proxies = proxies  # Ставим прокси
         self.http.headers = {  # Притворимся браузером
-            'User-agent': 'Mozilla/5.0 (Windows NT 6.2; WOW64; rv:30.0) '
-            'Gecko/20100101 Firefox/30.0'
+            'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:31.0)'
+            ' Gecko/20100101 Firefox/31.0'
         }
         self.http.verify = False
 
