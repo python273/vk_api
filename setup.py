@@ -12,7 +12,11 @@ Copyright (C) 2014
 from distutils.core import setup
 setup(
     name='vk_api',
+<<<<<<< HEAD
     version='4.7.6',
+=======
+    version='5.0.0',
+>>>>>>> refs/remotes/origin/dev
     author='Kirill Python',
     author_email='siberianpython@gmail.com',
     url='https://github.com/python273/vk_api',

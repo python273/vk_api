@@ -11,15 +11,21 @@ Copyright (C) 2014
 import json
 import sys
 
-if sys.version_info[0] == 3:
-    xrange = range
+if sys.version_info[0] != 3:
+    range = xrange
 
 
 class VkTools(object):
     def __init__(self, vk):
+        """
+
+        :param vk: объект VkApi
+        """
+
         self.vk = vk
 
-    def get_all(self, method, values=None, max_count=200, key='items'):
+    def get_all(self, method, values=None, max_count=200, key='items',
+                limit_count=None):
         """ Получить все элементы
             Работает в методах, где в ответе есть items или users
             За один запрос получает max_count * 25 элементов
@@ -29,6 +35,8 @@ class VkTools(object):
         :param max_count: максимальное количество элементов,
                             которое можно получить за один раз
         :param key: ключ элементов, которые нужно получить
+        :param limit_count: ограничение на кол-во получаемых элементов,
+                            но может прийти больше
         """
 
         if values:
@@ -40,16 +48,15 @@ class VkTools(object):
         offset = 0
 
         while True:
-            run_code = code_get_all_items % (
-                                        max_count, offset, json.dumps(values),
-                                        key, method, method
-                                    )
+            run_code = code_get_all_items % (max_count, offset,
+                                             json.dumps(values), key,
+                                             method, method)
 
             response = self.vk.method('execute', {'code': run_code})
 
             items += response['items']
 
-            if response['end']:
+            if response['end'] or len(items) >= limit_count:
                 break
 
             offset = response['offset']
@@ -78,7 +85,7 @@ class VkTools(object):
         count = response['count']
         items = response[key]
 
-        for i in xrange(max_count, count + 1, max_count):
+        for i in range(max_count, count + 1, max_count):
             values.update({
                 'offset': i
             })
@@ -89,8 +96,8 @@ class VkTools(object):
         return {'count': len(items), key: items}
 
 # Полный код в файле vk_procedures
-code_get_all_items = '''
+code_get_all_items = """
 var z=%s,x=%s,y=%s,k="%s",p={"count":z}+y,r=API.%s(p),c=r["count"],j=r[k],o=0,
 i=1;while(i<25&&o<c){o=i*z+x;p={"count":z,"offset":o}+y;r=API.%s(p);j=j+r[k];i
 =i+1;};return{"count":c,"items":j,"offset":o,"end":o+z>=c};
-'''.replace('\n', '')
+""".replace('\n', '')

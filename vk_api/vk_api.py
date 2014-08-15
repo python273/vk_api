@@ -13,15 +13,23 @@ import re
 import requests
 import time
 
-DELAY = 1.0 / 3  # 3 requests per second
+DELAY = 0.36  # 3 requests per second
 CAPTCHA_ERROR_CODE = 14
 NEED_VALIDATION_CODE = 17
+HTTP_ERROR_CODE = -1
+
+RE_CAPTCHAID = re.compile(r'sid=(\d+)')
+RE_NUMBER_HASH = re.compile(r'security_check.*?hash: \'(.*?)\'\};')
+RE_TOKEN_URL = re.compile(r'location\.href = "(.*?)"\+addr;')
+RE_PHONE_PREFIX = re.compile(r'phone_number">(.*?)<')
+RE_PHONE_POSTFIX = re.compile(r'phone_postfix">(.*?)<')
 
 
 class VkApi(object):
+
     def __init__(self, login=None, password=None, number=None, token=None,
                  proxies=None, captcha_handler=None, config_filename=None,
-                 api_version='5.21', app_id=2895443, scope=2097151):
+                 api_version='5.24', app_id=2895443, scope=2097151):
         """
         :param login: Логин ВКонтакте
         :param password: Пароль ВКонтакте
@@ -51,13 +59,16 @@ class VkApi(object):
         self.app_id = app_id
         self.scope = scope
 
+        if not config_filename:
+            config_filename = 'vk_config.json'
+
         self.settings = jconfig.Config(login, filename=config_filename)
 
         self.http = requests.Session()
         self.http.proxies = proxies  # Ставим прокси
         self.http.headers = {  # Притворимся браузером
-            'User-agent': 'Mozilla/5.0 (Windows NT 6.2; WOW64; rv:28.0) ' \
-                                            'Gecko/20100101 Firefox/28.0'
+            'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:31.0)'
+            ' Gecko/20100101 Firefox/31.0'
         }
         self.http.verify = False
 
@@ -75,7 +86,7 @@ class VkApi(object):
             if not self.check_sid():
                 self.vk_login()
             else:
-                self.security_check('http://vk.com')
+                self.security_check('https://vk.com/')
 
             if not self.check_token():
                 self.api_login()
@@ -113,7 +124,7 @@ class VkApi(object):
             self.sid = remixsid
 
         elif 'sid=' in response.url:
-            captcha_sid = regexp(r'sid=(\d+)', response.url)[0]
+            captcha_sid = search_re(RE_CAPTCHAID, response.url)
             captcha = Captcha(self, captcha_sid, self.vk_login)
 
             if self.error_handlers[CAPTCHA_ERROR_CODE]:
@@ -129,9 +140,10 @@ class VkApi(object):
     def security_check(self, url=None, response=None):
         if url:
             response = self.http.get(url)
-            if not 'security_check' in response.url:
+            if 'security_check' not in response.url:
                 return
 
+<<<<<<< HEAD
         phone_prefix = regexp(r'phone_number">(.*?)<',
                               response.text)
         phone_prefix = phone_prefix[0].strip()
@@ -139,6 +151,10 @@ class VkApi(object):
         phone_postfix = regexp(r'phone_postfix">(.*?)<',
                                response.text)
         phone_postfix = phone_postfix[0].strip()
+=======
+        phone_prefix = search_re(RE_PHONE_PREFIX, response.text).strip()
+        phone_postfix = search_re(RE_PHONE_POSTFIX, response.text).strip()
+>>>>>>> refs/remotes/origin/dev
 
         if self.number:
             code = code_from_number(phone_prefix, phone_postfix, self.number)
@@ -146,8 +162,7 @@ class VkApi(object):
             code = code_from_number(phone_prefix, phone_postfix, self.login)
 
         if code:
-            number_hash = regexp(r'security_check.*?hash: \'(.*?)\'\};',
-                                 response.text)[0]
+            number_hash = search_re(RE_NUMBER_HASH, response.text)
 
             values = {
                 'act': 'security_check',
@@ -196,8 +211,8 @@ class VkApi(object):
 
         response = self.http.post(url, values)
 
-        if not 'access_token' in response.url:
-            url = regexp(r'location\.href = "(.*?)"\+addr;', response.text)[0]
+        if 'access_token' not in response.url:
+            url = search_re(RE_TOKEN_URL, response.text)
             response = self.http.get(url)
 
         if 'access_token' in response.url:
@@ -233,6 +248,9 @@ class VkApi(object):
         # TODO: write me
         pass
 
+    def http_handler(self, error):
+        pass
+
     def method(self, method, values=None, captcha_sid=None, captcha_key=None):
         """ Использование методов API
 
@@ -249,7 +267,7 @@ class VkApi(object):
         else:
             values = {}
 
-        if not 'v' in values:
+        if 'v' not in values:
             values.update({'v': self.api_version})
 
         if self.token:
@@ -267,8 +285,19 @@ class VkApi(object):
         if delay > 0:
             time.sleep(delay)
 
-        response = self.http.post(url, values).json()
+        response = self.http.post(url, values)
         self.last_request = time.time()
+
+        if response.ok:
+            response = response.json()
+        else:
+            error = ApiHttpError(self, method, values, response)
+            response = self.http_handler(error)
+
+            if response is not None:
+                return response
+
+            raise error
 
         if 'error' in response:
             error = ApiError(self, method, values, response['error'])
@@ -276,7 +305,7 @@ class VkApi(object):
 
             if error_code in self.error_handlers:
                 if error_code == CAPTCHA_ERROR_CODE:
-                    # TODO: wtf
+
                     error = Captcha(
                         self,
                         error.error['captcha_sid'],
@@ -292,26 +321,43 @@ class VkApi(object):
                     return response
 
             raise error
-        else:
-            return response['response']
+
+        return response['response']
 
 
-def regexp(reg, string):
+def doc(method=None):
+    """ Открывает документацию на метод или список всех методов
+
+    :param method: метод
+    """
+
+    if not method:
+        method = 'methods'
+
+    url = 'https://vk.com/dev/{}'.format(method)
+
+    import webbrowser
+    webbrowser.open(url)
+
+
+def search_re(reg, string):
     """ Поиск по регулярке """
+    m = reg.search(string)
+    groups = m.groups()
 
-    reg = re.compile(reg, re.IGNORECASE | re.DOTALL)
-    reg = reg.findall(string)
-    return reg
+    if groups:
+        return groups[0]
 
 
 def code_from_number(phone_prefix, phone_postfix, number):
     prefix_len = len(phone_prefix)
     postfix_len = len(phone_postfix)
 
-    if (prefix_len + postfix_len) > len(number):
+    if (prefix_len + postfix_len) >= len(number):
         return
 
     # Сравниваем начало номера
+    # TODO: ignore "+" symbole
     if not number[:prefix_len] == phone_prefix:
         return
 
@@ -331,17 +377,19 @@ class BadPassword(AuthorizationError):
 
 
 class SecurityCheck(AuthorizationError):
+
     def __init__(self, phone_prefix, phone_postfix):
         self.phone_prefix = phone_prefix
         self.phone_postfix = phone_postfix
 
     def __str__(self):
-        return 'Security check. Enter number: {}...{}'.format(
+        return 'Security check. Enter number: {} ... {}'.format(
             self.phone_prefix, self.phone_postfix
         )
 
 
 class ApiError(Exception):
+
     def __init__(self, vk, method, values, error):
         self.vk = vk
         self.method = method
@@ -350,6 +398,10 @@ class ApiError(Exception):
         self.error = error
 
     def try_method(self):
+        """ Пробует отправить запрос заново
+
+        """
+
         return self.vk.method(self.method, self.values)
 
     def __str__(self):
@@ -357,7 +409,27 @@ class ApiError(Exception):
                                 self.error['error_msg'])
 
 
+class ApiHttpError(object):
+
+    def __init__(self, vk, method, values, response):
+        self.vk = vk
+        self.method = method
+        self.values = values
+        self.response = response
+
+    def try_method(self):
+        """ Пробует отправить запрос заново
+
+        """
+
+        return self.vk.method(self.method, self.values)
+
+    def __str__(self):
+        return 'Response code {}'.format(self.response.status_code)
+
+
 class Captcha(Exception):
+
     def __init__(self, vk, captcha_sid,
                  func, args=None, kwargs=None, url=None):
         self.vk = vk
@@ -370,12 +442,21 @@ class Captcha(Exception):
         self.url = url
 
     def get_url(self):
+        """ Возвращает ссылку на изображение капчи
+
+        """
+
         if not self.url:
             self.url = 'http://api.vk.com/captcha.php?sid={}'.format(self.sid)
 
         return self.url
 
     def try_again(self, key):
+        """ Отправляет запрос заново с ответом капчи
+
+        :param key: текст капчи
+        """
+
         self.key = key
 
         self.kwargs.update({
