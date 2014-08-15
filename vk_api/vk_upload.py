@@ -90,17 +90,23 @@ class VkUpload(object):
 
         return response
 
-    def photo_wall(self, photos, group_id=None):
+    def photo_wall(self, photos, user_id=None, group_id=None):
         """ Загрузка изображений на стену пользователя или в группу
 
         :param photos: список путей к изображениям, либо путь к изображению
+        :param user_id: идентификатор пользователя
         :param group_id: идентификатор сообщества (если загрузка идет в группу)
         """
 
         if type(photos) == str:
             photos = [photos]
 
-        values = {'group_id': group_id}
+        values = {}
+
+        if user_id:
+            values['user_id'] = user_id
+        elif group_id:
+            values['group_id'] = group_id
 
         response = self.vk.method('photos.getWallUploadServer', values)
         url = response['upload_url']
@@ -109,7 +115,9 @@ class VkUpload(object):
         response = self.vk.http.post(url, files=photos_files)
         closePhotos(photos_files)
 
-        response = self.vk.method('photos.saveWallPhoto', response.json())
+        values.update(response.json())
+
+        response = self.vk.method('photos.saveWallPhoto', values)
 
         return response
 
