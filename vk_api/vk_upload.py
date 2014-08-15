@@ -11,6 +11,11 @@ Copyright (C) 2014
 
 class VkUpload(object):
     def __init__(self, vk):
+        """
+
+        :param vk: объект VkApi
+        """
+
         self.vk = vk
         # https://vk.com/dev/upload_files
 
@@ -33,10 +38,10 @@ class VkUpload(object):
         if type(photos) == str:
             photos = [photos]
 
-        values = {
-            'album_id': album_id,
-            'group_id': group_id
-        }
+        values = {'album_id': album_id}
+
+        if group_id:
+            values['group_id'] = group_id
 
         # Получаем ссылку для загрузки
         url = self.vk.method('photos.getUploadServer', values)['upload_url']
@@ -48,7 +53,7 @@ class VkUpload(object):
 
         # Олег Илларионов:
         # это не могу к сожалению просто пофиксить
-        if not 'album_id' in response:
+        if 'album_id' not in response:
             response['album_id'] = response['aid']
 
         response.update({
@@ -58,8 +63,10 @@ class VkUpload(object):
             'description': description
         })
 
+        values.update(response)
+
         # Сохраняем фото в альбоме
-        response = self.vk.method('photos.save', response)
+        response = self.vk.method('photos.save', values)
 
         return response
 
@@ -85,17 +92,23 @@ class VkUpload(object):
 
         return response
 
-    def photo_wall(self, photos, group_id=None):
+    def photo_wall(self, photos, user_id=None, group_id=None):
         """ Загрузка изображений на стену пользователя или в группу
 
         :param photos: список путей к изображениям, либо путь к изображению
+        :param user_id: идентификатор пользователя
         :param group_id: идентификатор сообщества (если загрузка идет в группу)
         """
 
         if type(photos) == str:
             photos = [photos]
 
-        values = {'group_id': group_id}
+        values = {}
+
+        if user_id:
+            values['user_id'] = user_id
+        elif group_id:
+            values['group_id'] = group_id
 
         response = self.vk.method('photos.getWallUploadServer', values)
         url = response['upload_url']
@@ -104,7 +117,9 @@ class VkUpload(object):
         response = self.vk.http.post(url, files=photos_files)
         closePhotos(photos_files)
 
-        response = self.vk.method('photos.saveWallPhoto', response.json())
+        values.update(response.json())
+
+        response = self.vk.method('photos.saveWallPhoto', values)
 
         return response
 
