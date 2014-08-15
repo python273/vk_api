@@ -143,18 +143,8 @@ class VkApi(object):
             if 'security_check' not in response.url:
                 return
 
-<<<<<<< HEAD
-        phone_prefix = regexp(r'phone_number">(.*?)<',
-                              response.text)
-        phone_prefix = phone_prefix[0].strip()
-
-        phone_postfix = regexp(r'phone_postfix">(.*?)<',
-                               response.text)
-        phone_postfix = phone_postfix[0].strip()
-=======
         phone_prefix = search_re(RE_PHONE_PREFIX, response.text).strip()
         phone_postfix = search_re(RE_PHONE_POSTFIX, response.text).strip()
->>>>>>> refs/remotes/origin/dev
 
         if self.number:
             code = code_from_number(phone_prefix, phone_postfix, self.number)
