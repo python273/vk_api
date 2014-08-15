@@ -38,10 +38,10 @@ class VkUpload(object):
         if type(photos) == str:
             photos = [photos]
 
-        values = {
-            'album_id': album_id,
-            'group_id': group_id
-        }
+        values = {'album_id': album_id}
+
+        if group_id:
+            values['group_id'] = group_id
 
         # Получаем ссылку для загрузки
         url = self.vk.method('photos.getUploadServer', values)['upload_url']
@@ -63,8 +63,10 @@ class VkUpload(object):
             'description': description
         })
 
+        values.update(response)
+
         # Сохраняем фото в альбоме
-        response = self.vk.method('photos.save', response)
+        response = self.vk.method('photos.save', values)
 
         return response
 
