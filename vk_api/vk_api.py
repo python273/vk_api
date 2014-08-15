@@ -29,7 +29,7 @@ class VkApi(object):
 
     def __init__(self, login=None, password=None, number=None, token=None,
                  proxies=None, captcha_handler=None, config_filename=None,
-                 api_version='5.21', app_id=2895443, scope=2097151):
+                 api_version='5.24', app_id=2895443, scope=2097151):
         """
         :param login: Логин ВКонтакте
         :param password: Пароль ВКонтакте
