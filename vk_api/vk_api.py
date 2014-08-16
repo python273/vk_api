@@ -111,8 +111,14 @@ class VkApi(object):
         self.http.cookies.clear()
         response = self.http.post(url, values)
 
+        remixsid = None
+
         if 'remixsid' in self.http.cookies:
             remixsid = self.http.cookies['remixsid']
+        elif 'remixsid6' in self.http.cookies:  # ipv6?
+            remixsid = self.http.cookies['remixsid6']
+
+        if remixsid:
             self.settings['remixsid'] = remixsid
 
             # Нужно для авторизации в API
