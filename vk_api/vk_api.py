@@ -137,8 +137,10 @@ class VkApi(object):
                 self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
             else:
                 raise AuthorizationError('Authorization error (capcha)')
-        else:
+        elif 'm=1' in response.url:
             raise BadPassword('Bad password')
+        else:
+            raise AuthorizationError('Unknown error. Please send bugreport.')
 
         if 'security_check' in response.url:
             self.security_check(response=response)
