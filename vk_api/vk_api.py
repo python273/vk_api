@@ -351,11 +351,13 @@ def code_from_number(phone_prefix, phone_postfix, number):
     prefix_len = len(phone_prefix)
     postfix_len = len(phone_postfix)
 
+    if number[0] != '+':
+        number = '+' + number
+
     if (prefix_len + postfix_len) >= len(number):
         return
 
     # Сравниваем начало номера
-    # TODO: ignore "+" symbole
     if not number[:prefix_len] == phone_prefix:
         return
 
