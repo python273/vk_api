@@ -409,7 +409,7 @@ class ApiError(Exception):
                                 self.error['error_msg'])
 
 
-class ApiHttpError(object):
+class ApiHttpError(Exception):
 
     def __init__(self, vk, method, values, response):
         self.vk = vk
