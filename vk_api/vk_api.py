@@ -75,7 +75,6 @@ class VkApi(object):
             'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:31.0)'
             ' Gecko/20100101 Firefox/31.0'
         }
-        self.http.verify = False
 
         self.last_request = 0.0
 
@@ -186,7 +185,10 @@ class VkApi(object):
             if response.text.split('<!>')[4] == '4':
                 return True
 
-        raise SecurityCheck(phone_prefix, phone_postfix)
+        if phone_prefix and phone_postfix:
+            raise SecurityCheck(phone_prefix, phone_postfix)
+        else:
+            raise SecurityCheck(response=response)
 
     def check_sid(self):
         """ Прверка Cookies remixsid на валидность """
@@ -388,14 +390,19 @@ class BadPassword(AuthorizationError):
 
 class SecurityCheck(AuthorizationError):
 
-    def __init__(self, phone_prefix, phone_postfix):
+    def __init__(self, phone_prefix, phone_postfix, response=None):
         self.phone_prefix = phone_prefix
         self.phone_postfix = phone_postfix
+        self.response = response
 
     def __str__(self):
-        return 'Security check. Enter number: {} ... {}'.format(
-            self.phone_prefix, self.phone_postfix
-        )
+        if self.phone_prefix and self.phone_postfix:
+            return 'Security check. Enter number: {} ... {}'.format(
+                self.phone_prefix, self.phone_postfix
+            )
+        else:
+            return ('Security check. Phone prefix and postfix not detected. '
+                    'Please send bugreport. Response in self.response')
 
 
 class ApiError(Exception):
