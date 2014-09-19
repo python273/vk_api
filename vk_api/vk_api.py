@@ -19,7 +19,7 @@ NEED_VALIDATION_CODE = 17
 HTTP_ERROR_CODE = -1
 
 RE_CAPTCHAID = re.compile(r'sid=(\d+)')
-RE_NUMBER_HASH = re.compile(r'security_check.*?hash: \'(.*?)\'\};')
+RE_NUMBER_HASH = re.compile(r"al_page: '3', hash: '([a-z0-9]+)'")
 RE_TOKEN_URL = re.compile(r'location\.href = "(.*?)"\+addr;')
 
 RE_PHONE_PREFIX = re.compile(r'phone_number">(.*?)<')
