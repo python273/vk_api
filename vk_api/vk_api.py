@@ -150,7 +150,7 @@ class VkApi(object):
             self.security_check(response=response)
 
         if 'act=blocked' in response.url:
-            raise AccountBlocked()
+            raise AccountBlocked('Account is blocked')
 
     def security_check(self, url=None, response=None):
         if url:
