@@ -133,6 +133,9 @@ class VkApi(object):
 
             self.sid = remixsid
 
+            if 'id="login_blocked_wrap"' in response.text:
+                raise AccountBlocked()
+
         elif 'sid=' in response.url:
             captcha_sid = search_re(RE_CAPTCHAID, response.url)
             captcha = Captcha(self, captcha_sid, self.vk_login)
@@ -385,6 +388,10 @@ class AuthorizationError(Exception):
 
 
 class BadPassword(AuthorizationError):
+    pass
+
+
+class AccountBlocked(AuthorizationError):
     pass
 
 
