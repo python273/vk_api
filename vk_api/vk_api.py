@@ -19,15 +19,18 @@ NEED_VALIDATION_CODE = 17
 HTTP_ERROR_CODE = -1
 
 RE_CAPTCHAID = re.compile(r'sid=(\d+)')
-RE_NUMBER_HASH = re.compile(r'security_check.*?hash: \'(.*?)\'\};')
+RE_NUMBER_HASH = re.compile(r"al_page: '3', hash: '([a-z0-9]+)'")
 RE_TOKEN_URL = re.compile(r'location\.href = "(.*?)"\+addr;')
+
 RE_PHONE_PREFIX = re.compile(r'phone_number">(.*?)<')
-RE_PHONE_POSTFIX = re.compile(r'phone_postfix">(.*?)<')
+RE_PHONE_PREFIX_2 = re.compile(r'label ta_r">\+(\d+)')
+RE_PHONE_POSTFIX = re.compile(r'phone_postfix">.*?(\d+).*?<')
 
 
 class VkApi(object):
 
-    def __init__(self, login=None, password=None, number=None, token=None,
+    def __init__(self, login=None, password=None, number=None, sec_number=None,
+                 token=None,
                  proxies=None, captcha_handler=None, config_filename=None,
                  api_version='5.24', app_id=2895443, scope=2097151):
         """
@@ -35,6 +38,7 @@ class VkApi(object):
         :param password: Пароль ВКонтакте
         :param number: Номер для проверке безопасности (указывать, если
                                      в качестве логина используется не номер)
+        :param sec_number: 
 
         :param token: access_token
         :param proxies: proxy server
@@ -51,6 +55,7 @@ class VkApi(object):
         self.login = login
         self.password = password
         self.number = number
+        self.sec_number = sec_number
 
         self.sid = None
         self.token = {'access_token': token}
@@ -70,7 +75,6 @@ class VkApi(object):
             'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:31.0)'
             ' Gecko/20100101 Firefox/31.0'
         }
-        self.http.verify = False
 
         self.last_request = 0.0
 
@@ -137,11 +141,16 @@ class VkApi(object):
                 self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
             else:
                 raise AuthorizationError('Authorization error (capcha)')
-        else:
+        elif 'm=1' in response.url:
             raise BadPassword('Bad password')
+        else:
+            raise AuthorizationError('Unknown error. Please send bugreport.')
 
         if 'security_check' in response.url:
             self.security_check(response=response)
+
+        if 'act=blocked' in response.url:
+            raise AccountBlocked('Account is blocked')
 
     def security_check(self, url=None, response=None):
         if url:
@@ -149,12 +158,17 @@ class VkApi(object):
             if 'security_check' not in response.url:
                 return
 
-        phone_prefix = search_re(RE_PHONE_PREFIX, response.text).strip()
-        phone_postfix = search_re(RE_PHONE_POSTFIX, response.text).strip()
+        phone_prefix = search_re(RE_PHONE_PREFIX, response.text)
+        if not phone_prefix:
+            phone_prefix = search_re(RE_PHONE_PREFIX_2, response.text)
 
-        if self.number:
+        phone_postfix = search_re(RE_PHONE_POSTFIX, response.text)
+
+        if self.sec_number:
+            code = self.sec_number
+        elif self.number:
             code = code_from_number(phone_prefix, phone_postfix, self.number)
-        else:
+        elif self.login:
             code = code_from_number(phone_prefix, phone_postfix, self.login)
 
         if code:
@@ -174,7 +188,10 @@ class VkApi(object):
             if response.text.split('<!>')[4] == '4':
                 return True
 
-        raise SecurityCheck(phone_prefix, phone_postfix)
+        if phone_prefix and phone_postfix:
+            raise SecurityCheck(phone_prefix, phone_postfix)
+        else:
+            raise SecurityCheck(response=response)
 
     def check_sid(self):
         """ Прверка Cookies remixsid на валидность """
@@ -338,10 +355,10 @@ def doc(method=None):
 
 def search_re(reg, string):
     """ Поиск по регулярке """
-    m = reg.search(string)
-    groups = m.groups()
+    s = reg.search(string)
 
-    if groups:
+    if s:
+        groups = s.groups()
         return groups[0]
 
 
@@ -349,11 +366,13 @@ def code_from_number(phone_prefix, phone_postfix, number):
     prefix_len = len(phone_prefix)
     postfix_len = len(phone_postfix)
 
+    if number[0] == '+':
+        number = number[1:]
+
     if (prefix_len + postfix_len) >= len(number):
         return
 
     # Сравниваем начало номера
-    # TODO: ignore "+" symbole
     if not number[:prefix_len] == phone_prefix:
         return
 
@@ -372,16 +391,25 @@ class BadPassword(AuthorizationError):
     pass
 
 
+class AccountBlocked(AuthorizationError):
+    pass
+
+
 class SecurityCheck(AuthorizationError):
 
-    def __init__(self, phone_prefix, phone_postfix):
+    def __init__(self, phone_prefix, phone_postfix, response=None):
         self.phone_prefix = phone_prefix
         self.phone_postfix = phone_postfix
+        self.response = response
 
     def __str__(self):
-        return 'Security check. Enter number: {} ... {}'.format(
-            self.phone_prefix, self.phone_postfix
-        )
+        if self.phone_prefix and self.phone_postfix:
+            return 'Security check. Enter number: {} ... {}'.format(
+                self.phone_prefix, self.phone_postfix
+            )
+        else:
+            return ('Security check. Phone prefix and postfix not detected. '
+                    'Please send bugreport. Response in self.response')
 
 
 class ApiError(Exception):
@@ -405,7 +433,7 @@ class ApiError(Exception):
                                 self.error['error_msg'])
 
 
-class ApiHttpError(object):
+class ApiHttpError(Exception):
 
     def __init__(self, vk, method, values, response):
         self.vk = vk

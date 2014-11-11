@@ -56,7 +56,7 @@ class VkTools(object):
 
             items += response['items']
 
-            if response['end'] or len(items) >= limit_count:
+            if response['end'] or (limit_count and len(items) >= limit_count):
                 break
 
             offset = response['offset']
