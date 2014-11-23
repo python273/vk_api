@@ -96,7 +96,7 @@ class VkApi(object):
                 self.api_login()
 
     def vk_login(self, captcha_sid=None, captcha_key=None):
-        """ Авторизцаия ВКонтакте с получением cookies remixsid """
+        """ Авторизация ВКонтакте с получением cookies remixsid """
 
         url = 'https://login.vk.com/'
         values = {
@@ -194,7 +194,7 @@ class VkApi(object):
             raise SecurityCheck(response=response)
 
     def check_sid(self):
-        """ Прверка Cookies remixsid на валидность """
+        """ Проверка Cookies remixsid на валидность """
 
         if self.sid:
             url = 'https://vk.com/feed2.php'
@@ -242,7 +242,7 @@ class VkApi(object):
             raise AuthorizationError('Authorization error (api)')
 
     def check_token(self):
-        """ Прверка access_token на валидность """
+        """ Проверка access_token на валидность """
 
         if self.token:
             try:
