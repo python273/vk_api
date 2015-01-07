@@ -47,7 +47,7 @@ class VkApi(object):
         :param captcha_handler: Функция для обработки капчи
         :param config_filename: Расположение config файла
 
-        :param api_version: Версия API (default: '5.21')
+        :param api_version: Версия API (default: '5.24')
         :param app_id: Standalone-приложение (default: 2895443)
         :param scope: Запрашиваемые права (default: 2097151)
         """
