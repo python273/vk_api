@@ -158,6 +158,8 @@ def openPhotos(photos_paths):
 
     return photos
 
+def openPhotoForAvatar(photo_path): #аналог openPhotos, для загрузки аватарки юзера/сообщества
+	return {'file' : open(photo_path, 'rb')}
 
 def closePhotos(photos):
     for i in photos:
