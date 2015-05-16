@@ -2,10 +2,10 @@
 
 """
 @author: Kirill Python
-@contact: http://vk.com/python273
+@contact: https://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2014
+Copyright (C) 2015
 """
 
 import jconfig
@@ -83,7 +83,8 @@ class VkApi(object):
             CAPTCHA_ERROR_CODE: captcha_handler or self.captcha_handler
         }
 
-        if login and password:
+    def authorization(self):
+        if self.login and self.password:
             self.sid = self.settings['remixsid']
             self.token = self.settings['access_token']
 
@@ -471,7 +472,7 @@ class Captcha(Exception):
         """
 
         if not self.url:
-            self.url = 'http://api.vk.com/captcha.php?sid={}'.format(self.sid)
+            self.url = 'https://api.vk.com/captcha.php?sid={}'.format(self.sid)
 
         return self.url
 
