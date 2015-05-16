@@ -2,10 +2,10 @@
 
 """
 @author: Kirill Python
-@contact: http://vk.com/python273
+@contact: https://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2014
+Copyright (C) 2015
 """
 
 
@@ -47,9 +47,9 @@ class VkUpload(object):
         url = self.vk.method('photos.getUploadServer', values)['upload_url']
 
         # Загружаем
-        photos_files = openPhotos(photos)
+        photos_files = open_photos(photos)
         response = self.vk.http.post(url, files=photos_files).json()
-        closePhotos(photos_files)
+        close_photos(photos_files)
 
         # Олег Илларионов:
         # это не могу к сожалению просто пофиксить
@@ -84,9 +84,9 @@ class VkUpload(object):
         url = self.vk.method('photos.getMessagesUploadServer', values)
         url = url['upload_url']
 
-        photos_files = openPhotos(photos)
+        photos_files = open_photos(photos)
         response = self.vk.http.post(url, files=photos_files)
-        closePhotos(photos_files)
+        close_photos(photos_files)
 
         response = self.vk.method('photos.saveMessagesPhoto', response.json())
 
@@ -113,9 +113,9 @@ class VkUpload(object):
         response = self.vk.method('photos.getWallUploadServer', values)
         url = response['upload_url']
 
-        photos_files = openPhotos(photos)
+        photos_files = open_photos(photos)
         response = self.vk.http.post(url, files=photos_files)
-        closePhotos(photos_files)
+        close_photos(photos_files)
 
         values.update(response.json())
 
@@ -148,17 +148,15 @@ class VkUpload(object):
         return response
 
 
-def openPhotos(photos_paths):
+def open_photos(photos_paths):
     photos = {}
 
-    for x, filename in enumerate(photos_paths):  # Открываем файлы
-        photos.update(
-            {'file%s' % x: open(filename, 'rb')}
-        )
+    for x, filename in enumerate(photos_paths):
+        photos['file%s' % x] = open(filename, 'rb')
 
     return photos
 
 
-def closePhotos(photos):
+def close_photos(photos):
     for i in photos:
         photos[i].close()
