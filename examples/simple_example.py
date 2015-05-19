@@ -2,10 +2,7 @@
 
 """
 @author: Kirill Python
-@contact: http://vk.com/python273
-@license Apache License, Version 2.0, see LICENSE file
-
-Copyright (C) 2014
+@contact: https://vk.com/python273
 """
 
 import vk_api
@@ -20,8 +17,8 @@ def main():
     try:
         vk.authorization()
     except vk_api.AuthorizationError as error_msg:
-        print(error_msg)  # В случае ошибки выведем сообщение
-        return  # и выйдем
+        print(error_msg)
+        return
 
     values = {
         'count': 1  # Получаем только один пост
@@ -29,8 +26,7 @@ def main():
     response = vk.method('wall.get', values)  # Используем метод wall.get
 
     if response['items']:
-        # Печатаем текст последнего поста со стены
-        print(response['items'][0]['text'])
+        print(response['items'][0])
 
 if __name__ == '__main__':
     main()
