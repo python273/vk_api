@@ -32,13 +32,16 @@ class VkApi(object):
     def __init__(self, login=None, password=None, number=None, sec_number=None,
                  token=None,
                  proxies=None, captcha_handler=None, config_filename=None,
-                 api_version='5.24', app_id=2895443, scope=2097151):
+                 api_version='5.33', app_id=2895443, scope=2097151):
         """
         :param login: Логин ВКонтакте
         :param password: Пароль ВКонтакте
-        :param number: Номер для проверке безопасности (указывать, если
-                                     в качестве логина используется не номер)
-        :param sec_number: 
+        :param number: Номер для проверки безопасности (указывать, если
+                        в качестве логина используется не номер)
+        :param sec_number: Часть номера, которая проверяется при проверке
+                            безопасности (указывать, если точно известно, что
+                            вводить и если автоматическое получение кода из
+                            номера работает не корректно)
 
         :param token: access_token
         :param proxies: proxy server
@@ -47,7 +50,7 @@ class VkApi(object):
         :param captcha_handler: Функция для обработки капчи
         :param config_filename: Расположение config файла
 
-        :param api_version: Версия API (default: '5.21')
+        :param api_version: Версия API (default: '5.33')
         :param app_id: Standalone-приложение (default: 2895443)
         :param scope: Запрашиваемые права (default: 2097151)
         """
@@ -72,8 +75,8 @@ class VkApi(object):
         self.http = requests.Session()
         self.http.proxies = proxies  # Ставим прокси
         self.http.headers = {  # Притворимся браузером
-            'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:31.0)'
-            ' Gecko/20100101 Firefox/31.0'
+            'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:38.0) '
+            'Gecko/20100101 Firefox/38.0'
         }
 
         self.last_request = 0.0
@@ -84,6 +87,7 @@ class VkApi(object):
         }
 
     def authorization(self):
+        """ Полная авторизация с получением токена """
         if self.login and self.password:
             self.sid = self.settings['remixsid']
             self.token = self.settings['access_token']
@@ -263,6 +267,7 @@ class VkApi(object):
         pass
 
     def http_handler(self, error):
+        """ Handle connection errors """
         pass
 
     def method(self, method, values=None, captcha_sid=None, captcha_key=None):
@@ -299,8 +304,8 @@ class VkApi(object):
         if delay > 0:
             time.sleep(delay)
 
-        response = self.http.post(url, values)
         self.last_request = time.time()
+        response = self.http.post(url, values)
 
         if response.ok:
             response = response.json()
