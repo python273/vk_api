@@ -149,14 +149,17 @@ class VkUpload(object):
 
 
 def open_photos(photos_paths):
-    photos = {}
+    photos = []
 
     for x, filename in enumerate(photos_paths):
-        photos['file%s' % x] = open(filename, 'rb')
+        filetype = filename.split('.')[-1]
+        photos.append(
+            ('file%s' % x, ('pic.' + filetype, open(filename, 'rb')))
+        )
 
     return photos
 
 
 def close_photos(photos):
-    for i in photos:
-        photos[i].close()
+    for photo in photos:
+        photo[1][1].close()
