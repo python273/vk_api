@@ -2,17 +2,17 @@
 
 """
 @author: Kirill Python
-@contact: http://vk.com/python273
+@contact: https://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2014
+Copyright (C) 2015
 """
 
 import json
 import sys
 
 if sys.version_info[0] != 3:
-    range = xrange
+    range = xrange  # @ReservedAssignment @UndefinedVariable
 
 
 class VkTools(object):
@@ -24,11 +24,11 @@ class VkTools(object):
 
         self.vk = vk
 
-    def get_all(self, method, values=None, max_count=200, key='items',
+    def get_all(self, method, max_count, values=None, key='items',
                 limit_count=None):
         """ Получить все элементы
-            Работает в методах, где в ответе есть items или users
-            За один запрос получает max_count * 25 элементов
+        Работает в методах, где в ответе есть count и items или users
+        За один запрос получает max_count * 25 элементов
 
         :param method: метод
         :param values: параметры
@@ -48,15 +48,18 @@ class VkTools(object):
         offset = 0
 
         while True:
-            run_code = code_get_all_items % (max_count, offset,
-                                             json.dumps(values), key,
+            run_code = code_get_all_items % (max_count, offset, key,
+                                             json.dumps(values),
                                              method, method)
 
             response = self.vk.method('execute', {'code': run_code})
 
             items += response['items']
 
-            if response['end'] or (limit_count and len(items) >= limit_count):
+            if response['offset'] >= response['count']:
+                break
+
+            if limit_count and len(items) >= limit_count:
                 break
 
             offset = response['offset']
@@ -65,7 +68,7 @@ class VkTools(object):
 
     def get_all_slow(self, method, values=None, max_count=200, key='items'):
         """ Получить все элементы
-            Работает в методах, где в ответе есть count и items или users
+        Работает в методах, где в ответе есть count и items или users
 
         :param method: метод
         :param values: параметры
@@ -97,7 +100,7 @@ class VkTools(object):
 
 # Полный код в файле vk_procedures
 code_get_all_items = """
-var z=%s,x=%s,y=%s,k="%s",p={"count":z}+y,r=API.%s(p),c=r["count"],j=r[k],o=0,
-i=1;while(i<25&&o<c){o=i*z+x;p={"count":z,"offset":o}+y;r=API.%s(p);j=j+r[k];i
-=i+1;};return{"count":c,"items":j,"offset":o,"end":o+z>=c};
+var m=%s,n=%s,b="%s",v=n;var c={count:m,offset:v}+%s;var r=API.%s(c),k=r.count,
+j=r[b],i=1;while(i<25&&v+m<=k){v=i*m+n;c.offset=v;j=j+API.%s(c)[b];i=i+1;}
+return {count:k,items:j,offset:v+m};
 """.replace('\n', '')
