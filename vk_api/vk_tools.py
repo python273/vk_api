@@ -2,17 +2,17 @@
 
 """
 @author: Kirill Python
-@contact: http://vk.com/python273
+@contact: https://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2014
+Copyright (C) 2015
 """
 
 import json
 import sys
 
 if sys.version_info[0] != 3:
-    range = xrange
+    range = xrange  # @ReservedAssignment @UndefinedVariable
 
 
 class VkTools(object):
