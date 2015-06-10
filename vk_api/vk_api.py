@@ -33,7 +33,7 @@ class VkApi(object):
 
     def __init__(self, login=None, password=None, number=None, sec_number=None,
                  token=None,
-                 proxies=None, captcha_handler=None, config_filename=None,
+                 proxies=None, captcha_handler=None, config_filename='vk_config.json',
                  api_version='5.33', app_id=2895443, scope=2097151):
         """
         :param login: Логин ВКонтакте
@@ -68,9 +68,6 @@ class VkApi(object):
         self.api_version = api_version
         self.app_id = app_id
         self.scope = scope
-
-        if not config_filename:
-            config_filename = 'vk_config.json'
 
         self.settings = jconfig.Config(login, filename=config_filename)
 
