@@ -14,10 +14,12 @@ import requests
 import time
 
 DELAY = 0.36  # 3 requests per second
+TOO_MANY_RPS_CODE = 6
 CAPTCHA_ERROR_CODE = 14
 NEED_VALIDATION_CODE = 17
 HTTP_ERROR_CODE = -1
 
+RE_LOGIN_HASH = re.compile(r'name="lg_h" value="([a-z0-9]+)"')
 RE_CAPTCHAID = re.compile(r'sid=(\d+)')
 RE_NUMBER_HASH = re.compile(r"al_page: '3', hash: '([a-z0-9]+)'")
 RE_TOKEN_URL = re.compile(r'location\.href = "(.*?)"\+addr;')
@@ -83,7 +85,8 @@ class VkApi(object):
 
         self.error_handlers = {
             NEED_VALIDATION_CODE: self.need_validation_handler,
-            CAPTCHA_ERROR_CODE: captcha_handler or self.captcha_handler
+            CAPTCHA_ERROR_CODE: captcha_handler or self.captcha_handler,
+            TOO_MANY_RPS_CODE: self.too_many_rps_handler
         }
 
     def authorization(self):
@@ -103,12 +106,16 @@ class VkApi(object):
     def vk_login(self, captcha_sid=None, captcha_key=None):
         """ Авторизцаия ВКонтакте с получением cookies remixsid """
 
-        url = 'https://login.vk.com/'
+        self.http.cookies.clear()
+
+        # Get cookies
+        response = self.http.get('https://vk.com/')
+
         values = {
             'act': 'login',
-            'utf8': '1',
             'email': self.login,
-            'pass': self.password
+            'pass': self.password,
+            'lg_h': search_re(RE_LOGIN_HASH, response.text)
         }
 
         if captcha_sid and captcha_key:
@@ -117,8 +124,7 @@ class VkApi(object):
                 'captcha_key': captcha_key
             })
 
-        self.http.cookies.clear()
-        response = self.http.post(url, values)
+        response = self.http.post('https://login.vk.com/', values)
 
         remixsid = None
 
@@ -270,6 +276,10 @@ class VkApi(object):
         """ Handle connection errors """
         pass
 
+    def too_many_rps_handler(self, error):
+        time.sleep(0.5)
+        error.try_method()
+
     def method(self, method, values=None, captcha_sid=None, captcha_key=None):
         """ Использование методов API
 
@@ -320,10 +330,9 @@ class VkApi(object):
 
         if 'error' in response:
             error = ApiError(self, method, values, response['error'])
-            error_code = error.code
 
-            if error_code in self.error_handlers:
-                if error_code == CAPTCHA_ERROR_CODE:
+            if error.code in self.error_handlers:
+                if error.code == CAPTCHA_ERROR_CODE:
 
                     error = Captcha(
                         self,
@@ -334,7 +343,7 @@ class VkApi(object):
                         error.error['captcha_img']
                     )
 
-                response = self.error_handlers[error_code](error)
+                response = self.error_handlers[error.code](error)
 
                 if response is not None:
                     return response
