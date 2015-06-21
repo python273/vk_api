@@ -110,6 +110,7 @@ class VkApi(object):
 
         values = {
             'act': 'login',
+            'utf8': '1',
             'email': self.login,
             'pass': self.password,
             'lg_h': search_re(RE_LOGIN_HASH, response.text)
