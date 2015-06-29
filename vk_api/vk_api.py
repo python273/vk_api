@@ -475,6 +475,8 @@ class Captcha(Exception):
         self.args = args or ()
         self.kwargs = kwargs or {}
 
+        self.code = CAPTCHA_ERROR_CODE
+
         self.key = None
         self.url = url
 
