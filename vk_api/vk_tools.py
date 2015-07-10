@@ -25,7 +25,7 @@ class VkTools(object):
         self.vk = vk
 
     def get_all(self, method, max_count, values=None, key='items',
-                limit_count=None):
+                limit=None):
         """ Получить все элементы
         Работает в методах, где в ответе есть count и items или users
         За один запрос получает max_count * 25 элементов
@@ -35,7 +35,7 @@ class VkTools(object):
         :param max_count: максимальное количество элементов,
                             которое можно получить за один раз
         :param key: ключ элементов, которые нужно получить
-        :param limit_count: ограничение на кол-во получаемых элементов,
+        :param limit: ограничение на кол-во получаемых элементов,
                             но может прийти больше
         """
 
@@ -60,7 +60,7 @@ class VkTools(object):
             if response['offset'] >= response['count']:
                 break
 
-            if limit_count and len(items) >= limit_count:
+            if limit and len(items) >= limit:
                 break
 
             offset = response['offset']
