@@ -279,7 +279,7 @@ class VkApi(object):
 
         if self.token:
             try:
-                self.method('isAppUser')
+                self.method('stats.trackVisitor')
             except ApiError:
                 return False
 
