@@ -221,6 +221,9 @@ class VkApi(object):
     def api_login(self):
         """ Получение токена через Desktop приложение """
 
+        if not self.sid:
+            raise AuthorizationError('API authorization error (no sid cookie)')
+
         url = 'https://oauth.vk.com/authorize'
         values = {
             'client_id': self.app_id,
