@@ -34,7 +34,8 @@ class VkApi(object):
     def __init__(self, login=None, password=None, number=None, sec_number=None,
                  token=None,
                  proxies=None, captcha_handler=None, config_filename='vk_config.json',
-                 api_version='5.33', app_id=2895443, scope=2097151):
+                 api_version='5.33', app_id=2895443, scope=2097151,
+                 client_secret=None):
         """
         :param login: Логин ВКонтакте
         :param password: Пароль ВКонтакте
@@ -55,6 +56,8 @@ class VkApi(object):
         :param api_version: Версия API (default: '5.33')
         :param app_id: Standalone-приложение (default: 2895443)
         :param scope: Запрашиваемые права (default: 2097151)
+        :param client_secret: Защищенный ключ приложения для серверной
+                                авторизации (https://vk.com/dev/auth_server)
         """
 
         self.login = login
@@ -68,6 +71,7 @@ class VkApi(object):
         self.api_version = api_version
         self.app_id = app_id
         self.scope = scope
+        self.client_secret = client_secret
 
         self.settings = jconfig.Config(login, filename=config_filename)
 
@@ -252,6 +256,23 @@ class VkApi(object):
             self.token = token
         else:
             raise AuthorizationError('Authorization error (api)')
+
+    def server_auth(self):
+        """ Серверная авторизация """
+        values = {
+            'client_id': self.app_id,
+            'client_secret': self.client_secret,
+            'v': self.api_version,
+            'grant_type': 'client_credentials'
+        }
+
+        response = self.http.post(
+            'https://oauth.vk.com/access_token', values).json()
+
+        if 'error' in response:
+            raise AuthorizationError(response['error_description'])
+        else:
+            self.token = response
 
     def check_token(self):
         """ Прверка access_token на валидность """
