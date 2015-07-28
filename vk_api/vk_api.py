@@ -34,7 +34,7 @@ class VkApi(object):
     def __init__(self, login=None, password=None, number=None, sec_number=None,
                  token=None,
                  proxies=None, captcha_handler=None, config_filename='vk_config.json',
-                 api_version='5.33', app_id=2895443, scope=2097151,
+                 api_version='5.35', app_id=2895443, scope=33554431,
                  client_secret=None):
         """
         :param login: Логин ВКонтакте
@@ -53,9 +53,9 @@ class VkApi(object):
         :param captcha_handler: Функция для обработки капчи
         :param config_filename: Расположение config файла
 
-        :param api_version: Версия API (default: '5.33')
+        :param api_version: Версия API (default: '5.35')
         :param app_id: Standalone-приложение (default: 2895443)
-        :param scope: Запрашиваемые права (default: 2097151)
+        :param scope: Запрашиваемые права (default: 33554431)
         :param client_secret: Защищенный ключ приложения для серверной
                                 авторизации (https://vk.com/dev/auth_server)
         """
