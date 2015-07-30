@@ -35,9 +35,6 @@ class VkUpload(object):
         :param group_id: идентификатор сообщества (если загрузка идет в группу)
         """
 
-        if not isinstance(photos, list):
-            photos = [photos]
-
         values = {'album_id': album_id}
 
         if group_id:
@@ -76,12 +73,7 @@ class VkUpload(object):
         :param photos: список путей к изображениям, либо путь к изображению
         """
 
-        if not isinstance(photos, list):
-            photos = [photos]
-
-        values = {}
-
-        url = self.vk.method('photos.getMessagesUploadServer', values)
+        url = self.vk.method('photos.getMessagesUploadServer')
         url = url['upload_url']
 
         photos_files = open_photos(photos)
@@ -99,9 +91,6 @@ class VkUpload(object):
         :param user_id: идентификатор пользователя
         :param group_id: идентификатор сообщества (если загрузка идет в группу)
         """
-
-        if not isinstance(photos, list):
-            photos = [photos]
 
         values = {}
 
@@ -149,6 +138,9 @@ class VkUpload(object):
 
 
 def open_photos(photos_paths):
+    if not isinstance(photos_paths, list):
+            photos_paths = [photos_paths]
+
     photos = []
 
     for x, filename in enumerate(photos_paths):
