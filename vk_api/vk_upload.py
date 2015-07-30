@@ -35,7 +35,7 @@ class VkUpload(object):
         :param group_id: идентификатор сообщества (если загрузка идет в группу)
         """
 
-        if type(photos) == str:
+        if not isinstance(photos, list):
             photos = [photos]
 
         values = {'album_id': album_id}
@@ -76,7 +76,7 @@ class VkUpload(object):
         :param photos: список путей к изображениям, либо путь к изображению
         """
 
-        if type(photos) == str:
+        if not isinstance(photos, list):
             photos = [photos]
 
         values = {}
@@ -100,7 +100,7 @@ class VkUpload(object):
         :param group_id: идентификатор сообщества (если загрузка идет в группу)
         """
 
-        if type(photos) == str:
+        if not isinstance(photos, list):
             photos = [photos]
 
         values = {}
