@@ -9,6 +9,12 @@ import vk_api
 
 
 def captcha_handler(captcha):
+    """
+        При возникновении капчи вызывается эта функция и ей передается объект
+        капчи. Через метод get_url можно получить ссылку на изображение.
+        Через метод try_again можно попытаться отправить запрос с кодом капчи
+    """
+
     key = input("Enter Captcha {0}: ".format(captcha.get_url())).strip()
 
     # Пробуем снова отправить запрос с капчей
@@ -21,7 +27,7 @@ def main():
     login, password = 'python@vk.com', 'mypassword'
     vk = vk_api.VkApi(
         login, password,
-        captcha_handler=captcha_handler  # function for handle captcha
+        captcha_handler=captcha_handler  # функция для обработки капчи
     )
 
     try:
