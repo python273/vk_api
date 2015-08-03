@@ -20,10 +20,13 @@ def main():
         print(error_msg)
         return
 
-    values = {
-        'count': 1  # Получаем только один пост
-    }
-    response = vk.method('wall.get', values)  # Используем метод wall.get
+    """
+        VkApi.method позволяет выполнять запросы к API. В этом примере
+        используется метод wall.get (https://vk.com/dev/wall.get) с параметром
+        count = 1, т.е. мы получаем один последний пост со стены текущего
+        пользователя.
+    """
+    response = vk.method('wall.get', {'count': 1})  # Используем метод wall.get
 
     if response['items']:
         print(response['items'][0])
