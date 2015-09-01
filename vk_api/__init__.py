@@ -13,13 +13,6 @@ __version__ = '6.4'
 __email__ = 'python273@ya.ru'
 __contact__ = 'https://vk.com/python273'
 
-import sys
-
-if sys.version_info[0] == 2:
-    from vk_api import *
-    from vk_upload import *
-    from vk_tools import *
-else:
-    from .vk_api import *
-    from .vk_upload import *
-    from .vk_tools import *
+from .vk_api import *
+from .vk_upload import *
+from .vk_tools import *

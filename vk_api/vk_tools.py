@@ -16,16 +16,19 @@ if sys.version_info[0] != 3:
 
 
 class VkTools(object):
+    """ Содержит некоторые воспомогательные функции, которые могут понадобиться
+        при использовании API
+    """
+
+    __slots__ = ('vk',)
+
     def __init__(self, vk):
         """
-
         :param vk: объект VkApi
         """
-
         self.vk = vk
 
-    def get_all(self, method, max_count, values=None, key='items',
-                limit=None):
+    def get_all(self, method, max_count, values=None, key='items', limit=None):
         """ Получить все элементы
         Работает в методах, где в ответе есть count и items или users
         За один запрос получает max_count * 25 элементов
@@ -56,18 +59,18 @@ class VkTools(object):
             response = self.vk.method('execute', {'code': run_code})
 
             items += response['items']
+            offset = response['offset']
 
-            if response['offset'] >= response['count']:
+            if offset >= response['count']:
                 break
 
             if limit and len(items) >= limit:
                 break
 
-            offset = response['offset']
-
         return {'count': len(items), key: items}
 
-    def get_all_slow(self, method, values=None, max_count=200, key='items'):
+    def get_all_slow(self, method, max_count, values=None, key='items',
+                     limit=None):
         """ Получить все элементы
         Работает в методах, где в ответе есть count и items или users
 
@@ -76,6 +79,8 @@ class VkTools(object):
         :param max_count: максимальное количество элементов,
                             которое можно получить за один раз
         :param key: ключ элементов, которые нужно получить
+        :param limit: ограничение на кол-во получаемых элементов,
+                            но может прийти больше
         """
 
         if not values:
@@ -97,7 +102,11 @@ class VkTools(object):
             response = self.vk.method(method, values)
             items += response[key]
 
+            if limit and len(items) >= limit:
+                break
+
         return {'count': len(items), key: items}
+
 
 # Полный код в файле vk_procedures
 code_get_all_items = """
