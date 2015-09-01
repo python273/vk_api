@@ -13,9 +13,4 @@ __version__ = '1.2'
 __email__ = 'python273@ya.ru'
 __contact__ = 'https://vk.com/python273'
 
-
-import sys
-if sys.version_info[0] == 2:
-    from jconfig import *
-else:
-    from .jconfig import *
+from .jconfig import *

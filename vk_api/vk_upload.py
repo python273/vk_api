@@ -139,7 +139,7 @@ class VkUpload(object):
 
 def open_photos(photos_paths):
     if not isinstance(photos_paths, list):
-            photos_paths = [photos_paths]
+        photos_paths = [photos_paths]
 
     photos = []
 
