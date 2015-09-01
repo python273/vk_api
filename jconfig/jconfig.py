@@ -8,40 +8,41 @@
 Copyright (C) 2015
 """
 
-import os
 import json
 
 
 class Config(object):
-    def __init__(self, section, filename=None):
+    __slots__ = ('_section', '_filename', '_settings')
 
-        if not filename:
-            filename = 'config'
+    def __init__(self, section, filename='.jconfig'):
+        self._section = section
+        self._filename = filename
+        self._settings = self.load()
 
-        self.section = section  # Секция настроек
-        self.filename = filename  # Файл с настройками
-        self.all = self.parse()  # Все настройки
-        self.settings = self.all.get(section, {})  # Настройки секции
+    def __getattr__(self, name):
+        return self._settings[self._section].get(name)
 
-    def __getitem__(self, item):
-        return self.settings.get(item, {})
+    def __setattr__(self, name, value):
+        if name.startswith('_'):
+            super(Config, self).__setattr__(name, value)
+            return
 
-    def __setitem__(self, key, value):
-        self.settings.update({key: value})
-        self.all.update({self.section: self.settings})
-        self.update(self.all)
+        self._settings[self._section][name] = value
 
-    def parse(self):
-        fileis = os.path.exists(self.filename)
-        if fileis:
-            settings = json.load(open(self.filename, 'r'))
-            return settings
-        else:
-            self.update()
-            return {}
+    def clear_section(self):
+        self._settings[self._section] = {}
 
-    def update(self, settings=None):
-        if not settings:
+    def load(self):
+        try:
+            with open(self._filename, 'r') as f:
+                settings = json.load(f)
+        except FileNotFoundError:
             settings = {}
 
-        json.dump(settings, open(self.filename, 'w'))
+        settings.setdefault(self._section, {})
+
+        return settings
+
+    def save(self):
+        with open(self._filename, 'w') as f:
+            json.dump(self._settings, f)
