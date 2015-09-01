@@ -8,10 +8,12 @@
 Copyright (C) 2015
 """
 
-import jconfig
 import re
-import requests
 import time
+
+import requests
+
+import jconfig
 
 DELAY = 0.36  # 3 requests per second
 TOO_MANY_RPS_CODE = 6
@@ -30,7 +32,6 @@ RE_PHONE_POSTFIX = re.compile(r'phone_postfix">.*?(\d+).*?<')
 
 
 class VkApi(object):
-
     def __init__(self, login=None, password=None, number=None, sec_number=None,
                  token=None,
                  proxies=None, captcha_handler=None, config_filename='vk_config.json',
@@ -78,8 +79,8 @@ class VkApi(object):
         self.http = requests.Session()
         self.http.proxies = proxies  # Ставим прокси
         self.http.headers = {  # Притворимся браузером
-            'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:38.0) '
-            'Gecko/20100101 Firefox/38.0'
+            'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:40.0) '
+            'Gecko/20100101 Firefox/40.0'
         }
 
         self.last_request = 0.0
@@ -90,11 +91,19 @@ class VkApi(object):
             TOO_MANY_RPS_CODE: self.too_many_rps_handler
         }
 
-    def authorization(self):
-        """ Полная авторизация с получением токена """
+    def authorization(self, reauth=False):
+        """ Полная авторизация с получением токена
+
+        :param reauth: Позволяет переавторизиваться, игнорируя сохраненные 
+                        куки и токен
+        """
+
         if self.login and self.password:
-            self.sid = self.settings['remixsid']
-            self.token = self.settings['access_token']
+            if reauth:
+                self.settings.clear_section()
+
+            self.sid = self.settings.remixsid
+            self.token = self.settings.token
 
             if not self.check_sid():
                 self.vk_login()
@@ -136,13 +145,15 @@ class VkApi(object):
             remixsid = self.http.cookies['remixsid6']
 
         if remixsid:
-            self.settings['remixsid'] = remixsid
+            self.settings.remixsid = remixsid
 
             # Нужно для авторизации в API
-            self.settings['forapilogin'] = {
+            self.settings.forapilogin = {
                 'p': self.http.cookies['p'],
                 'l': self.http.cookies['l']
             }
+
+            self.settings.save()
 
             self.sid = remixsid
 
@@ -225,8 +236,8 @@ class VkApi(object):
     def api_login(self):
         """ Получение токена через Desktop приложение """
 
-        if not self.sid:
-            raise AuthorizationError('API authorization error (no sid cookie)')
+        if not self.sid or not self.settings.forapilogin:
+            raise AuthorizationError('API authorization error (no cookies)')
 
         url = 'https://oauth.vk.com/authorize'
         values = {
@@ -235,7 +246,7 @@ class VkApi(object):
             'response_type': 'token',
         }
 
-        self.http.cookies.update(self.settings['forapilogin'])
+        self.http.cookies.update(self.settings.forapilogin)
         self.http.cookies.update({'remixsid': self.sid})
 
         response = self.http.post(url, values)
@@ -252,7 +263,8 @@ class VkApi(object):
                 x = i.split('=')
                 token.update({x[0]: x[1]})
 
-            self.settings['access_token'] = token
+            self.settings.token = token
+            self.settings.save()
             self.token = token
         else:
             raise AuthorizationError('Authorization error (api)')
@@ -355,7 +367,6 @@ class VkApi(object):
 
             if error.code in self.error_handlers:
                 if error.code == CAPTCHA_ERROR_CODE:
-
                     error = Captcha(
                         self,
                         error.error['captcha_sid'],
@@ -433,7 +444,6 @@ class AccountBlocked(AuthorizationError):
 
 
 class SecurityCheck(AuthorizationError):
-
     def __init__(self, phone_prefix, phone_postfix, response=None):
         self.phone_prefix = phone_prefix
         self.phone_postfix = phone_postfix
@@ -450,7 +460,6 @@ class SecurityCheck(AuthorizationError):
 
 
 class ApiError(Exception):
-
     def __init__(self, vk, method, values, error):
         self.vk = vk
         self.method = method
@@ -471,7 +480,6 @@ class ApiError(Exception):
 
 
 class ApiHttpError(Exception):
-
     def __init__(self, vk, method, values, response):
         self.vk = vk
         self.method = method
@@ -490,7 +498,6 @@ class ApiHttpError(Exception):
 
 
 class Captcha(Exception):
-
     def __init__(self, vk, captcha_sid,
                  func, args=None, kwargs=None, url=None):
         self.vk = vk
