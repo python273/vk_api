@@ -299,7 +299,7 @@ class VkApi(object):
 
     def captcha_handler(self, captcha):
         """ http://vk.com/dev/captcha_error """
-        pass
+        raise captcha
 
     def need_validation_handler(self, error):
         """ http://vk.com/dev/need_validation """
