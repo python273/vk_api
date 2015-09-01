@@ -20,18 +20,23 @@ def main():
         print(error_msg)
         return
 
+    """
+        В VkUpload реализованы методы загрузки файлов в ВК.
+        (Не все, если что-то понадобится - могу дописать)
+    """
     upload = vk_api.VkUpload(vk)
-    photo = upload.photo(  # Подставте свои данные
+
+    photo = upload.photo(  # Подставьте свои данные
         'D:/downloads/tube.jpg',
         album_id=200851098,
         group_id=74030368
     )
 
-    vk_url = 'https://vk.com/photo{}_{}'.format(
+    vk_photo_url = 'https://vk.com/photo{}_{}'.format(
         photo[0]['owner_id'], photo[0]['id']
     )
 
-    print(photo, '\nLink: ', vk_url)
+    print(photo, '\nLink: ', vk_photo_url)
 
 if __name__ == '__main__':
     main()
