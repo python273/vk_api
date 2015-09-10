@@ -36,7 +36,7 @@ class Config(object):
         try:
             with open(self._filename, 'r') as f:
                 settings = json.load(f)
-        except FileNotFoundError:
+        except IOError:
             settings = {}
 
         settings.setdefault(self._section, {})
