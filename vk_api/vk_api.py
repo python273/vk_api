@@ -15,7 +15,7 @@ import requests
 
 import jconfig
 
-DELAY = 0.36  # 3 requests per second
+DELAY = 0.34  # ~3 requests per second
 TOO_MANY_RPS_CODE = 6
 CAPTCHA_ERROR_CODE = 14
 NEED_VALIDATION_CODE = 17
@@ -33,8 +33,8 @@ RE_PHONE_POSTFIX = re.compile(r'phone_postfix">.*?(\d+).*?<')
 
 class VkApi(object):
     def __init__(self, login=None, password=None, number=None, sec_number=None,
-                 token=None,
-                 proxies=None, captcha_handler=None, config_filename='vk_config.json',
+                 token=None, proxies=None, captcha_handler=None,
+                 config_filename='vk_config.json',
                  api_version='5.35', app_id=2895443, scope=33554431,
                  client_secret=None):
         """
@@ -188,6 +188,7 @@ class VkApi(object):
 
         phone_postfix = search_re(RE_PHONE_POSTFIX, response.text)
 
+        code = None
         if self.sec_number:
             code = self.sec_number
         elif self.number:
@@ -312,7 +313,7 @@ class VkApi(object):
 
     def too_many_rps_handler(self, error):
         time.sleep(0.5)
-        error.try_method()
+        return error.try_method()
 
     def method(self, method, values=None, captcha_sid=None, captcha_key=None):
         """ Использование методов API
@@ -348,8 +349,8 @@ class VkApi(object):
         if delay > 0:
             time.sleep(delay)
 
-        self.last_request = time.time()
         response = self.http.post(url, values)
+        self.last_request = time.time()
 
         if response.ok:
             response = response.json()
@@ -444,7 +445,7 @@ class AccountBlocked(AuthorizationError):
 
 
 class SecurityCheck(AuthorizationError):
-    def __init__(self, phone_prefix, phone_postfix, response=None):
+    def __init__(self, phone_prefix=None, phone_postfix=None, response=None):
         self.phone_prefix = phone_prefix
         self.phone_postfix = phone_postfix
         self.response = response
@@ -527,12 +528,13 @@ class Captcha(Exception):
         :param key: текст капчи
         """
 
-        self.key = key
+        if key:
+            self.key = key
 
-        self.kwargs.update({
-            'captcha_sid': self.sid,
-            'captcha_key': self.key
-        })
+            self.kwargs.update({
+                'captcha_sid': self.sid,
+                'captcha_key': self.key
+            })
 
         return self.func(*self.args, **self.kwargs)
 
