@@ -108,9 +108,142 @@ class VkTools(object):
         return {'count': len(items), key: items}
 
 
+class VkRequestsPool(object):
+    """ Позволяет сделать несколько обращений к API за один запрос
+        за счет метода execute
+    """
+
+    __slots__ = ('vk', 'pool', 'one_param')
+
+    def __init__(self, vk):
+        self.vk = vk
+        self.pool = []
+        self.one_param = False
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self.execute()
+
+    def method(self, method, values=None):
+        """ Добавляет запрос в пулл
+
+        :param method: метод
+        :param values: параметры
+        """
+
+        if self.one_param:
+            raise Exception('One param mode dont work with self.method')
+
+        req = (method, values, {})
+        self.pool.append(req)
+        return req[2]
+
+    def method_one_param(self, method, default_values=None, key=None,
+                         values=None):
+
+        if self.one_param is False and self.pool:
+            raise Exception('One param mode dont work with self.method')
+
+        self.one_param = {
+            'method': method,
+            'default': default_values,
+            'key': key,
+            'return': {}
+        }
+
+        self.pool = values
+
+        return self.one_param['return']
+
+    def check_one_method(self, pool):
+        """ Возвращает True, если все запросы в пулле к одному методу """
+        if len(pool) > 1:
+            first_method = pool[0][0]
+
+            for req in pool[1:]:
+                if req[0] != first_method:
+                    break
+            else:
+                return True
+
+        return False
+
+    def gen_code_one_method(self, pool):
+        """ Генерирует код для одного метода
+            (если в пулле запросы к одному методу)
+        """
+        method = pool[0][0]
+
+        list_values = [i[1] for i in pool]
+        json_list_values = json.dumps(list_values, separators=(',', ':'))
+        run_code = code_requestspoll_one_method % (
+            json_list_values, method
+        )
+
+        return run_code
+
+    def gen_code_one_param(self, pool):
+        """ Генерирует код для одного метода и одного меняющегося параметра
+           (если в пулле запросы к одному методу, с одним меняющеися параметром)
+        """
+        run_code = code_requestspoll_one_param % (
+            json.dumps(self.one_param['default'], separators=(',', ':')),
+            json.dumps(pool, separators=(',', ':')),
+            self.one_param['key'],
+            self.one_param['method']
+        )
+
+        # print(run_code)
+
+        return run_code
+
+    def gen_code_many_methods(self, pool):
+        """ Генерирует код для нескольких методов """
+        reqs = ','.join(
+            'API.{}({})'.format(i[0], json.dumps(i[1]), separators=(',', ':'))
+            for i in pool
+        )
+        run_code = 'return [{}];'.format(reqs)
+
+        return run_code
+
+    def execute(self):
+        for i in range(0, len(self.pool), 25):
+            cur_pool = self.pool[i:i + 25]
+
+            if self.one_param:
+                run_code = self.gen_code_one_param(cur_pool)
+            else:
+                one_method = self.check_one_method(cur_pool)
+
+                if one_method:
+                    run_code = self.gen_code_one_method(cur_pool)
+                else:
+                    run_code = self.gen_code_many_methods(cur_pool)
+
+            response = self.vk.method('execute', {'code': run_code})
+
+            for x in range(len(response)):
+                if self.one_param:
+                    self.one_param['return'][cur_pool[x]] = response[x]
+                else:
+                    self.pool[i + x][2].update(response[x])
+
+
 # Полный код в файле vk_procedures
 code_get_all_items = """
 var m=%s,n=%s,b="%s",v=n;var c={count:m,offset:v}+%s;var r=API.%s(c),k=r.count,
 j=r[b],i=1;while(i<25&&v+m<=k){v=i*m+n;c.offset=v;j=j+API.%s(c)[b];i=i+1;}
 return {count:k,items:j,offset:v+m};
+""".replace('\n', '')
+
+code_requestspoll_one_method = """
+var p=%s,i=0,r=[];while(i<p.length){r.push(API.%s(p[i]));i=i+1;}return r;
+""".replace('\n', '')
+
+code_requestspoll_one_param = """
+var d=%s,v=%s,r=[],i=0;while(i<v.length){d.%s=v[i];r.push(API.%s(d));i=i+1;};
+return r;
 """.replace('\n', '')
