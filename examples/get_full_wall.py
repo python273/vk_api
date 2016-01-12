@@ -12,15 +12,15 @@ def main():
     """ Пример: получение всех постов со стены """
 
     login, password = 'python@vk.com', 'mypassword'
-    vk = vk_api.VkApi(login, password)
+    vk_session = vk_api.VkApi(login, password)
 
     try:
-        vk.authorization()
+        vk_session.authorization()
     except vk_api.AuthorizationError as error_msg:
         print(error_msg)
         return
 
-    tools = vk_api.VkTools(vk)
+    tools = vk_api.VkTools(vk_session)
     """
         VkTools.get_all позволяет получить все итемы, например со стены или
         получить все диалоги, или сообщения. При использовании get_all
