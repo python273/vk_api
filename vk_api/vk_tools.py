@@ -142,9 +142,19 @@ class VkRequestsPool(object):
 
     def method_one_param(self, method, default_values=None, key=None,
                          values=None):
+        """  Использовать, если изменяется значение только одного параметра
+
+        :param method: метод
+        :param default_values: одинаковые значения для запросов
+        :param key: ключ изменяющегося параметра
+        :param values: список значений изменяющегося параметра (max: 25)
+        """
 
         if self.one_param is False and self.pool:
             raise Exception('One param mode dont work with self.method')
+
+        if default_values is None:
+            default_values = {}
 
         self.one_param = {
             'method': method,
