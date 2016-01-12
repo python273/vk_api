@@ -20,10 +20,12 @@ TOO_MANY_RPS_CODE = 6
 CAPTCHA_ERROR_CODE = 14
 NEED_VALIDATION_CODE = 17
 HTTP_ERROR_CODE = -1
+TWOFACTOR_CODE = -2
 
 RE_LOGIN_HASH = re.compile(r'name="lg_h" value="([a-z0-9]+)"')
 RE_CAPTCHAID = re.compile(r'sid=(\d+)')
 RE_NUMBER_HASH = re.compile(r"al_page: '3', hash: '([a-z0-9]+)'")
+RE_AUTH_HASH = re.compile(r"hash: '([a-z_0-9]+)'")
 RE_TOKEN_URL = re.compile(r'location\.href = "(.*?)"\+addr;')
 
 RE_PHONE_PREFIX = re.compile(r'phone_number">(.*?)<')
@@ -33,9 +35,11 @@ RE_PHONE_POSTFIX = re.compile(r'phone_postfix">.*?(\d+).*?<')
 
 class VkApi(object):
     def __init__(self, login=None, password=None, number=None, sec_number=None,
-                 token=None, proxies=None, captcha_handler=None,
+                 token=None,
+                 proxies=None,
+                 auth_handler=None, captcha_handler=None,
                  config_filename='vk_config.json',
-                 api_version='5.35', app_id=2895443, scope=33554431,
+                 api_version='5.44', app_id=2895443, scope=33554431,
                  client_secret=None):
         """
         :param login: Логин ВКонтакте
@@ -51,6 +55,9 @@ class VkApi(object):
         :param proxies: proxy server
                         {'http': 'http://127.0.0.1:8888/',
                         'https': 'https://127.0.0.1:8888/'}
+        :param auth_handler: Функция для обработки двухфакторной аутентификации,
+                              обязана возвращать строку с кодом для
+                              прохождения аутентификации
         :param captcha_handler: Функция для обработки капчи
         :param config_filename: Расположение config файла
 
@@ -88,7 +95,8 @@ class VkApi(object):
         self.error_handlers = {
             NEED_VALIDATION_CODE: self.need_validation_handler,
             CAPTCHA_ERROR_CODE: captcha_handler or self.captcha_handler,
-            TOO_MANY_RPS_CODE: self.too_many_rps_handler
+            TOO_MANY_RPS_CODE: self.too_many_rps_handler,
+            TWOFACTOR_CODE: auth_handler or self.auth_handler
         }
 
     def authorization(self, reauth=False):
@@ -139,6 +147,10 @@ class VkApi(object):
 
         remixsid = None
 
+        if 'act=authcheck' in response.url:
+            code = self.error_handlers[TWOFACTOR_CODE]()
+            response = self.twofactor(response, code)
+
         if 'remixsid' in self.http.cookies:
             remixsid = self.http.cookies['remixsid']
         elif 'remixsid6' in self.http.cookies:  # ipv6?
@@ -162,7 +174,7 @@ class VkApi(object):
             captcha = Captcha(self, captcha_sid, self.vk_login)
 
             if self.error_handlers[CAPTCHA_ERROR_CODE]:
-                self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
+                return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
             else:
                 raise AuthorizationError('Authorization error (capcha)')
         elif 'm=1' in response.url:
@@ -175,6 +187,28 @@ class VkApi(object):
 
         if 'act=blocked' in response.url:
             raise AccountBlocked('Account is blocked')
+
+    def twofactor(self, response, code):
+        """ Двухфакторная аутентификация
+        :param reponse: запрос, содержащий страницу с приглашением к аутентификации
+        :param code: код, который необходимо ввести для успешной аутентификации
+        """
+        assert code != None, "Empty code doesn't acceptable"
+        assert len(code) == 6, "Length of code cannot be other than 6."
+
+        auth_hash = search_re(RE_AUTH_HASH, response.text)
+        url = 'https://vk.com/al_login.php'
+        if auth_hash:
+            values = {
+                    'act': 'a_authcheck_code',
+                    'code': code,
+                    'remember': 0, # TODO: Fix me(device remembering)
+                    'hash': auth_hash,
+                    }
+            response = self.http.post(url, values, cookies=response.cookies)
+            if url not in response.url:
+                return response
+        raise TwoFactorError('Incorrect code: %s' % code)
 
     def security_check(self, url=None, response=None):
         if url:
@@ -315,6 +349,12 @@ class VkApi(object):
         time.sleep(0.5)
         return error.try_method()
 
+    def auth_handler(self):
+        raise AuthorizationError("No handler for two-factor authorization.")
+
+    def get_api(self):
+        return VkApiMethod(self)
+
     def method(self, method, values=None, captcha_sid=None, captcha_key=None):
         """ Использование методов API
 
@@ -387,6 +427,25 @@ class VkApi(object):
         return response['response']
 
 
+class VkApiMethod:
+    def __init__(self, vk, method=None):
+        self._vk = vk
+        self._method = method
+
+    def __getattr__(self, method):
+        if self._method:
+            self._method += '.' + method
+            return self
+
+        return VkApiMethod(self._vk, method)
+
+    def __call__(self, *args, **kwargs):
+        return self._vk.method(self._method, kwargs)
+
+    def get_doc(self):
+        doc(self._method)
+
+
 def doc(method=None):
     """ Открывает документацию на метод или список всех методов
 
@@ -441,6 +500,10 @@ class BadPassword(AuthorizationError):
 
 
 class AccountBlocked(AuthorizationError):
+    pass
+
+
+class TwoFactorError(AuthorizationError):
     pass
 
 

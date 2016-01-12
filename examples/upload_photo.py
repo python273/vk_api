@@ -12,10 +12,10 @@ def main():
     """ Пример: загрузка фото """
 
     login, password = 'python@vk.com', 'mypassword'
-    vk = vk_api.VkApi(login, password)
+    vk_session = vk_api.VkApi(login, password)
 
     try:
-        vk.authorization()
+        vk_session.authorization()
     except vk_api.AuthorizationError as error_msg:
         print(error_msg)
         return
@@ -24,7 +24,7 @@ def main():
         В VkUpload реализованы методы загрузки файлов в ВК.
         (Не все, если что-то понадобится - могу дописать)
     """
-    upload = vk_api.VkUpload(vk)
+    upload = vk_api.VkUpload(vk_session)
 
     photo = upload.photo(  # Подставьте свои данные
         'D:/downloads/tube.jpg',
