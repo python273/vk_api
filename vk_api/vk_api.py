@@ -174,7 +174,7 @@ class VkApi(object):
             captcha = Captcha(self, captcha_sid, self.vk_login)
 
             if self.error_handlers[CAPTCHA_ERROR_CODE]:
-                self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
+                return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
             else:
                 raise AuthorizationError('Authorization error (capcha)')
         elif 'm=1' in response.url:
@@ -352,6 +352,9 @@ class VkApi(object):
     def auth_handler(self):
         raise AuthorizationError("No handler for two-factor authorization.")
 
+    def get_api(self):
+        return VkApiMethod(self)
+
     def method(self, method, values=None, captcha_sid=None, captcha_key=None):
         """ Использование методов API
 
@@ -422,6 +425,25 @@ class VkApi(object):
             raise error
 
         return response['response']
+
+
+class VkApiMethod:
+    def __init__(self, vk, method=None):
+        self._vk = vk
+        self._method = method
+
+    def __getattr__(self, method):
+        if self._method:
+            self._method += '.' + method
+            return self
+
+        return VkApiMethod(self._vk, method)
+
+    def __call__(self, *args, **kwargs):
+        return self._vk.method(self._method, kwargs)
+
+    def get_doc(self):
+        doc(self._method)
 
 
 def doc(method=None):
