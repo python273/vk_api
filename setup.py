@@ -14,7 +14,7 @@ from distutils.core import setup
 
 setup(
     name='vk_api',
-    version='6.7',
+    version='7.0',
     author='Kirill Python',
     author_email='python273@ya.ru',
     url='https://github.com/python273/vk_api',

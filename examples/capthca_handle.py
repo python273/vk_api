@@ -25,13 +25,13 @@ def main():
     """ Пример: обработка капчи """
 
     login, password = 'python@vk.com', 'mypassword'
-    vk = vk_api.VkApi(
+    vk_session = vk_api.VkApi(
         login, password,
         captcha_handler=captcha_handler  # функция для обработки капчи
     )
 
     try:
-        vk.authorization()
+        vk_session.authorization()
     except vk_api.AuthorizationError as error_msg:
         print(error_msg)
         return

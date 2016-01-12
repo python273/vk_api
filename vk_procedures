@@ -25,3 +25,32 @@ while(i < 25 && offset + max_count <= count) {
  
 return {count: count, items: items, offset: offset + max_count};
 ==========
+CODE: VkRequestsPool for one method
+INPUT: list_values:json, method
+----------
+var pool_values = %s,
+    i = 0,
+    responses = [];
+
+while(i < pool_values.length) {
+    responses.push(API.%s(pool_values[i]))
+    i = i + 1;
+}
+
+return responses;
+==========
+CODE: VkRequestsPool for one param
+INPUT: default_values:json, values:json,list, key, method
+----------
+var default_values = %s,
+    values = %s,
+    responses = [],
+    i = 0;
+
+while(i < values.length) {
+    default_values.%s = values[i];
+    responses.push(API.%s(default_values));
+    i = i + 1;
+}
+
+return responses;
