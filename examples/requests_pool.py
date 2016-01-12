@@ -21,7 +21,8 @@ def main():
         return
 
     """
-        TODO: write description
+        Позволяет выполнять до 25 запросов к API за один запрос.
+        Работает через метод execute.
     """
 
     friends = {}
@@ -32,9 +33,19 @@ def main():
 
     print(friends)
 
+    # Same result
+    with vk_api.VkRequestsPool(vk_session) as pool:
+        friends = pool.method_one_param(
+            'friends.get', key='user_id', values=[1, 183433824])
+
+    print(friends)
+
     with vk_api.VkRequestsPool(vk_session) as pool:
         friends = pool.method('friends.get')
         status = pool.method('status.get')
+
+    # Обратите внимание, что запрос выполняется после выхода из with
+    # и к результатам обратиться можно только после выхода из него
 
     print(friends)
     print(status)
