@@ -193,8 +193,11 @@ class VkApi(object):
         :param reponse: запрос, содержащий страницу с приглашением к аутентификации
         :param code: код, который необходимо ввести для успешной аутентификации
         """
-        assert code != None, "Empty code doesn't acceptable"
-        assert len(code) == 6, "Length of code cannot be other than 6."
+
+        if code == None:
+            raise TwoFactorError("Empty code doesn't acceptable")
+        if len(code) != 6:
+            raise TwoFactorError("Length of code cannot be other than 6.")
 
         auth_hash = search_re(RE_AUTH_HASH, response.text)
         url = 'https://vk.com/al_login.php'
