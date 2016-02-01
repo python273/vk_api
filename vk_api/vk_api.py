@@ -574,6 +574,7 @@ class Captcha(Exception):
 
         self.key = None
         self.url = url
+        self.image = None
 
     def get_url(self):
         """ Возвращает ссылку на изображение капчи
@@ -584,6 +585,14 @@ class Captcha(Exception):
             self.url = 'https://api.vk.com/captcha.php?sid={}'.format(self.sid)
 
         return self.url
+
+    def get_image(self):
+        """ Возвращает бинарное изображение капчи, получаемое по get_url()
+        """
+
+        if not self.image:
+            self.image = self.vk.http.get(self.get_url()).content
+        return self.image
 
     def try_again(self, key):
         """ Отправляет запрос заново с ответом капчи
