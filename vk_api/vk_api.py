@@ -56,8 +56,9 @@ class VkApi(object):
                         {'http': 'http://127.0.0.1:8888/',
                         'https': 'https://127.0.0.1:8888/'}
         :param auth_handler: Функция для обработки двухфакторной аутентификации,
-                              обязана возвращать строку с кодом для
-                              прохождения аутентификации
+                              обязана возвращать строку с кодом и булевое значение,
+                              означающее, стоит ли вк запомнить это устройство, для
+                              прохождения аутентификации.
         :param captcha_handler: Функция для обработки капчи
         :param config_filename: Расположение config файла
 
@@ -148,8 +149,8 @@ class VkApi(object):
         remixsid = None
 
         if 'act=authcheck' in response.url:
-            code = self.error_handlers[TWOFACTOR_CODE]()
-            response = self.twofactor(response, code)
+            code, remember_device = self.error_handlers[TWOFACTOR_CODE]()
+            response = self.twofactor(response, code, remember_device)
 
         if 'remixsid' in self.http.cookies:
             remixsid = self.http.cookies['remixsid']
@@ -188,13 +189,19 @@ class VkApi(object):
         if 'act=blocked' in response.url:
             raise AccountBlocked('Account is blocked')
 
-    def twofactor(self, response, code):
+    def twofactor(self, response, code, remember_device=False):
         """ Двухфакторная аутентификация
         :param reponse: запрос, содержащий страницу с приглашением к аутентификации
         :param code: код, который необходимо ввести для успешной аутентификации
+        :param remember_device: параметр, означающий,
+               стоит ли запоминать это устройство в целях
+               избежания повторного ввода кода(default: False)
         """
-        assert code != None, "Empty code doesn't acceptable"
-        assert len(code) == 6, "Length of code cannot be other than 6."
+
+        if code == None:
+            raise TwoFactorError("Empty code doesn't acceptable")
+        if len(code) != 6:
+            raise TwoFactorError("Length of code cannot be other than 6.")
 
         auth_hash = search_re(RE_AUTH_HASH, response.text)
         url = 'https://vk.com/al_login.php'
@@ -202,7 +209,7 @@ class VkApi(object):
             values = {
                     'act': 'a_authcheck_code',
                     'code': code,
-                    'remember': 0, # TODO: Fix me(device remembering)
+                    'remember': int(remember_device),
                     'hash': auth_hash,
                     }
             response = self.http.post(url, values, cookies=response.cookies)
@@ -574,6 +581,7 @@ class Captcha(Exception):
 
         self.key = None
         self.url = url
+        self.image = None
 
     def get_url(self):
         """ Возвращает ссылку на изображение капчи
@@ -584,6 +592,14 @@ class Captcha(Exception):
             self.url = 'https://api.vk.com/captcha.php?sid={}'.format(self.sid)
 
         return self.url
+
+    def get_image(self):
+        """ Возвращает бинарное изображение капчи, получаемое по get_url()
+        """
+
+        if not self.image:
+            self.image = self.vk.http.get(self.get_url()).content
+        return self.image
 
     def try_again(self, key):
         """ Отправляет запрос заново с ответом капчи
