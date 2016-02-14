@@ -52,7 +52,7 @@ class VkTools(object):
 
         while True:
             run_code = code_get_all_items % (
-                max_count, offset, key, json.dumps(values, ensure_ascii=False),
+                max_count, offset, key, sjson_dumps(values),
                 method, method
             )
 
@@ -187,7 +187,7 @@ class VkRequestsPool(object):
         method = pool[0][0]
 
         list_values = [i[1] for i in pool]
-        json_list_values = json.dumps(list_values, separators=(',', ':'))
+        json_list_values = sjson_dumps(list_values)
         run_code = code_requestspoll_one_method % (
             json_list_values, method
         )
@@ -199,8 +199,8 @@ class VkRequestsPool(object):
            (если в пулле запросы к одному методу, с одним меняющеися параметром)
         """
         run_code = code_requestspoll_one_param % (
-            json.dumps(self.one_param['default'], separators=(',', ':')),
-            json.dumps(pool, separators=(',', ':')),
+            sjson_dumps(self.one_param['default']),
+            sjson_dumps(pool),
             self.one_param['key'],
             self.one_param['method']
         )
@@ -212,7 +212,7 @@ class VkRequestsPool(object):
     def gen_code_many_methods(self, pool):
         """ Генерирует код для нескольких методов """
         reqs = ','.join(
-            'API.{}({})'.format(i[0], json.dumps(i[1]), separators=(',', ':'))
+            'API.{}({})'.format(i[0], sjson_dumps(i[1]))
             for i in pool
         )
         run_code = 'return [{}];'.format(reqs)
@@ -241,6 +241,12 @@ class VkRequestsPool(object):
                 else:
                     self.pool[i + x][2].update(response[x])
 
+
+def sjson_dumps(*args, **kwargs):
+    kwargs['ensure_ascii'] = False
+    kwargs['separators'] = (',', ':')
+
+    return json.dumps(*args, **kwargs)
 
 # Полный код в файле vk_procedures
 code_get_all_items = """
