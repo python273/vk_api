@@ -239,7 +239,10 @@ class VkRequestsPool(object):
                 if self.one_param:
                     self.one_param['return'][cur_pool[x]] = response[x]
                 else:
-                    self.pool[i + x][2].update(response[x])
+                    if response[x] is False:
+                        self.pool[i + x][2].update({'_error': True})
+                    else:
+                        self.pool[i + x][2].update(response[x])
 
 
 def sjson_dumps(*args, **kwargs):
