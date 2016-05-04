@@ -10,6 +10,7 @@ Copyright (C) 2015
 
 import re
 import time
+import threading
 
 import requests
 
@@ -100,10 +101,12 @@ class VkApi(object):
             TWOFACTOR_CODE: auth_handler or self.auth_handler
         }
 
+        self.lock = threading.Lock()
+
     def authorization(self, reauth=False):
         """ Полная авторизация с получением токена
 
-        :param reauth: Позволяет переавторизиваться, игнорируя сохраненные 
+        :param reauth: Позволяет переавторизиваться, игнорируя сохраненные
                         куки и токен
         """
 
@@ -390,14 +393,15 @@ class VkApi(object):
                 'captcha_key': captcha_key
             })
 
-        # Ограничение 3 запроса в секунду
-        delay = DELAY - (time.time() - self.last_request)
+        with self.lock:
+            # Ограничение 3 запроса в секунду
+            delay = DELAY - (time.time() - self.last_request)
 
-        if delay > 0:
-            time.sleep(delay)
+            if delay > 0:
+                time.sleep(delay)
 
-        response = self.http.post(url, values)
-        self.last_request = time.time()
+            response = self.http.post(url, values)
+            self.last_request = time.time()
 
         if response.ok:
             response = response.json()
