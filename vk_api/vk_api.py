@@ -86,10 +86,10 @@ class VkApi(object):
 
         self.http = requests.Session()
         self.http.proxies = proxies  # Ставим прокси
-        self.http.headers = {  # Притворимся браузером
+        self.http.headers.update({  # Притворимся браузером
             'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:40.0) '
             'Gecko/20100101 Firefox/40.0'
-        }
+        })
 
         self.last_request = 0.0
 
