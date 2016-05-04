@@ -40,7 +40,7 @@ class VkApi(object):
                  auth_handler=None, captcha_handler=None,
                  config_filename='vk_config.json',
                  api_version='5.44', app_id=2895443, scope=33554431,
-                 client_secret=None):
+                 client_secret=None, additional_headers={}):
         """
         :param login: Логин ВКонтакте
         :param password: Пароль ВКонтакте
@@ -67,7 +67,13 @@ class VkApi(object):
         :param scope: Запрашиваемые права (default: 33554431)
         :param client_secret: Защищенный ключ приложения для серверной
                                 авторизации (https://vk.com/dev/auth_server)
+        :param additional_headers: Дополнительные HTTP-заголовки
         """
+
+        headers = {  # Притворимся браузером
+            'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:40.0) '
+            'Gecko/20100101 Firefox/40.0'
+        }.update(additional_headers)
 
         self.login = login
         self.password = password
@@ -86,10 +92,7 @@ class VkApi(object):
 
         self.http = requests.Session()
         self.http.proxies = proxies  # Ставим прокси
-        self.http.headers.update({  # Притворимся браузером
-            'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:40.0) '
-            'Gecko/20100101 Firefox/40.0'
-        })
+        self.http.headers.update(headers)
 
         self.last_request = 0.0
 
@@ -103,7 +106,7 @@ class VkApi(object):
     def authorization(self, reauth=False):
         """ Полная авторизация с получением токена
 
-        :param reauth: Позволяет переавторизиваться, игнорируя сохраненные 
+        :param reauth: Позволяет переавторизиваться, игнорируя сохраненные
                         куки и токен
         """
 
