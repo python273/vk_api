@@ -22,12 +22,18 @@ class Config(object):
     def __getattr__(self, name):
         return self._settings[self._section].get(name)
 
+    def __getitem__(self, key):
+        return self.__getattr__(key)
+
     def __setattr__(self, name, value):
         if name.startswith('_'):
             super(Config, self).__setattr__(name, value)
             return
 
         self._settings[self._section][name] = value
+
+    def __setitem__(self, key, value):
+        return self.__setattr__(key, value)
 
     def clear_section(self):
         self._settings[self._section] = {}
