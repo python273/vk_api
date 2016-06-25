@@ -10,6 +10,7 @@ Copyright (C) 2015
 
 import re
 import time
+import threading
 
 import requests
 
@@ -39,7 +40,7 @@ class VkApi(object):
                  proxies=None,
                  auth_handler=None, captcha_handler=None,
                  config_filename='vk_config.json',
-                 api_version='5.44', app_id=2895443, scope=33554431,
+                 api_version='5.52', app_id=2895443, scope=33554431,
                  client_secret=None):
         """
         :param login: Логин ВКонтакте
@@ -56,8 +57,9 @@ class VkApi(object):
                         {'http': 'http://127.0.0.1:8888/',
                         'https': 'https://127.0.0.1:8888/'}
         :param auth_handler: Функция для обработки двухфакторной аутентификации,
-                              обязана возвращать строку с кодом для
-                              прохождения аутентификации
+                              обязана возвращать строку с кодом и булевое значение,
+                              означающее, стоит ли вк запомнить это устройство, для
+                              прохождения аутентификации.
         :param captcha_handler: Функция для обработки капчи
         :param config_filename: Расположение config файла
 
@@ -85,10 +87,10 @@ class VkApi(object):
 
         self.http = requests.Session()
         self.http.proxies = proxies  # Ставим прокси
-        self.http.headers = {  # Притворимся браузером
+        self.http.headers.update({  # Притворимся браузером
             'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:40.0) '
             'Gecko/20100101 Firefox/40.0'
-        }
+        })
 
         self.last_request = 0.0
 
@@ -99,10 +101,12 @@ class VkApi(object):
             TWOFACTOR_CODE: auth_handler or self.auth_handler
         }
 
+        self.lock = threading.Lock()
+
     def authorization(self, reauth=False):
         """ Полная авторизация с получением токена
 
-        :param reauth: Позволяет переавторизиваться, игнорируя сохраненные 
+        :param reauth: Позволяет переавторизиваться, игнорируя сохраненные
                         куки и токен
         """
 
@@ -148,8 +152,8 @@ class VkApi(object):
         remixsid = None
 
         if 'act=authcheck' in response.url:
-            code = self.error_handlers[TWOFACTOR_CODE]()
-            response = self.twofactor(response, code)
+            code, remember_device = self.error_handlers[TWOFACTOR_CODE]()
+            response = self.twofactor(response, code, remember_device)
 
         if 'remixsid' in self.http.cookies:
             remixsid = self.http.cookies['remixsid']
@@ -188,13 +192,19 @@ class VkApi(object):
         if 'act=blocked' in response.url:
             raise AccountBlocked('Account is blocked')
 
-    def twofactor(self, response, code):
+    def twofactor(self, response, code, remember_device=False):
         """ Двухфакторная аутентификация
         :param reponse: запрос, содержащий страницу с приглашением к аутентификации
         :param code: код, который необходимо ввести для успешной аутентификации
+        :param remember_device: параметр, означающий,
+               стоит ли запоминать это устройство в целях
+               избежания повторного ввода кода(default: False)
         """
-        assert code != None, "Empty code doesn't acceptable"
-        assert len(code) == 6, "Length of code cannot be other than 6."
+
+        if code == None:
+            raise TwoFactorError("Empty code doesn't acceptable")
+        if len(code) != 6:
+            raise TwoFactorError("Length of code cannot be other than 6.")
 
         auth_hash = search_re(RE_AUTH_HASH, response.text)
         url = 'https://vk.com/al_login.php'
@@ -202,7 +212,7 @@ class VkApi(object):
             values = {
                     'act': 'a_authcheck_code',
                     'code': code,
-                    'remember': 0, # TODO: Fix me(device remembering)
+                    'remember': int(remember_device),
                     'hash': auth_hash,
                     }
             response = self.http.post(url, values, cookies=response.cookies)
@@ -383,14 +393,15 @@ class VkApi(object):
                 'captcha_key': captcha_key
             })
 
-        # Ограничение 3 запроса в секунду
-        delay = DELAY - (time.time() - self.last_request)
+        with self.lock:
+            # Ограничение 3 запроса в секунду
+            delay = DELAY - (time.time() - self.last_request)
 
-        if delay > 0:
-            time.sleep(delay)
+            if delay > 0:
+                time.sleep(delay)
 
-        response = self.http.post(url, values)
-        self.last_request = time.time()
+            response = self.http.post(url, values)
+            self.last_request = time.time()
 
         if response.ok:
             response = response.json()
@@ -574,6 +585,7 @@ class Captcha(Exception):
 
         self.key = None
         self.url = url
+        self.image = None
 
     def get_url(self):
         """ Возвращает ссылку на изображение капчи
@@ -584,6 +596,14 @@ class Captcha(Exception):
             self.url = 'https://api.vk.com/captcha.php?sid={}'.format(self.sid)
 
         return self.url
+
+    def get_image(self):
+        """ Возвращает бинарное изображение капчи, получаемое по get_url()
+        """
+
+        if not self.image:
+            self.image = self.vk.http.get(self.get_url()).content
+        return self.image
 
     def try_again(self, key):
         """ Отправляет запрос заново с ответом капчи
