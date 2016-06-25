@@ -40,7 +40,7 @@ class VkApi(object):
                  proxies=None,
                  auth_handler=None, captcha_handler=None,
                  config_filename='vk_config.json',
-                 api_version='5.44', app_id=2895443, scope=33554431,
+                 api_version='5.52', app_id=2895443, scope=33554431,
                  client_secret=None):
         """
         :param login: Логин ВКонтакте
