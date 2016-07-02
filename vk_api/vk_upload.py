@@ -112,7 +112,7 @@ class VkUpload(object):
 
         return response
 
-    def audio(self, file_path, artist, title):
+    def audio(self, file_path, **kwargs):
         """ Загрузка аудио
 
         :param file_path: путь к аудиофайлу
@@ -127,10 +127,7 @@ class VkUpload(object):
 
         response = self.vk.http.post(url, files=audio_file).json()
 
-        response.update({
-            'artist': artist,
-            'title': title
-        })
+        response.update(kwargs)
 
         response = self.vk.method('audio.save', response)
 
