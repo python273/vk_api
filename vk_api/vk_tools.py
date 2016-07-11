@@ -5,7 +5,7 @@
 @contact: https://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2015
+Copyright (C) 2016
 """
 
 import json
@@ -111,20 +111,27 @@ class VkTools(object):
 class VkRequestsPool(object):
     """ Позволяет сделать несколько обращений к API за один запрос
         за счет метода execute
+
+        Если ответ от API приходит в виде list'а (например при вызове users.get),
+        то значение записывается с ключем list {'list': [...]}
     """
 
-    __slots__ = ('vk', 'pool', 'one_param')
+    __slots__ = ('vk', 'pool', 'one_param', 'execute_errors')
 
     def __init__(self, vk):
         self.vk = vk
         self.pool = []
         self.one_param = False
+        self.execute_errors = []
 
     def __enter__(self):
         return self
 
     def __exit__(self, *args, **kwargs):
         self.execute()
+
+    def get_execute_errors(self):
+        return self.execute_errors
 
     def method(self, method, values=None):
         """ Добавляет запрос в пулл
@@ -169,7 +176,7 @@ class VkRequestsPool(object):
 
     def check_one_method(self, pool):
         """ Возвращает True, если все запросы в пулле к одному методу """
-        if len(pool) > 1:
+        if pool:
             first_method = pool[0][0]
 
             for req in pool[1:]:
@@ -225,22 +232,30 @@ class VkRequestsPool(object):
 
             if self.one_param:
                 run_code = self.gen_code_one_param(cur_pool)
+            elif self.check_one_method(cur_pool):
+                run_code = self.gen_code_one_method(cur_pool)
             else:
-                one_method = self.check_one_method(cur_pool)
+                run_code = self.gen_code_many_methods(cur_pool)
 
-                if one_method:
-                    run_code = self.gen_code_one_method(cur_pool)
-                else:
-                    run_code = self.gen_code_many_methods(cur_pool)
+            response_raw = self.vk.method('execute', {'code': run_code}, raw=True)
 
-            response = self.vk.method('execute', {'code': run_code})
+            response = response_raw['response']
+            response_errors = response_raw.get('execute_errors')
+
+            if response_errors:
+                self.execute_errors += response_errors[:-1]
 
             for x in range(len(response)):
                 if self.one_param:
-                    self.one_param['return'][cur_pool[x]] = response[x]
+                    if response[x] is False:
+                        self.one_param['return'][cur_pool[x]] = {'_error': True}
+                    else:
+                        self.one_param['return'][cur_pool[x]] = response[x]
                 else:
                     if response[x] is False:
                         self.pool[i + x][2].update({'_error': True})
+                    elif type(response[x]) is list:
+                        self.pool[i + x][2].update({'list': response[x]})
                     else:
                         self.pool[i + x][2].update(response[x])
 
