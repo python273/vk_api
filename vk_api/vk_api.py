@@ -5,7 +5,7 @@
 @contact: https://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2015
+Copyright (C) 2016
 """
 
 import re
@@ -120,7 +120,7 @@ class VkApi(object):
             if not self.check_sid():
                 self.vk_login()
             else:
-                self.security_check('https://vk.com/')
+                self.security_check('https://vk.com/settings')
 
             if not self.check_token():
                 self.api_login()
@@ -365,13 +365,15 @@ class VkApi(object):
     def get_api(self):
         return VkApiMethod(self)
 
-    def method(self, method, values=None, captcha_sid=None, captcha_key=None):
+    def method(self, method, values=None, captcha_sid=None, captcha_key=None, raw=False):
         """ Использование методов API
 
         :param method: метод
         :param values: параметры
         :param captcha_sid:
         :param captcha_key:
+        :param raw: при False возвращает response['response'], при True возвращает response
+                    e.g. может понадобиться для метода execute для получения execute_errors
         """
 
         url = 'https://api.vk.com/method/%s' % method
@@ -435,7 +437,7 @@ class VkApi(object):
 
             raise error
 
-        return response['response']
+        return response if raw else response['response']
 
 
 class VkApiMethod:
