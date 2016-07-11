@@ -5,7 +5,7 @@
 @contact: https://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2015
+Copyright (C) 2016
 """
 
 __author__ = 'Kirill Python'
