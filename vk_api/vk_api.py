@@ -120,7 +120,7 @@ class VkApi(object):
             if not self.check_sid():
                 self.vk_login()
             else:
-                self.security_check('https://vk.com/')
+                self.security_check('https://vk.com/settings')
 
             if not self.check_token():
                 self.api_login()
