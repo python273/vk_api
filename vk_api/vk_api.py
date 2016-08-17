@@ -134,7 +134,8 @@ class VkApi(object):
         response = self.http.get('https://vk.com/')
 
         values = {
-            'act': 'login',
+            'role': 'al_frame',
+            '_origin': 'https://vk.com',
             'utf8': '1',
             'email': self.login,
             'pass': self.password,
@@ -147,7 +148,7 @@ class VkApi(object):
                 'captcha_key': captcha_key
             })
 
-        response = self.http.post('https://login.vk.com/', values)
+        response = self.http.post('https://login.vk.com/?act=login', values)
 
         remixsid = None
 
@@ -181,7 +182,7 @@ class VkApi(object):
                 return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
             else:
                 raise AuthorizationError('Authorization error (capcha)')
-        elif 'm=1' in response.url:
+        elif 'onLoginFailed(4' in response.text:
             raise BadPassword('Bad password')
         else:
             raise AuthorizationError('Unknown error. Please send bugreport.')
