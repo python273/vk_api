@@ -24,7 +24,7 @@ HTTP_ERROR_CODE = -1
 TWOFACTOR_CODE = -2
 
 RE_LOGIN_HASH = re.compile(r'name="lg_h" value="([a-z0-9]+)"')
-RE_CAPTCHAID = re.compile(r'sid=(\d+)')
+RE_CAPTCHAID = re.compile(r"onLoginCaptcha\('(\d+)'")
 RE_NUMBER_HASH = re.compile(r"al_page: '3', hash: '([a-z0-9]+)'")
 RE_AUTH_HASH = re.compile(r"hash: '([a-z_0-9]+)'")
 RE_TOKEN_URL = re.compile(r'location\.href = "(.*?)"\+addr;')
@@ -120,7 +120,7 @@ class VkApi(object):
             if not self.check_sid():
                 self.vk_login()
             else:
-                self.security_check('https://vk.com/settings')
+                self.security_check()
 
             if not self.check_token():
                 self.api_login()
@@ -152,7 +152,7 @@ class VkApi(object):
 
         remixsid = None
 
-        if 'act=authcheck' in response.url:
+        if 'act=authcheck' in response.url:  # TODO: test/fix
             code, remember_device = self.error_handlers[TWOFACTOR_CODE]()
             response = self.twofactor(response, code, remember_device)
 
@@ -174,8 +174,8 @@ class VkApi(object):
 
             self.sid = remixsid
 
-        elif 'sid=' in response.url:
-            captcha_sid = search_re(RE_CAPTCHAID, response.url)
+        elif 'onLoginCaptcha(' in response.text:
+            captcha_sid = search_re(RE_CAPTCHAID, response.text)
             captcha = Captcha(self, captcha_sid, self.vk_login)
 
             if self.error_handlers[CAPTCHA_ERROR_CODE]:
@@ -185,12 +185,13 @@ class VkApi(object):
         elif 'onLoginFailed(4' in response.text:
             raise BadPassword('Bad password')
         else:
-            raise AuthorizationError('Unknown error. Please send bugreport.')
+            raise AuthorizationError(
+                'Unknown error. Please send bugreport: https://vk.com/python273'
+            )
 
-        if 'security_check' in response.url:
-            self.security_check(response=response)
+        self.security_check()
 
-        if 'act=blocked' in response.url:
+        if 'act=blocked' in response.url:  # TODO: text/fix
             raise AccountBlocked('Account is blocked')
 
     def twofactor(self, response, code, remember_device=False):
@@ -221,9 +222,9 @@ class VkApi(object):
                 return response
         raise TwoFactorError('Incorrect code: %s' % code)
 
-    def security_check(self, url=None, response=None):
-        if url:
-            response = self.http.get(url)
+    def security_check(self, response=None):
+        if response is None:
+            response = self.http.get('https://vk.com/settings')
             if 'security_check' not in response.url:
                 return
 
