@@ -9,12 +9,13 @@ Copyright (C) 2016
 """
 
 import re
-import time
 import threading
+import time
 
 import requests
 
 import jconfig
+from .utils import doc, code_from_number, search_re, clean_string
 
 DELAY = 0.34  # ~3 requests per second
 TOO_MANY_RPS_CODE = 6
@@ -29,8 +30,7 @@ RE_NUMBER_HASH = re.compile(r"al_page: '3', hash: '([a-z0-9]+)'")
 RE_AUTH_HASH = re.compile(r"hash: '([a-z_0-9]+)'")
 RE_TOKEN_URL = re.compile(r'location\.href = "(.*?)"\+addr;')
 
-RE_PHONE_PREFIX = re.compile(r'phone_number">(.*?)<')
-RE_PHONE_PREFIX_2 = re.compile(r'label ta_r">\+(\d+)')
+RE_PHONE_PREFIX = re.compile(r'label ta_r">\+(.*?)<')
 RE_PHONE_POSTFIX = re.compile(r'phone_postfix">.*?(\d+).*?<')
 
 
@@ -134,6 +134,7 @@ class VkApi(object):
         response = self.http.get('https://vk.com/')
 
         values = {
+            'act': 'login',
             'role': 'al_frame',
             '_origin': 'https://vk.com',
             'utf8': '1',
@@ -148,18 +149,16 @@ class VkApi(object):
                 'captcha_key': captcha_key
             })
 
-        response = self.http.post('https://login.vk.com/?act=login', values)
-
-        remixsid = None
+        response = self.http.post('https://login.vk.com/', values)
 
         if 'act=authcheck' in response.url:  # TODO: test/fix
             code, remember_device = self.error_handlers[TWOFACTOR_CODE]()
             response = self.twofactor(response, code, remember_device)
 
-        if 'remixsid' in self.http.cookies:
-            remixsid = self.http.cookies['remixsid']
-        elif 'remixsid6' in self.http.cookies:  # ipv6?
-            remixsid = self.http.cookies['remixsid6']
+        remixsid = (
+            self.http.cookies.get('remixsid') or
+            self.http.cookies.get('remixsid6')
+        )
 
         if remixsid:
             self.settings.remixsid = remixsid
@@ -228,11 +227,8 @@ class VkApi(object):
             if 'security_check' not in response.url:
                 return
 
-        phone_prefix = search_re(RE_PHONE_PREFIX, response.text)
-        if not phone_prefix:
-            phone_prefix = search_re(RE_PHONE_PREFIX_2, response.text)
-
-        phone_postfix = search_re(RE_PHONE_POSTFIX, response.text)
+        phone_prefix = clean_string(search_re(RE_PHONE_PREFIX, response.text))
+        phone_postfix = clean_string(search_re(RE_PHONE_POSTFIX, response.text))
 
         code = None
         if self.sec_number:
@@ -459,51 +455,6 @@ class VkApiMethod:
 
     def get_doc(self):
         doc(self._method)
-
-
-def doc(method=None):
-    """ Открывает документацию на метод или список всех методов
-
-    :param method: метод
-    """
-
-    if not method:
-        method = 'methods'
-
-    url = 'https://vk.com/dev/{}'.format(method)
-
-    import webbrowser
-    webbrowser.open(url)
-
-
-def search_re(reg, string):
-    """ Поиск по регулярке """
-    s = reg.search(string)
-
-    if s:
-        groups = s.groups()
-        return groups[0]
-
-
-def code_from_number(phone_prefix, phone_postfix, number):
-    prefix_len = len(phone_prefix)
-    postfix_len = len(phone_postfix)
-
-    if number[0] == '+':
-        number = number[1:]
-
-    if (prefix_len + postfix_len) >= len(number):
-        return
-
-    # Сравниваем начало номера
-    if not number[:prefix_len] == phone_prefix:
-        return
-
-    # Сравниваем конец номера
-    if not number[-postfix_len:] == phone_postfix:
-        return
-
-    return number[prefix_len:-postfix_len]
 
 
 class AuthorizationError(Exception):

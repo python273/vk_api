@@ -12,7 +12,7 @@ import json
 import sys
 
 if sys.version_info[0] != 3:
-    range = xrange  # @ReservedAssignment @UndefinedVariable
+    range = xrange
 
 
 class VkTools(object):
