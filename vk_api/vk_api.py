@@ -152,9 +152,19 @@ class VkApi(object):
 
         response = self.http.post('https://login.vk.com/', values)
 
-        if 'act=authcheck' in response.url:  # TODO: test/fix
-            code, remember_device = self.error_handlers[TWOFACTOR_CODE]()
-            response = self.twofactor(response, code, remember_device)
+        if 'onLoginCaptcha(' in response.text:
+            captcha_sid = search_re(RE_CAPTCHAID, response.text)
+            captcha = Captcha(self, captcha_sid, self.vk_login)
+
+            return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
+
+        if 'onLoginFailed(4' in response.text:
+            raise BadPassword('Bad password')
+
+        if 'act=authcheck' in response.text:
+            response = self.http.get('https://vk.com/login?act=authcheck')
+
+            self.twofactor(response)
 
         remixsid = (
             self.http.cookies.get('remixsid') or
@@ -173,60 +183,48 @@ class VkApi(object):
             self.settings.save()
 
             self.sid = remixsid
-
-        elif 'onLoginCaptcha(' in response.text:
-            captcha_sid = search_re(RE_CAPTCHAID, response.text)
-            captcha = Captcha(self, captcha_sid, self.vk_login)
-
-            if self.error_handlers[CAPTCHA_ERROR_CODE]:
-                return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
-            else:
-                raise AuthorizationError('Authorization error (capcha)')
-        elif 'onLoginFailed(4' in response.text:
-            raise BadPassword('Bad password')
         else:
             raise AuthorizationError(
                 'Unknown error. Please send bugreport: https://vk.com/python273'
             )
 
-        self.security_check()
+        response = self.security_check()
 
-        if 'act=blocked' in response.url:  # TODO: text/fix
+        if 'act=blocked' in response.url:
             raise AccountBlocked('Account is blocked')
 
-    def twofactor(self, response, code, remember_device=False):
+    def twofactor(self, auth_response):
         """ Двухфакторная аутентификация
-        :param response: запрос, содержащий страницу с приглашением к аутентификации
-        :param code: код, который необходимо ввести для успешной аутентификации
-        :param remember_device: параметр, означающий,
-               стоит ли запоминать это устройство в целях
-               избежания повторного ввода кода(default: False)
+            :param auth_response: страница с приглашением к аутентификации
         """
+        code, remember_device = self.error_handlers[TWOFACTOR_CODE]()
 
-        if code is None:
-            raise TwoFactorError("Empty code doesn't acceptable")
-        if len(code) != 6:
-            raise TwoFactorError("Length of code cannot be other than 6.")
+        auth_hash = search_re(RE_AUTH_HASH, auth_response.text)
 
-        auth_hash = search_re(RE_AUTH_HASH, response.text)
-        url = 'https://vk.com/al_login.php'
-        if auth_hash:
-            values = {
-                    'act': 'a_authcheck_code',
-                    'code': code,
-                    'remember': int(remember_device),
-                    'hash': auth_hash,
-                    }
-            response = self.http.post(url, values, cookies=response.cookies)
-            if url not in response.url:
-                return response
-        raise TwoFactorError('Incorrect code: %s' % code)
+        values = {
+            'act': 'a_authcheck_code',
+            'al': '1',
+            'code': code,
+            'remember': int(remember_device),
+            'hash': auth_hash,
+        }
+
+        response = self.http.post('https://vk.com/al_login.php', values)
+        response_parsed = response.text.split('<!>')
+
+        if response_parsed[4] == '4':  # OK
+            return self.http.get('https://vk.com/' + response_parsed[5])
+
+        elif response_parsed[4] == '8':  # Incorrect code
+            return self.twofactor(auth_response)
+
+        raise TwoFactorError('Two factor authentication failed')
 
     def security_check(self, response=None):
         if response is None:
             response = self.http.get('https://vk.com/settings')
             if 'security_check' not in response.url:
-                return
+                return response
 
         phone_prefix = clean_string(search_re(RE_PHONE_PREFIX, response.text))
         phone_postfix = clean_string(search_re(RE_PHONE_POSTFIX, response.text))
@@ -254,12 +252,12 @@ class VkApi(object):
             response = self.http.post('https://vk.com/login.php', values)
 
             if response.text.split('<!>')[4] == '4':
-                return True
+                return response
 
         if phone_prefix and phone_postfix:
             raise SecurityCheck(phone_prefix, phone_postfix)
-        else:
-            raise SecurityCheck(response=response)
+
+        raise SecurityCheck(response=response)
 
     def check_sid(self):
         """ Проверка Cookies remixsid на валидность """
