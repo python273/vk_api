@@ -12,7 +12,7 @@ import json
 import sys
 
 if sys.version_info[0] != 3:
-    range = xrange  # @ReservedAssignment @UndefinedVariable
+    range = xrange
 
 
 class VkTools(object):
@@ -28,7 +28,8 @@ class VkTools(object):
         """
         self.vk = vk
 
-    def get_all(self, method, max_count, values=None, key='items', limit=None):
+    def get_all_iter(self, method, max_count, values=None, key='items',
+                     limit=None):
         """ Получить все элементы
         Работает в методах, где в ответе есть count и items или users
         За один запрос получает max_count * 25 элементов
@@ -47,7 +48,7 @@ class VkTools(object):
         else:
             values = {}
 
-        items = []
+        items_count = 0
         offset = 0
 
         while True:
@@ -58,8 +59,12 @@ class VkTools(object):
 
             response = self.vk.method('execute', {'code': run_code})
 
-            items += response['items']
+            items = response['items']
             offset = response['offset']
+            items_count += len(items)
+
+            for item in items:
+                yield item
 
             if offset >= response['count']:
                 break
@@ -67,10 +72,16 @@ class VkTools(object):
             if limit and len(items) >= limit:
                 break
 
+    def get_all(self, method, max_count, values=None, key='items', limit=None):
+        """ Для обратной совместимости, используйте get_all
+
+        """
+
+        items = list(self.get_all_iter(method, max_count, values, key, limit))
         return {'count': len(items), key: items}
 
-    def get_all_slow(self, method, max_count, values=None, key='items',
-                     limit=None):
+    def get_all_slow_iter(self, method, max_count, values=None, key='items',
+                          limit=None):
         """ Получить все элементы
         Работает в методах, где в ответе есть count и items или users
 
@@ -92,7 +103,7 @@ class VkTools(object):
 
         response = self.vk.method(method, values)
         count = response['count']
-        items = response[key]
+        items_count = 0
 
         for i in range(max_count, count + 1, max_count):
             values.update({
@@ -100,11 +111,19 @@ class VkTools(object):
             })
 
             response = self.vk.method(method, values)
-            items += response[key]
+            items = response[key]
+            items_count += len(items)
 
-            if limit and len(items) >= limit:
+            for item in items:
+                yield item
+
+            if limit and len(items_count) >= limit:
                 break
 
+    def get_all_slow(self, method, max_count, values=None, key='items',
+                     limit=None):
+
+        items = list(self.get_all_slow(method, max_count, values, key, limit))
         return {'count': len(items), key: items}
 
 
@@ -112,7 +131,7 @@ class VkRequestsPool(object):
     """ Позволяет сделать несколько обращений к API за один запрос
         за счет метода execute
 
-        Если ответ от API приходит в виде list'а (например при вызове users.get),
+        Если ответ от API приходит в виде list (например при вызове users.get),
         то значение записывается с ключем list {'list': [...]}
     """
 
@@ -237,7 +256,8 @@ class VkRequestsPool(object):
             else:
                 run_code = self.gen_code_many_methods(cur_pool)
 
-            response_raw = self.vk.method('execute', {'code': run_code}, raw=True)
+            response_raw = self.vk.method('execute', {'code': run_code},
+                                          raw=True)
 
             response = response_raw['response']
             response_errors = response_raw.get('execute_errors')
