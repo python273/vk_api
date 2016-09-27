@@ -15,7 +15,8 @@ import time
 import requests
 
 import jconfig
-from .utils import doc, code_from_number, search_re, clean_string
+from .utils import code_from_number, search_re, clean_string
+
 
 DELAY = 0.34  # ~3 requests per second
 TOO_MANY_RPS_CODE = 6
@@ -195,14 +196,14 @@ class VkApi(object):
 
     def twofactor(self, response, code, remember_device=False):
         """ Двухфакторная аутентификация
-        :param reponse: запрос, содержащий страницу с приглашением к аутентификации
+        :param response: запрос, содержащий страницу с приглашением к аутентификации
         :param code: код, который необходимо ввести для успешной аутентификации
         :param remember_device: параметр, означающий,
                стоит ли запоминать это устройство в целях
                избежания повторного ввода кода(default: False)
         """
 
-        if code == None:
+        if code is None:
             raise TwoFactorError("Empty code doesn't acceptable")
         if len(code) != 6:
             raise TwoFactorError("Length of code cannot be other than 6.")
@@ -452,9 +453,6 @@ class VkApiMethod:
 
     def __call__(self, *args, **kwargs):
         return self._vk.method(self._method, kwargs)
-
-    def get_doc(self):
-        doc(self._method)
 
 
 class AuthorizationError(Exception):
