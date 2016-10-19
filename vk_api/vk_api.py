@@ -449,7 +449,7 @@ class VkApiMethod:
 
         return VkApiMethod(self._vk, method)
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, **kwargs):
         return self._vk.method(self._method, kwargs)
 
 
