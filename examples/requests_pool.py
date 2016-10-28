@@ -29,14 +29,21 @@ def main():
 
     with vk_api.VkRequestsPool(vk_session) as pool:
         for user_id in [1, 183433824]:
-            friends[user_id] = pool.method('friends.get', {'user_id': user_id})
+            friends[user_id] = pool.method('friends.get', {
+                'user_id': user_id,
+                'fields': 'photo'
+            })
 
     print(friends)
 
     # Same result
     with vk_api.VkRequestsPool(vk_session) as pool:
         friends = pool.method_one_param(
-            'friends.get', key='user_id', values=[1, 183433824])
+            'friends.get',
+            key='user_id',
+            default_values={'fields': 'photo'},
+            values=[1, 183433824]
+        )
 
     print(friends)
 
