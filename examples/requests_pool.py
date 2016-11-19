@@ -9,7 +9,11 @@ import vk_api
 
 
 def main():
-    """ Пример работы с VkRequestsPool """
+    """ Пример работы с VkRequestsPool
+
+        VkRequestsPool позволяет выполнять до 25 запросов к API за один запрос
+        к серверу с помощю метода execute.
+    """
 
     login, password = 'python@vk.com', 'mypassword'
     vk_session = vk_api.VkApi(login, password)
@@ -20,9 +24,24 @@ def main():
         print(error_msg)
         return
 
+    with vk_api.VkRequestsPool(vk_session) as pool:
+        friends = pool.method('friends.get')
+        status = pool.method('status.get')
+
+        # Пример запроса с ошибкой
+        request_with_error = pool.method('wall.getById')
+
+    """ Обратите внимание, что запрос выполняется после выхода из with
+        и к результатам обратиться можно только после выхода из него
     """
-        Позволяет выполнять до 25 запросов к API за один запрос.
-        Работает через метод execute.
+
+    print(friends.result)
+    print(status.result)
+
+    # False - поэтому нельзя обратиться к результату
+    print(request_with_error.ok)
+
+    """ Пример получения друзей у нескольких пользователей за один запрос
     """
 
     friends = {}
@@ -34,28 +53,30 @@ def main():
                 'fields': 'photo'
             })
 
+    for key, value in friends.items():
+        friends[key] = value.result
+
     print(friends)
 
-    # Same result
+    """ Следующий пример оптимизированная версия предыдущего
+
+        В friends будет записан тот же самый результат, что и в прошлом примере.
+        method_one_param можно использовать, когда запрос идет к одному методу,
+        и когда изменяется только один параметр. В данном случае это 'user_id'
+
+        Плюс не нужно вызывать .result для каждого ключа
+    """
     with vk_api.VkRequestsPool(vk_session) as pool:
         friends = pool.method_one_param(
-            'friends.get',
-            key='user_id',
-            default_values={'fields': 'photo'},
-            values=[1, 183433824]
+            'friends.get',  # Метод
+            key='user_id',  # Изменяющийся параметр
+            values=[1, 183433824],
+
+            # Параметры, которые будут в каждом запросе
+            default_values={'fields': 'photo'}
         )
 
-    print(friends)
-
-    with vk_api.VkRequestsPool(vk_session) as pool:
-        friends = pool.method('friends.get')
-        status = pool.method('status.get')
-
-    # Обратите внимание, что запрос выполняется после выхода из with
-    # и к результатам обратиться можно только после выхода из него
-
-    print(friends)
-    print(status)
+    print(friends.result)
 
 if __name__ == '__main__':
     main()
