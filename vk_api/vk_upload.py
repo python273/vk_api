@@ -102,7 +102,7 @@ class VkUpload(object):
 
         crop_params = {}
 
-        if crop_x!=None and crop_y!=None and crop_width!=None:
+        if crop_x is not None and crop_y is not None and crop_width is not None:
             crop_params['_square_crop'] = '{0},{1},{2}'.format(crop_x, crop_y, crop_width)
 
         url = self.vk.method('photos.getOwnerPhotoUploadServer', values)
