@@ -84,6 +84,34 @@ class VkUpload(object):
 
         return response
 
+
+    def photo_owner(self, photo_to_send, owner_id=None):
+        """ Загрузка изображения профиля
+
+        :param photo_to_send: путь к изображению
+        :param owner_id: идентификатор сообщества или текущего пользователя.
+                По умолчанию загрузка идет в профиль текущего пользователя.
+                См. https://vk.com/dev/photos.getOwnerPhotoUploadServer для деталей.
+        """
+
+        values = {}
+
+        if user_id:
+            values['owner_id'] = owner_id
+
+        url = self.vk.method('photos.getOwnerPhotoUploadServer', values)
+        url = url['upload_url']
+
+        photos_files = open_owner_photo(photo_to_send)
+        response = self.vk.http.post(url, files=photos_files)
+        close_photos(photos_files)
+
+        response = self.vk.method('photos.saveOwnerPhoto', response.json())
+
+        return response
+
+
+
     def photo_wall(self, photos, user_id=None, group_id=None):
         """ Загрузка изображений на стену пользователя или в группу
 
@@ -169,6 +197,18 @@ def open_photos(photos_paths):
         photos.append(
             ('file%s' % x, ('pic.' + filetype, open(filename, 'rb')))
         )
+
+    return photos
+
+
+# Эта функция используется в VkUpload.photo_owner(). Интересно заметить,
+# что если возвращать только кортеж (без списка), то при отправке http.post начнутся проблемы.
+def open_owner_photo(photo_path):
+    photos = []
+    filetype = photo_path.split('.')[-1]
+    photos.append(
+        ('file', ('pic.' + filetype, open(photo_path, 'rb')))
+    )
 
     return photos
 
