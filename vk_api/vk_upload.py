@@ -96,7 +96,7 @@ class VkUpload(object):
 
         values = {}
 
-        if user_id:
+        if owner_id:
             values['owner_id'] = owner_id
 
         url = self.vk.method('photos.getOwnerPhotoUploadServer', values)
