@@ -1,7 +1,10 @@
 build/
 dist/
 *.pyc
+MANIFEST
 .project
 .pydevproject
 .settings/
-/testing
+testing/
+tests/config.py
+tests/vk_config.json
