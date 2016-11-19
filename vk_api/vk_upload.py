@@ -73,8 +73,7 @@ class VkUpload(object):
         :param photos: список путей к изображениям, либо путь к изображению
         """
 
-        url = self.vk.method('photos.getMessagesUploadServer')
-        url = url['upload_url']
+        url = self.vk.method('photos.getMessagesUploadServer')['upload_url']
 
         photos_files = open_photos(photos)
         response = self.vk.http.post(url, files=photos_files)
@@ -87,12 +86,14 @@ class VkUpload(object):
     def photo_profile(self, photo, owner_id=None, crop_x=None, crop_y=None, crop_width=None):
         """ Загрузка изображения профиля
 
-        :param photo_to_send: путь к изображению
+        :param photo: путь к изображению
         :param owner_id: идентификатор сообщества или текущего пользователя.
                 По умолчанию загрузка идет в профиль текущего пользователя.
                 При отрицательном значении загрузка идет в группу.
-        :params crop_x, crop_y, crop_width: координаты верхнего правого угла миниатюры и сторона квадрата.
-                При передаче всех этих параметров для фотографии также будет подготовлена квадратная миниатюра
+        :param crop_x: координата X верхнего правого угла миниатюры.
+        :param crop_y: координата Y верхнего правого угла миниатюры.
+        :param crop_width: сторона квадрата миниатюры.
+                При передаче всех crop_* для фотографии также будет подготовлена квадратная миниатюра.
         """
 
         values = {}
@@ -105,8 +106,7 @@ class VkUpload(object):
         if crop_x is not None and crop_y is not None and crop_width is not None:
             crop_params['_square_crop'] = '{0},{1},{2}'.format(crop_x, crop_y, crop_width)
 
-        url = self.vk.method('photos.getOwnerPhotoUploadServer', values)
-        url = url['upload_url']
+        url = self.vk.method('photos.getOwnerPhotoUploadServer', values)['upload_url']
 
         photos_files = open_photos(photo, key_format='file')
         response = self.vk.http.post(url, data=crop_params, files=photos_files)
