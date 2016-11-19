@@ -14,5 +14,6 @@ __email__ = 'python273@ya.ru'
 __contact__ = 'https://vk.com/python273'
 
 from .vk_api import *
-from .vk_upload import *
-from .vk_tools import *
+from .vk_upload import VkUpload
+from .vk_tools import VkTools
+from .vk_requestspool import VkRequestsPool
