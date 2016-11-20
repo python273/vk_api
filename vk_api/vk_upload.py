@@ -84,18 +84,18 @@ class VkUpload(object):
 
         return response
 
-    def photo_chat_change(self, photos, chat_id):
+    def photo_chat(self, photo, chat_id):
         """ Загрузка и смена обложки в беседе
 
-        :param photos: список путей к изображениям, либо путь к изображению
+        :param photos: путь к изображению
         :param chat_id: ID беседы
         """
         values = {'chat_id': chat_id}
-        url = self.vk.method('photos.getChatUploadServer',values)['upload_url']
+        url = self.vk.method('photos.getChatUploadServer', values)['upload_url']
 
-        photos_files = open_photos(photos)
-        response = self.vk.http.post(url, files=photos_files)
-        close_photos(photos_files)
+        photo_file = open_photos(photo)
+        response = self.vk.http.post(url, files=photo_file)
+        close_photos(photo_file)
 
         response = self.vk.method('messages.setChatPhoto', response.json())
 
