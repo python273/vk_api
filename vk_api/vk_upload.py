@@ -84,6 +84,23 @@ class VkUpload(object):
 
         return response
 
+    def photo_chat_change(self, photos, chat_id):
+        """ Загрузка и смена обложки в беседе
+
+        :param photos: список путей к изображениям, либо путь к изображению
+        :param chat_id: ID беседы
+        """
+        values = {'chat_id': chat_id}
+        url = self.vk.method('photos.getChatUploadServer',values)['upload_url']
+
+        photos_files = open_photos(photos)
+        response = self.vk.http.post(url, files=photos_files)
+        close_photos(photos_files)
+
+        response = self.vk.method('messages.setChatPhoto', response.json())
+
+        return response
+
     def photo_wall(self, photos, user_id=None, group_id=None):
         """ Загрузка изображений на стену пользователя или в группу
 
@@ -123,7 +140,7 @@ class VkUpload(object):
         url = self.vk.method('audio.getUploadServer')['upload_url']
 
         filetype = file_path.split('.')[-1]
-        audio_file = [(('file', ( 'file.' + filetype, open(file_path, 'rb'))))]
+        audio_file = [(('file', ('file.' + filetype, open(file_path, 'rb'))))]
 
         response = self.vk.http.post(url, files=audio_file).json()
 
