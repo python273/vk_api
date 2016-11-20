@@ -115,6 +115,23 @@ class VkUpload(object):
         response = self.vk.method('photos.saveOwnerPhoto', response.json())
 
         return response
+    
+    def photo_chat(self, photo, chat_id):
+        """ Загрузка и смена обложки в беседе
+        :param photo: путь к изображению
+        :param chat_id: ID беседы
+        """
+
+        values = {'chat_id': chat_id}
+        url = self.vk.method('photos.getChatUploadServer', values)['upload_url']
+
+        photo_file = open_photos(photo)
+        response = self.vk.http.post(url, files=photo_file)
+        close_photos(photo_file)
+
+        response = self.vk.method('messages.setChatPhoto', response.json())
+
+        return response
 
     def photo_wall(self, photos, user_id=None, group_id=None):
         """ Загрузка изображений на стену пользователя или в группу
