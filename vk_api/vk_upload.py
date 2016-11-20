@@ -90,6 +90,7 @@ class VkUpload(object):
         :param photos: путь к изображению
         :param chat_id: ID беседы
         """
+
         values = {'chat_id': chat_id}
         url = self.vk.method('photos.getChatUploadServer', values)['upload_url']
 
@@ -140,7 +141,7 @@ class VkUpload(object):
         url = self.vk.method('audio.getUploadServer')['upload_url']
 
         filetype = file_path.split('.')[-1]
-        audio_file = [(('file', ('file.' + filetype, open(file_path, 'rb'))))]
+        audio_file = [(('file', ( 'file.' + filetype, open(file_path, 'rb'))))]
 
         response = self.vk.http.post(url, files=audio_file).json()
 
