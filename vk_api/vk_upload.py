@@ -73,14 +73,46 @@ class VkUpload(object):
         :param photos: список путей к изображениям, либо путь к изображению
         """
 
-        url = self.vk.method('photos.getMessagesUploadServer')
-        url = url['upload_url']
+        url = self.vk.method('photos.getMessagesUploadServer')['upload_url']
 
         photos_files = open_photos(photos)
         response = self.vk.http.post(url, files=photos_files)
         close_photos(photos_files)
 
         response = self.vk.method('photos.saveMessagesPhoto', response.json())
+
+        return response
+
+    def photo_profile(self, photo, owner_id=None, crop_x=None, crop_y=None, crop_width=None):
+        """ Загрузка изображения профиля
+
+        :param photo: путь к изображению
+        :param owner_id: идентификатор сообщества или текущего пользователя.
+                По умолчанию загрузка идет в профиль текущего пользователя.
+                При отрицательном значении загрузка идет в группу.
+        :param crop_x: координата X верхнего правого угла миниатюры.
+        :param crop_y: координата Y верхнего правого угла миниатюры.
+        :param crop_width: сторона квадрата миниатюры.
+                При передаче всех crop_* для фотографии также будет подготовлена квадратная миниатюра.
+        """
+
+        values = {}
+
+        if owner_id:
+            values['owner_id'] = owner_id
+
+        crop_params = {}
+
+        if crop_x is not None and crop_y is not None and crop_width is not None:
+            crop_params['_square_crop'] = '{0},{1},{2}'.format(crop_x, crop_y, crop_width)
+
+        url = self.vk.method('photos.getOwnerPhotoUploadServer', values)['upload_url']
+
+        photos_files = open_photos(photo, key_format='file')
+        response = self.vk.http.post(url, data=crop_params, files=photos_files)
+        close_photos(photos_files)
+
+        response = self.vk.method('photos.saveOwnerPhoto', response.json())
 
         return response
 
@@ -158,7 +190,7 @@ class VkUpload(object):
         return response
 
 
-def open_photos(photos_paths):
+def open_photos(photos_paths, key_format='file{}'):
     if not isinstance(photos_paths, list):
         photos_paths = [photos_paths]
 
@@ -167,7 +199,7 @@ def open_photos(photos_paths):
     for x, filename in enumerate(photos_paths):
         filetype = filename.split('.')[-1]
         photos.append(
-            ('file%s' % x, ('pic.' + filetype, open(filename, 'rb')))
+            (key_format.format(x), ('pic.' + filetype, open(filename, 'rb')))
         )
 
     return photos
