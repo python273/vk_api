@@ -8,6 +8,11 @@
 Copyright (C) 2016
 """
 
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
 
 def search_re(reg, string):
     """ Поиск по регулярке """
@@ -42,3 +47,10 @@ def code_from_number(prefix, postfix, number):
         return
 
     return number[prefix_len:-postfix_len]
+
+
+def sjson_dumps(*args, **kwargs):
+    kwargs['ensure_ascii'] = False
+    kwargs['separators'] = (',', ':')
+
+    return json.dumps(*args, **kwargs)

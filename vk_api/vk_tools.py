@@ -10,6 +10,8 @@ Copyright (C) 2016
 
 import sys
 
+from .utils import sjson_dumps
+
 
 if sys.version_info.major == 2:
     range = xrange
@@ -35,12 +37,21 @@ class VkTools(object):
         За один запрос получает max_count * 25 элементов
 
         :param method: метод
+        :type method: str
+
         :param values: параметры
+        :type values: dict
+
         :param max_count: максимальное количество элементов,
                             которое можно получить за один раз
+        :type max_count: int
+
         :param key: ключ элементов, которые нужно получить
+        :type key: str
+
         :param limit: ограничение на кол-во получаемых элементов,
                             но может прийти больше
+        :type limit: int
         """
 
         if values:
@@ -125,3 +136,11 @@ class VkTools(object):
 
         items = list(self.get_all_slow(method, max_count, values, key, limit))
         return {'count': len(items), key: items}
+
+
+# Полный код в файле vk_procedures
+code_get_all_items = """
+var m=%s,n=%s,b="%s",v=n;var c={count:m,offset:v}+%s;var r=API.%s(c),k=r.count,
+j=r[b],i=1;while(i<25&&v+m<=k){v=i*m+n;c.offset=v;j=j+API.%s(c)[b];i=i+1;}
+return {count:k,items:j,offset:v+m};
+""".replace('\n', '')

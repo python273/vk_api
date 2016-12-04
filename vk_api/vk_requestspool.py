@@ -3,11 +3,7 @@
 import sys
 from collections import namedtuple
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
+from .utils import sjson_dumps
 
 if sys.version_info.major == 2:
     range = xrange
@@ -73,7 +69,7 @@ class VkRequestsPool(object):
         """ Добавляет запрос в пулл
 
         :param method: метод
-        :type method: basestring
+        :type method: str
 
         :param values: параметры
         :type values: dict
@@ -96,13 +92,13 @@ class VkRequestsPool(object):
         """ Использовать, если изменяется значение только одного параметра
 
         :param method: метод
-        :type method: basestring
+        :type method: str
 
         :param default_values: одинаковые значения для запросов
         :type default_values: dict
 
         :param key: ключ изменяющегося параметра
-        :type key: basestring
+        :type key: str
 
         :param values: список значений изменяющегося параметра (max: 25)
         :type values: list
@@ -178,13 +174,6 @@ class VkRequestsPool(object):
         self.one_param['return'].set_result(result)
 
 
-def sjson_dumps(*args, **kwargs):
-    kwargs['ensure_ascii'] = False
-    kwargs['separators'] = (',', ':')
-
-    return json.dumps(*args, **kwargs)
-
-
 def check_one_method(pool):
     """ Возвращает True, если все запросы в пулле к одному методу """
 
@@ -233,12 +222,6 @@ def gen_code_many_methods(pool):
 
 
 # Полный код в файле vk_procedures
-code_get_all_items = """
-var m=%s,n=%s,b="%s",v=n;var c={count:m,offset:v}+%s;var r=API.%s(c),k=r.count,
-j=r[b],i=1;while(i<25&&v+m<=k){v=i*m+n;c.offset=v;j=j+API.%s(c)[b];i=i+1;}
-return {count:k,items:j,offset:v+m};
-""".replace('\n', '')
-
 code_requestspoll_one_method = """
 var p=%s,i=0,r=[];while(i<p.length){r.push(API.%s(p[i]));i=i+1;}return r;
 """.replace('\n', '')
