@@ -44,9 +44,9 @@ class VkUpload(object):
         url = self.vk.method('photos.getUploadServer', values)['upload_url']
 
         # Загружаем
-        photos_files = open_photos(photos)
+        photos_files = open_files(photos)
         response = self.vk.http.post(url, files=photos_files).json()
-        close_photos(photos_files)
+        close_files(photos_files)
 
         # Олег Илларионов:
         # это не могу к сожалению просто пофиксить
@@ -75,9 +75,9 @@ class VkUpload(object):
 
         url = self.vk.method('photos.getMessagesUploadServer')['upload_url']
 
-        photos_files = open_photos(photos)
+        photos_files = open_files(photos)
         response = self.vk.http.post(url, files=photos_files)
-        close_photos(photos_files)
+        close_files(photos_files)
 
         response = self.vk.method('photos.saveMessagesPhoto', response.json())
 
@@ -108,9 +108,9 @@ class VkUpload(object):
 
         url = self.vk.method('photos.getOwnerPhotoUploadServer', values)['upload_url']
 
-        photos_files = open_photos(photo, key_format='file')
+        photos_files = open_files(photo, key_format='file')
         response = self.vk.http.post(url, data=crop_params, files=photos_files)
-        close_photos(photos_files)
+        close_files(photos_files)
 
         response = self.vk.method('photos.saveOwnerPhoto', response.json())
 
@@ -125,9 +125,9 @@ class VkUpload(object):
         values = {'chat_id': chat_id}
         url = self.vk.method('photos.getChatUploadServer', values)['upload_url']
 
-        photo_file = open_photos(photo)
+        photo_file = open_files(photo)
         response = self.vk.http.post(url, files=photo_file)
-        close_photos(photo_file)
+        close_files(photo_file)
 
         response = self.vk.method('messages.setChatPhoto', response.json())
 
@@ -151,9 +151,9 @@ class VkUpload(object):
         response = self.vk.method('photos.getWallUploadServer', values)
         url = response['upload_url']
 
-        photos_files = open_photos(photos)
+        photos_files = open_files(photos)
         response = self.vk.http.post(url, files=photos_files)
-        close_photos(photos_files)
+        close_files(photos_files)
 
         values.update(response.json())
 
@@ -171,10 +171,9 @@ class VkUpload(object):
 
         url = self.vk.method('audio.getUploadServer')['upload_url']
 
-        filetype = file_path.split('.')[-1]
-        audio_file = [(('file', ( 'file.' + filetype, open(file_path, 'rb'))))]
-
-        response = self.vk.http.post(url, files=audio_file).json()
+        file = open_files(file_path, key_format='file')
+        response = self.vk.http.post(url, files=file).json()
+        close_files(file)
 
         response.update(kwargs)
 
@@ -207,21 +206,23 @@ class VkUpload(object):
         return response
 
 
-def open_photos(photos_paths, key_format='file{}'):
-    if not isinstance(photos_paths, list):
-        photos_paths = [photos_paths]
+def open_files(paths, key_format='file{}'):
+    if not isinstance(paths, list):
+        paths = [paths]
 
-    photos = []
+    files = []
 
-    for x, filename in enumerate(photos_paths):
-        filetype = filename.split('.')[-1]
-        photos.append(
-            (key_format.format(x), ('pic.' + filetype, open(filename, 'rb')))
+    for x, filename in enumerate(paths):
+        file = open(filename, 'rb')
+
+        ext = filename.split('.')[-1]
+        files.append(
+            (key_format.format(x), ('file{}.{}'.format(x, ext), file))
         )
 
-    return photos
+    return files
 
 
-def close_photos(photos):
-    for photo in photos:
-        photo[1][1].close()
+def close_files(files):
+    for file in files:
+        file[1][1].close()
