@@ -1,3 +1,5 @@
+.idea/
+.vscode/
 build/
 dist/
 *.pyc
@@ -8,3 +10,4 @@ MANIFEST
 testing/
 tests/config.py
 tests/vk_config.json
+vk_config.json
