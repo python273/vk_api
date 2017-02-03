@@ -291,11 +291,13 @@ class VkApi(object):
         self.http.cookies.update(self.settings.forapilogin)
         self.http.cookies.update({'remixsid': self.sid})
 
-        response = self.http.post(url, values)
+        response = self.http.get(url, params=values)
 
         if 'access_token' not in response.url:
             url = search_re(RE_TOKEN_URL, response.text)
-            response = self.http.get(url)
+
+            if url:
+                response = self.http.get(url)
 
         if 'access_token' in response.url:
             params = response.url.split('#')[1].split('&')
