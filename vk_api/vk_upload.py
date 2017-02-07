@@ -5,7 +5,7 @@
 @contact: https://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2016
+Copyright (C) 2017
 """
 
 
@@ -44,9 +44,9 @@ class VkUpload(object):
         url = self.vk.method('photos.getUploadServer', values)['upload_url']
 
         # Загружаем
-        photos_files = open_files(photos)
-        response = self.vk.http.post(url, files=photos_files).json()
-        close_files(photos_files)
+        photo_files = open_files(photos)
+        response = self.vk.http.post(url, files=photo_files).json()
+        close_files(photo_files)
 
         # Олег Илларионов:
         # это не могу к сожалению просто пофиксить
@@ -75,15 +75,16 @@ class VkUpload(object):
 
         url = self.vk.method('photos.getMessagesUploadServer')['upload_url']
 
-        photos_files = open_files(photos)
-        response = self.vk.http.post(url, files=photos_files)
-        close_files(photos_files)
+        photo_files = open_files(photos)
+        response = self.vk.http.post(url, files=photo_files)
+        close_files(photo_files)
 
         response = self.vk.method('photos.saveMessagesPhoto', response.json())
 
         return response
 
-    def photo_profile(self, photo, owner_id=None, crop_x=None, crop_y=None, crop_width=None):
+    def photo_profile(self, photo, owner_id=None, crop_x=None, crop_y=None,
+                      crop_width=None):
         """ Загрузка изображения профиля
 
         :param photo: путь к изображению
@@ -93,7 +94,8 @@ class VkUpload(object):
         :param crop_x: координата X верхнего правого угла миниатюры.
         :param crop_y: координата Y верхнего правого угла миниатюры.
         :param crop_width: сторона квадрата миниатюры.
-                При передаче всех crop_* для фотографии также будет подготовлена квадратная миниатюра.
+                При передаче всех crop_* для фотографии также будет
+                подготовлена квадратная миниатюра.
         """
 
         values = {}
@@ -104,13 +106,16 @@ class VkUpload(object):
         crop_params = {}
 
         if crop_x is not None and crop_y is not None and crop_width is not None:
-            crop_params['_square_crop'] = '{0},{1},{2}'.format(crop_x, crop_y, crop_width)
+            crop_params['_square_crop'] = '{},{},{}'.format(
+                crop_x, crop_y, crop_width
+            )
 
-        url = self.vk.method('photos.getOwnerPhotoUploadServer', values)['upload_url']
+        response = self.vk.method('photos.getOwnerPhotoUploadServer', values)
+        url = response['upload_url']
 
-        photos_files = open_files(photo, key_format='file')
-        response = self.vk.http.post(url, data=crop_params, files=photos_files)
-        close_files(photos_files)
+        photo_files = open_files(photo, key_format='file')
+        response = self.vk.http.post(url, data=crop_params, files=photo_files)
+        close_files(photo_files)
 
         response = self.vk.method('photos.saveOwnerPhoto', response.json())
 
@@ -161,7 +166,7 @@ class VkUpload(object):
 
         return response
 
-    def audio(self, file_path, **kwargs):
+    def audio(self, file_path, artist, title):
         """ Загрузка аудио
 
         :param file_path: путь к аудиофайлу
@@ -171,11 +176,14 @@ class VkUpload(object):
 
         url = self.vk.method('audio.getUploadServer')['upload_url']
 
-        file = open_files(file_path, key_format='file')
-        response = self.vk.http.post(url, files=file).json()
-        close_files(file)
+        f = open_files(file_path, key_format='file')
+        response = self.vk.http.post(url, files=f).json()
+        close_files(f)
 
-        response.update(kwargs)
+        response.update({
+            'artist': artist,
+            'title': title
+        })
 
         response = self.vk.method('audio.save', response)
 
@@ -193,8 +201,8 @@ class VkUpload(object):
         values = {'group_id': group_id}
         url = self.vk.method('docs.getUploadServer', values)['upload_url']
 
-        with open(file_path, 'rb') as file:
-            response = self.vk.http.post(url, files={'file': file}).json()
+        with open(file_path, 'rb') as f:
+            response = self.vk.http.post(url, files={'file': f}).json()
 
         response.update({
             'title': title,
@@ -213,16 +221,16 @@ def open_files(paths, key_format='file{}'):
     files = []
 
     for x, filename in enumerate(paths):
-        file = open(filename, 'rb')
+        f = open(filename, 'rb')
 
         ext = filename.split('.')[-1]
         files.append(
-            (key_format.format(x), ('file{}.{}'.format(x, ext), file))
+            (key_format.format(x), ('file{}.{}'.format(x, ext), f))
         )
 
     return files
 
 
 def close_files(files):
-    for file in files:
-        file[1][1].close()
+    for f in files:
+        f[1][1].close()

@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-
-"""
-@author: Kirill Python
-@contact: https://vk.com/python273
-"""
-
 import vk_api
 
 
@@ -22,8 +16,7 @@ def main():
 
     vk = vk_session.get_api()
 
-    """
-        VkApi.method позволяет выполнять запросы к API. В этом примере
+    """ VkApi.method позволяет выполнять запросы к API. В этом примере
         используется метод wall.get (https://vk.com/dev/wall.get) с параметром
         count = 1, т.е. мы получаем один последний пост со стены текущего
         пользователя.

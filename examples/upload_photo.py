@@ -1,15 +1,9 @@
 # -*- coding: utf-8 -*-
-
-"""
-@author: Kirill Python
-@contact: https://vk.com/python273
-"""
-
 import vk_api
 
 
 def main():
-    """ Пример: загрузка фото """
+    """ Пример загрузки фото """
 
     login, password = 'python@vk.com', 'mypassword'
     vk_session = vk_api.VkApi(login, password)
@@ -20,14 +14,13 @@ def main():
         print(error_msg)
         return
 
+    """ В VkUpload реализованы методы загрузки файлов в ВК
     """
-        В VkUpload реализованы методы загрузки файлов в ВК.
-        (Не все, если что-то понадобится - могу дописать)
-    """
+
     upload = vk_api.VkUpload(vk_session)
 
     photo = upload.photo(  # Подставьте свои данные
-        'D:/downloads/tube.jpg',
+        '/root/3301.jpg',
         album_id=200851098,
         group_id=74030368
     )

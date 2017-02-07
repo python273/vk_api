@@ -199,7 +199,7 @@ def gen_code_one_method(pool):
 
 def gen_code_one_param(pool, default_values, key, method):
     """ Генерирует код для одного метода и одного меняющегося параметра
-       (если в пулле запросы к одному методу, с одним меняющимся параметром)
+        (если в пулле запросы к одному методу, с одним меняющимся параметром)
     """
 
     return code_requestspoll_one_param % (

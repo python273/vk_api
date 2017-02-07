@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-
-"""
-@author: Kirill Python
-@contact: https://vk.com/python273
-"""
-
 import vk_api
 
 
@@ -12,7 +6,7 @@ def main():
     """ Пример работы с VkRequestsPool
 
         VkRequestsPool позволяет выполнять до 25 запросов к API за один запрос
-        к серверу с помощю метода execute.
+        к серверу с помощью метода execute.
     """
 
     login, password = 'python@vk.com', 'mypassword'
@@ -58,7 +52,7 @@ def main():
 
     print(friends)
 
-    """ Следующий пример оптимизированная версия предыдущего
+    """ Следующий пример - оптимизированная версия предыдущего
 
         В friends будет записан тот же самый результат, что и в прошлом примере.
         method_one_param можно использовать, когда запрос идет к одному методу,

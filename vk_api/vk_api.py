@@ -5,7 +5,7 @@
 @contact: https://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2016
+Copyright (C) 2017
 """
 
 import re
@@ -41,7 +41,7 @@ class VkApi(object):
                  proxies=None,
                  auth_handler=None, captcha_handler=None,
                  config_filename='vk_config.json',
-                 api_version='5.52', app_id=2895443, scope=33554431,
+                 api_version='5.62', app_id=2895443, scope=33554431,
                  client_secret=None):
         """
         :param login: Логин ВКонтакте
@@ -55,20 +55,20 @@ class VkApi(object):
 
         :param token: access_token
         :param proxies: proxy server
-                        {'http': 'http://127.0.0.1:8888/',
-                        'https': 'https://127.0.0.1:8888/'}
+                         {'http': 'http://127.0.0.1:8888/',
+                         'https': 'https://127.0.0.1:8888/'}
         :param auth_handler: Функция для обработки двухфакторной аутентификации,
-                              обязана возвращать строку с кодом и булевое значение,
-                              означающее, стоит ли вк запомнить это устройство, для
-                              прохождения аутентификации.
+                              должна возвращать строку с кодом и
+                              булевое значение, означающее, стоит ли запомнить
+                              это устройство, для прохождения аутентификации.
         :param captcha_handler: Функция для обработки капчи
         :param config_filename: Расположение config файла
 
-        :param api_version: Версия API (default: '5.35')
-        :param app_id: Standalone-приложение (default: 2895443)
-        :param scope: Запрашиваемые права (default: 33554431)
+        :param api_version: Версия API
+        :param app_id: Standalone-приложение
+        :param scope: Запрашиваемые права. Можно передать строкой
         :param client_secret: Защищенный ключ приложения для серверной
-                                авторизации (https://vk.com/dev/auth_server)
+                               авторизации (https://vk.com/dev/auth_server)
         """
 
         self.login = login
@@ -87,8 +87,8 @@ class VkApi(object):
         self.settings = jconfig.Config(login, filename=config_filename)
 
         self.http = requests.Session()
-        self.http.proxies = proxies  # Ставим прокси
-        self.http.headers.update({  # Притворимся браузером
+        self.http.proxies = proxies
+        self.http.headers.update({
             'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:40.0) '
             'Gecko/20100101 Firefox/40.0'
         })
