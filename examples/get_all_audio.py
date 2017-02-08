@@ -1,21 +1,12 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import json
-
 import vk_api
 
-
-def getJson(file_name):
-    with open(file_name) as file:
-        json_text = json.loads(file.read())
-    return json_text
-
-
 def main():
-    """ Пример получения последнего сообщения со стены """
+    """ Пример получения списка всех песен по id """
 
-    login, password = settings['vk']['login'], settings['vk']['pass']
+    login, password = 'python@vk.com', 'mypassword'
     vk_session = vk_api.VkApi(login, password)
 
     try:
@@ -26,7 +17,7 @@ def main():
 
     vk_audio = vk_api.VkAudio(vk_session)
 
-    audio_list = vk_audio.get_all_audio_list('58895108')
+    audio_list = vk_audio.get_all_audio_list('12345678')
 
     print("len: {}".format(len(audio_list)))
     for audio in audio_list:
@@ -35,5 +26,4 @@ def main():
 
 if __name__ == '__main__':
     global settings
-    settings = getJson('settings.json')
     main()
