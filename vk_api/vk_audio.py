@@ -20,8 +20,7 @@ if sys.version_info.major == 2:
 
 
 class VkAudio(object):
-    """ Содержит некоторые воспомогательные функции, которые могут понадобиться
-        при использовании API
+    """ Содержит функции для работы с VK Audio
     """
 
     __slots__ = ('vk',)
@@ -33,6 +32,9 @@ class VkAudio(object):
         self.vk = vk
 
     def get_all_audio_list(self, user_id):
+        """ Загрузка и смена обложки в беседе
+        :param user_id: id пользователя
+        """
         audio_list = []
         audio_pages_url = self.get_audio_pages(user_id)
         [audio_list.append(j) for i in list(map(self.get_audio_url, audio_pages_url))
@@ -40,6 +42,9 @@ class VkAudio(object):
         return audio_list
 
     def get_audio_pages(self, user_id):
+        """ Загрузка и смена обложки в беседе
+        :param user_id: id пользователя
+        """
         pageuser = 'https://m.vk.com/id' + user_id
         get_user_page = requests.post(pageuser, cookies={'remixsid': self.vk.sid })
         html_user_page = get_user_page.content
@@ -52,6 +57,9 @@ class VkAudio(object):
         return pages
 
     def get_audio_url(self, page):
+        """ Загрузка и смена обложки в беседе
+        :param page: url страницы с музыкой
+        """
         audio_page = requests.post(page, cookies={'remixsid': self.vk.sid})
         audio_html = audio_page.content
         soup = BeautifulSoup(audio_html, 'lxml')
