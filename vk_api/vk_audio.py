@@ -32,7 +32,7 @@ class VkAudio(object):
         self.vk = vk
 
     def get_all_audio_list(self, user_id):
-        """ Загрузка и смена обложки в беседе
+        """ Отправляет id пользователя и получаем список его песен
         :param user_id: id пользователя
         """
         audio_list = []
@@ -42,7 +42,7 @@ class VkAudio(object):
         return audio_list
 
     def get_audio_pages(self, user_id):
-        """ Загрузка и смена обложки в беседе
+        """ Получаем список страниц
         :param user_id: id пользователя
         """
         pageuser = 'https://m.vk.com/id' + user_id
@@ -57,7 +57,7 @@ class VkAudio(object):
         return pages
 
     def get_audio_url(self, page):
-        """ Загрузка и смена обложки в беседе
+        """ Отправляем страницу и получаем список всех песен на ней
         :param page: url страницы с музыкой
         """
         audio_page = requests.post(page, cookies={'remixsid': self.vk.sid})
