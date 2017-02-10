@@ -9,8 +9,6 @@ Copyright (C) 2017
 
 import re
 import sys
-import time
-import datetime
 
 from bs4 import BeautifulSoup
 
