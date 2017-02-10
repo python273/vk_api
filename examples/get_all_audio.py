@@ -17,7 +17,7 @@ def main():
 
     vk_audio = vk_api.VkAudio(vk_session)
 
-    audio_list = vk_audio.get_all_audio_list('12345678')
+    audio_list = vk_audio.audio_get('12345678')
 
     print("len: {}".format(len(audio_list)))
     for audio in audio_list:
