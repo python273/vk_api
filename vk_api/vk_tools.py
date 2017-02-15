@@ -138,7 +138,7 @@ class VkTools(object):
     def get_all_slow(self, method, max_count, values=None, key='items',
                      limit=None):
 
-        items = list(self.get_all_slow(method, max_count, values, key, limit))
+        items = list(self.get_all_slow_iter(method, max_count, values, key, limit))
         return {'count': len(items), key: items}
 
 
