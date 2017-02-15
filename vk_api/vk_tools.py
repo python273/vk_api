@@ -88,11 +88,17 @@ class VkTools(object):
                 break
 
     def get_all(self, method, max_count, values=None, key='items', limit=None):
-        """ Для обратной совместимости, используйте get_all
+        """ Использовать только если нужно загрузить все объекты в память.
 
+            Eсли вы можете обрабатывать объекты по частям, то лучше
+            использовать get_all_iter
+
+            Например если вы записываете объекты в БД, то нет смысла загружать
+            все данные в память
         """
 
         items = list(self.get_all_iter(method, max_count, values, key, limit))
+
         return {'count': len(items), key: items}
 
     def get_all_slow_iter(self, method, max_count, values=None, key='items',
@@ -137,8 +143,18 @@ class VkTools(object):
 
     def get_all_slow(self, method, max_count, values=None, key='items',
                      limit=None):
+        """ Использовать только если нужно загрузить все объекты в память.
 
-        items = list(self.get_all_slow_iter(method, max_count, values, key, limit))
+            Eсли вы можете обрабатывать объекты по частям, то лучше
+            использовать get_all_slow_iter
+
+            Например если вы записываете объекты в БД, то нет смысла загружать
+            все данные в память
+        """
+
+        items = list(
+            self.get_all_slow_iter(method, max_count, values, key, limit)
+        )
         return {'count': len(items), key: items}
 
 
