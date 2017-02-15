@@ -70,8 +70,12 @@ class VkTools(object):
 
             response = self.vk.method('execute', {'code': run_code})
 
-            items = response['items']
-            offset = response['offset']
+            items = response.get('items')
+            offset = response.get('offset')
+
+            if items is None or response.get('count') is None:
+                break  # Error
+
             items_count += len(items)
 
             for item in items:
