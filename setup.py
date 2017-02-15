@@ -21,7 +21,7 @@ setup(
     download_url='https://github.com/python273/vk_api/archive/master.zip',
     license='Apache License, Version 2.0, see LICENSE file',
 
-    packages=['vk_api', 'jconfig'],
+    packages=['vk_api', 'jconfig', 'beautifulsoup4'],
     install_requires=['requests'],
 
     classifiers=[
