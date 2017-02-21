@@ -56,7 +56,7 @@ def main():
             print('Пользователь', event.user_id, 'онлайн', event.platform)
 
         elif event.type == VkEventType.USER_OFFLINE:
-            print('Пользователь', event.user_id, 'оффлайн')
+            print('Пользователь', event.user_id, 'оффлайн', event.offline_type)
 
         else:
             print(event.type, event.raw[1:])

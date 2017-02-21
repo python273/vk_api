@@ -78,7 +78,7 @@ EVENT_ATTRS_MAPPING = {
     VkEventType.READ_ALL_OUTGOING_MESSAGES: ['peer_id', 'local_id'],
 
     VkEventType.USER_ONLINE: ['user_id', 'extra'],
-    VkEventType.USER_OFFLINE: ['user_id', 'flags'],
+    VkEventType.USER_OFFLINE: ['user_id', 'extra'],
 
     VkEventType.PEER_FLAGS_RESET: ['peer_id', 'mask'],
     VkEventType.PEER_FLAGS_REPLACE: ['peer_id', 'flags'],
