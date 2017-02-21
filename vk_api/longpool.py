@@ -132,7 +132,7 @@ class VkLongPoll(object):
     def __init__(self, vk, wait=25, use_ssl=True, mode=DEFAULT_MODE):
         """
         https://vk.com/dev/using_longpoll
-        https://new.vk.com/dev/using_longpoll_2
+        https://vk.com/dev/using_longpoll_2
 
         :param vk: объект VkApi
         :param wait: время ожидания
