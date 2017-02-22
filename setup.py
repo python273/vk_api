@@ -13,7 +13,7 @@ Copyright (C) 2017
 
 setup(
     name='vk_api',
-    version='8.2',
+    version='8.3',
     author='python273',
     author_email='whoami@python273.pw',
     url='https://github.com/python273/vk_api',
@@ -33,6 +33,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Programming Language :: Python :: Implementation :: CPython',
     ]
