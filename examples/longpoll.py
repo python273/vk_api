@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import vk_api
-from vk_api.longpool import VkLongPoll, VkEventType
+from vk_api.longpoll import VkLongPoll, VkEventType
 
 
 def main():
-    """ Пример использования longpool
+    """ Пример использования longpoll
 
         https://vk.com/dev/using_longpoll
         https://vk.com/dev/using_longpoll_2
@@ -19,9 +19,9 @@ def main():
         print(error_msg)
         return
 
-    longpool = VkLongPoll(vk_session)
+    longpoll = VkLongPoll(vk_session)
 
-    for event in longpool.listen():
+    for event in longpoll.listen():
 
         if event.type == VkEventType.MESSAGE_NEW:
             print('Новое сообщение:')
