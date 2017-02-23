@@ -3,7 +3,7 @@ from .vk_api import *
 from .vk_upload import VkUpload
 from .vk_tools import VkTools
 from .vk_requestspool import VkRequestsPool
-from .longpoll import *
+from .longpoll import VkLongPoll, VkEventType, VkPlatform, VkMessageType, VkOfflineType
 
 """
 @author: Kirill Python
