@@ -10,7 +10,7 @@ Copyright (C) 2017
 
 import sys
 
-from .utils import sjson_dumps
+from .execute import VkFunction
 
 
 if sys.version_info.major == 2:
@@ -63,12 +63,9 @@ class VkTools(object):
         offset = 0
 
         while True:
-            run_code = code_get_all_items % (
-                max_count, offset, key, sjson_dumps(values),
-                method, method
+            response = vk_get_all_items(
+                self.vk, method, values, key, max_count, offset
             )
-
-            response = self.vk.method('execute', {'code': run_code})
 
             items = response.get('items')
             offset = response.get('offset')
@@ -158,9 +155,28 @@ class VkTools(object):
         return {'count': len(items), key: items}
 
 
-# Полный код в файле vk_procedures
-code_get_all_items = """
-var m=%s,n=%s,b="%s",v=n;var c={count:m,offset:v}+%s;var r=API.%s(c),k=r.count,
-j=r[b],i=1;while(i<25&&v+m<=k){v=i*m+n;c.offset=v;j=j+API.%s(c)[b];i=i+1;}
-return {count:k,items:j,offset:v+m};
-""".replace('\n', '')
+vk_get_all_items = VkFunction(
+    args=('method', 'values', 'key', 'max_count', 'start_offset'),
+    clean_args=('method', 'max_count', 'start_offset'),
+    code='''
+    var max_count = %(max_count)s,
+        offset = %(start_offset)s,
+        key = %(key)s;
+
+    var params = {count: max_count, offset: offset} + %(values)s;
+
+    var r = API.%(method)s(params),
+        items = r[key],
+        i = 1;
+
+    while(i < 25 && offset + max_count <= r.count) {
+        offset = offset + max_count;
+        params.offset = offset;
+
+        items = items + API.%(method)s(params)[key];
+
+        i = i + 1;
+    };
+
+    return {count: r.count, items: items, offset: offset + max_count};
+''')
