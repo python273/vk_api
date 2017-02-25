@@ -44,17 +44,16 @@ def minify(code):
 
 
 def parse_args(function_args, args, kwargs):
-    needed_args = list(function_args)
     parsed_args = {}
 
     for arg_name in kwargs.keys():
-        if arg_name not in needed_args:
+        if arg_name in function_args:
+            parsed_args[arg_name] = kwargs[arg_name]
+        else:
             raise VkFunctionException(
                 'function got an unexpected keyword argument \'{}\''.format(
                     arg_name
                 ))
-        else:
-            parsed_args[arg_name] = kwargs[arg_name]
 
     args_count = len(args) + len(kwargs)
     func_args_count = len(function_args)
@@ -67,8 +66,8 @@ def parse_args(function_args, args, kwargs):
                 args_count
             ))
 
-    for i in range(len(args)):
-        parsed_args[needed_args[i]] = args[i]
+    for arg_name, arg_value in zip(function_args, args):
+        parsed_args[arg_name] = arg_value
 
     return parsed_args
 
