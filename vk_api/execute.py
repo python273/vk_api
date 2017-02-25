@@ -1,4 +1,5 @@
 from .utils import sjson_dumps
+from .vk_api import VkApiMethod
 
 
 class VkFunction(object):
@@ -30,6 +31,10 @@ class VkFunction(object):
         return self._minified_code % compiled_args
 
     def __call__(self, vk, *args, **kwargs):
+
+        if type(vk) is VkApiMethod:
+            vk = vk._vk
+
         args = parse_args(self.args, args, kwargs)
 
         return vk.method(
