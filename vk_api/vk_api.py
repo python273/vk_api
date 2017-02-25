@@ -40,7 +40,7 @@ class VkApi(object):
                  token=None,
                  proxies=None,
                  auth_handler=None, captcha_handler=None,
-                 config_filename='vk_config.json',
+                 config=None, config_filename='vk_config.json',
                  api_version='5.62', app_id=2895443, scope=33554431,
                  client_secret=None):
         """
@@ -62,6 +62,7 @@ class VkApi(object):
                               булевое значение, означающее, стоит ли запомнить
                               это устройство, для прохождения аутентификации.
         :param captcha_handler: Функция для обработки капчи
+        :param config: класс для сохранения настроек
         :param config_filename: Расположение config файла
 
         :param api_version: Версия API
@@ -84,7 +85,10 @@ class VkApi(object):
         self.scope = scope
         self.client_secret = client_secret
 
-        self.settings = jconfig.Config(login, filename=config_filename)
+        if config is None:
+            self.settings = jconfig.Config(login, filename=config_filename)
+        else:
+            self.settings = config(login, filename=config_filename)
 
         self.http = requests.Session()
         self.http.proxies = proxies

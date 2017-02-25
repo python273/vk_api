@@ -13,4 +13,4 @@ __version__ = '2.1'
 __email__ = 'whoami@python273.pw'
 __contact__ = 'https://vk.com/python273'
 
-from .jconfig import *
+from .jconfig import Config
