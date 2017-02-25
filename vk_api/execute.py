@@ -1,5 +1,5 @@
 from .utils import sjson_dumps
-from .vk_api import VkApiMethod
+from .vk_api import VkApi, VkApiMethod
 
 
 class VkFunction(object):
@@ -31,6 +31,10 @@ class VkFunction(object):
         return self._minified_code % compiled_args
 
     def __call__(self, vk, *args, **kwargs):
+
+        if type(vk) not in [VkApi, VkApiMethod]:
+            raise VkFunctionException(
+                'The first arg should be VkApi or VkApiMethod instance')
 
         if type(vk) is VkApiMethod:
             vk = vk._vk
