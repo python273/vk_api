@@ -24,8 +24,8 @@ def main():
     )
 
     try:
-        vk_session.authorization()
-    except vk_api.AuthorizationError as error_msg:
+        vk_session.auth()
+    except vk_api.AuthError as error_msg:
         print(error_msg)
         return
 

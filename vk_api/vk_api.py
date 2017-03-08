@@ -108,7 +108,7 @@ class VkApi(object):
 
         self.lock = threading.Lock()
 
-    def authorization(self, reauth=False):
+    def auth(self, reauth=False):
         """ Полная авторизация с получением токена
 
         :param reauth: Позволяет переавторизиваться, игнорируя сохраненные
@@ -129,6 +129,8 @@ class VkApi(object):
 
             if not self.check_token():
                 self.api_login()
+
+    authorization = auth  # backward compatibility
 
     def vk_login(self, captcha_sid=None, captcha_key=None):
         """ Авторизация ВКонтакте с получением cookies remixsid """
@@ -188,7 +190,7 @@ class VkApi(object):
 
             self.sid = remixsid
         else:
-            raise AuthorizationError(
+            raise AuthError(
                 'Unknown error. Please send bugreport: https://vk.com/python273'
             )
 
@@ -283,7 +285,7 @@ class VkApi(object):
         """ Получение токена через Desktop приложение """
 
         if not self.sid or not self.settings.forapilogin:
-            raise AuthorizationError('API authorization error (no cookies)')
+            raise AuthError('API authorization error (no cookies)')
 
         url = 'https://oauth.vk.com/authorize'
         values = {
@@ -315,7 +317,7 @@ class VkApi(object):
             self.settings.save()
             self.token = token
         else:
-            raise AuthorizationError('Authorization error (api)')
+            raise AuthError('Authorization error (api)')
 
     def server_auth(self):
         """ Серверная авторизация """
@@ -330,7 +332,7 @@ class VkApi(object):
             'https://oauth.vk.com/access_token', values).json()
 
         if 'error' in response:
-            raise AuthorizationError(response['error_description'])
+            raise AuthError(response['error_description'])
         else:
             self.token = response
 
@@ -363,7 +365,7 @@ class VkApi(object):
         return error.try_method()
 
     def auth_handler(self):
-        raise AuthorizationError("No handler for two-factor authorization.")
+        raise AuthError("No handler for two-factor authorization.")
 
     def get_api(self):
         return VkApiMethod(self)
@@ -459,23 +461,27 @@ class VkApiMethod:
         return self._vk.method(self._method, kwargs)
 
 
-class AuthorizationError(Exception):
+class AuthorizationError(Exception):  # todo: delete
     pass
 
 
-class BadPassword(AuthorizationError):
+class AuthError(AuthorizationError):
     pass
 
 
-class AccountBlocked(AuthorizationError):
+class BadPassword(AuthError):
     pass
 
 
-class TwoFactorError(AuthorizationError):
+class AccountBlocked(AuthError):
     pass
 
 
-class SecurityCheck(AuthorizationError):
+class TwoFactorError(AuthError):
+    pass
+
+
+class SecurityCheck(AuthError):
     def __init__(self, phone_prefix=None, phone_postfix=None, response=None):
         self.phone_prefix = phone_prefix
         self.phone_postfix = phone_postfix
