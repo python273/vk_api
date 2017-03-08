@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 @author: Kirill Python
 @contact: https://vk.com/python273
@@ -16,7 +15,6 @@ import requests
 
 import jconfig
 from .utils import code_from_number, search_re, clean_string
-
 
 DELAY = 0.34  # ~3 requests per second
 TOO_MANY_RPS_CODE = 6
@@ -130,7 +128,16 @@ class VkApi(object):
             if not self.check_token():
                 self.api_login()
 
-    authorization = auth  # backward compatibility
+    def authorization(self, *args, **kwargs):
+        import warnings
+        warnings.simplefilter('always', DeprecationWarning)
+        warnings.warn(
+            'Please replace `VkApi.authorization` with `VkApi.auth` and '
+            '`AuthorizationError` with `AuthError`',
+            DeprecationWarning
+        )
+
+        return self.auth(*args, **kwargs)
 
     def vk_login(self, captcha_sid=None, captcha_key=None):
         """ Авторизация ВКонтакте с получением cookies remixsid """
