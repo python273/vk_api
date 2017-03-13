@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-from .vk_api import *
-from .vk_upload import VkUpload
-from .vk_tools import VkTools
-from .vk_requestspool import VkRequestsPool
+from .exceptions import *
+from .requests_pool import VkRequestsPool
+from .tools import VkTools
+from .upload import VkUpload
+from .vk_api import VkApi
 
 """
 @author: Kirill Python
