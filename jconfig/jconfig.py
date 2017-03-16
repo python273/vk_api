@@ -41,7 +41,7 @@ class Config(object):
         try:
             with open(self._filename, 'r') as f:
                 settings = json.load(f)
-        except IOError:
+        except (IOError, json.JSONDecodeError):
             settings = {}
 
         settings.setdefault(self._section, {})
