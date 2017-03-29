@@ -26,7 +26,7 @@ TWOFACTOR_CODE = -2
 RE_LOGIN_HASH = re.compile(r'name="lg_h" value="([a-z0-9]+)"')
 RE_CAPTCHAID = re.compile(r"onLoginCaptcha\('(\d+)'")
 RE_NUMBER_HASH = re.compile(r"al_page: '3', hash: '([a-z0-9]+)'")
-RE_AUTH_HASH = re.compile(r"\{act: 'a_authcheck_code'.+hash: '([a-z_0-9]+)'\}")
+RE_AUTH_HASH = re.compile(r"\{.*?act: 'a_authcheck_code'.+?hash: '([a-z_0-9]+)'.*?\}")
 RE_TOKEN_URL = re.compile(r'location\.href = "(.*?)"\+addr;')
 
 RE_PHONE_PREFIX = re.compile(r'label ta_r">\+(.*?)<')
