@@ -188,17 +188,19 @@ class VkUpload(object):
 
         return response
 
-    def document(self, file_path, title=None, tags=None, group_id=None):
+    def document(self, file_path, title=None, tags=None, group_id=None, to_wall=False):
         """ Загрузка документа
 
         :param file_path: путь к документу
         :param title: название документа
         :param tags: метки для поиска
         :param group_id: идентификатор сообщества (если загрузка идет в группу)
+        :param to_wall: Определяет метод получения адреса загрузки (если True, загрузка будет на стену)
         """
 
         values = {'group_id': group_id}
-        url = self.vk.method('docs.getUploadServer', values)['upload_url']
+        method = 'docs.getUploadServer' if not to_wall else 'docs.getWallUploadServer'
+        url = self.vk.method(method, values)['upload_url']
 
         with open(file_path, 'rb') as f:
             response = self.vk.http.post(url, files={'file': f}).json()
@@ -212,6 +214,15 @@ class VkUpload(object):
 
         return response
 
+    def document_wall(self, file_path, title=None, tags=None, group_id=None):
+        """ Загрузка документа в папку Отправленные,
+            для последующей отправки документа на стену
+            или личным сообщением.
+
+        Описание параметров :func:`document`
+        """
+
+        return self.document(file_path, title, tags, group_id, True)
 
 def open_files(paths, key_format='file{}'):
     if not isinstance(paths, list):
