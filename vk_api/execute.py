@@ -41,11 +41,12 @@ class VkFunction(object):
 
     def __call__(self, vk, *args, **kwargs):
 
-        if type(vk) not in [VkApi, VkApiMethod]:
+        if not isinstance(vk, (VkApi, VkApiMethod)):
             raise VkFunctionException(
-                'The first arg should be VkApi or VkApiMethod instance')
+                'The first arg should be VkApi or VkApiMethod instance'
+            )
 
-        if type(vk) is VkApiMethod:
+        if isinstance(vk, VkApiMethod):
             vk = vk._vk
 
         args = parse_args(self.args, args, kwargs)
