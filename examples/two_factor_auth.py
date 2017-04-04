@@ -8,8 +8,8 @@ def auth_handler():
 
     # Код двухфакторной аутентификации
     key = input("Enter authentication code: ")
-    # Если: 1 - сохранить, 0 - не сохранять.
-    remember_device = 1
+    # Если: True - сохранить, False - не сохранять.
+    remember_device = True
 
     return key, remember_device
 
