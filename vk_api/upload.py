@@ -23,7 +23,9 @@ class VkUpload(object):
               group_id=None):
         """ Загрузка изображений в альбом пользователя
 
-        :param photos: список путей к изображениям, либо путь к изображению
+        :param photos: путь к изображению(ям) или file-like объект(ы)
+        :type photos: str, list
+
         :param album_id: идентификатор альбома
         :param latitude: географическая широта, заданная в градусах
                             (от -90 до 90)
@@ -69,7 +71,8 @@ class VkUpload(object):
     def photo_messages(self, photos):
         """ Загрузка изображений в сообщения
 
-        :param photos: список путей к изображениям, либо путь к изображению
+        :param photos: путь к изображению(ям) или file-like объект(ы)
+        :type photos: str, list
         """
 
         url = self.vk.method('photos.getMessagesUploadServer')['upload_url']
@@ -86,7 +89,7 @@ class VkUpload(object):
                       crop_width=None):
         """ Загрузка изображения профиля
 
-        :param photo: путь к изображению
+        :param photo: путь к изображению или file-like объект
         :param owner_id: идентификатор сообщества или текущего пользователя.
                 По умолчанию загрузка идет в профиль текущего пользователя.
                 При отрицательном значении загрузка идет в группу.
@@ -122,7 +125,8 @@ class VkUpload(object):
     
     def photo_chat(self, photo, chat_id):
         """ Загрузка и смена обложки в беседе
-        :param photo: путь к изображению
+
+        :param photo: путь к изображению или file-like объект
         :param chat_id: ID беседы
         """
 
@@ -140,7 +144,9 @@ class VkUpload(object):
     def photo_wall(self, photos, user_id=None, group_id=None):
         """ Загрузка изображений на стену пользователя или в группу
 
-        :param photos: список путей к изображениям, либо путь к изображению
+        :param photos: путь к изображению(ям) или file-like объект(ы)
+        :type photos: str, list
+
         :param user_id: идентификатор пользователя
         :param group_id: идентификатор сообщества (если загрузка идет в группу)
         """
@@ -165,17 +171,17 @@ class VkUpload(object):
 
         return response
 
-    def audio(self, file_path, artist, title):
+    def audio(self, audio, artist, title):
         """ Загрузка аудио
 
-        :param file_path: путь к аудиофайлу
+        :param audio: путь к аудиофайлу или file-like объект
         :param artist: исполнитель
         :param title: название
         """
 
         url = self.vk.method('audio.getUploadServer')['upload_url']
 
-        f = open_files(file_path, key_format='file')
+        f = open_files(audio, key_format='file')
         response = self.vk.http.post(url, files=f).json()
         close_files(f)
 
@@ -188,22 +194,28 @@ class VkUpload(object):
 
         return response
 
-    def document(self, file_path, title=None, tags=None, group_id=None, to_wall=False):
+    def document(self, doc, title=None, tags=None, group_id=None,
+                 to_wall=False):
         """ Загрузка документа
 
-        :param file_path: путь к документу
+        :param doc: путь к документу или file-like объект
         :param title: название документа
         :param tags: метки для поиска
         :param group_id: идентификатор сообщества (если загрузка идет в группу)
-        :param to_wall: Определяет метод получения адреса загрузки (если True, загрузка будет на стену)
+        :param to_wall: загрузить на стену
         """
 
         values = {'group_id': group_id}
-        method = 'docs.getUploadServer' if not to_wall else 'docs.getWallUploadServer'
+
+        if to_wall:
+            method = 'docs.getWallUploadServer'
+        else:
+            method = 'docs.getUploadServer'
+
         url = self.vk.method(method, values)['upload_url']
 
-        with open(file_path, 'rb') as f:
-            response = self.vk.http.post(url, files={'file': f}).json()
+        files = open_files(doc, 'file')
+        response = self.vk.http.post(url, files=files).json()
 
         response.update({
             'title': title,
@@ -214,15 +226,19 @@ class VkUpload(object):
 
         return response
 
-    def document_wall(self, file_path, title=None, tags=None, group_id=None):
+    def document_wall(self, doc, title=None, tags=None, group_id=None):
         """ Загрузка документа в папку Отправленные,
             для последующей отправки документа на стену
             или личным сообщением.
 
-        Описание параметров :func:`document`
+        :param doc: путь к документу или file-like объект
+        :param title: название документа
+        :param tags: метки для поиска
+        :param group_id: идентификатор сообщества (если загрузка идет в группу)
         """
 
-        return self.document(file_path, title, tags, group_id, True)
+        return self.document(doc, title, tags, group_id, True)
+
 
 def open_files(paths, key_format='file{}'):
     if not isinstance(paths, list):
@@ -230,8 +246,17 @@ def open_files(paths, key_format='file{}'):
 
     files = []
 
-    for x, filename in enumerate(paths):
-        f = open(filename, 'rb')
+    for x, file in enumerate(paths):
+        if hasattr(file, 'read'):
+            f = file
+
+            if hasattr(file, 'name'):
+                filename = file.name
+            else:
+                filename = '.jpg'
+        else:
+            filename = file
+            f = open(filename, 'rb')
 
         ext = filename.split('.')[-1]
         files.append(
