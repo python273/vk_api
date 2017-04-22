@@ -14,10 +14,8 @@ class VKAudio:
         response = self._vk.http.get('https://m.vk.com/audios{}'.format(kwargs['owner_id']),
                                      params={'offset': kwargs.get('offset', 0)},
                                      allow_redirects=False)
-
         if response.text == '':
             raise AccessRightsError("You dont have permissions to browse {}'s audios".format(kwargs['owner_id']))
-
         return scrap_data(response.text)
 
     def search(self, **kwargs):

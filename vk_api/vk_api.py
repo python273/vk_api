@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 @author: Kirill Python
 @contact: https://vk.com/python273
@@ -453,7 +453,7 @@ class VkApi(object):
         return response if raw else response['response']
 
 
-class VkApiMethod:
+class VkApiMethod(object):
 
     def __init__(self, vk, method=None):
         self._vk = vk
