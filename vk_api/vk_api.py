@@ -12,11 +12,10 @@ import threading
 import time
 
 import requests
-from urllib.parse import quote
 
 import jconfig
+from vk_api.vk_audio import VKAudio
 from .exceptions import *
-from .vk_audio import scrap_data
 from .utils import code_from_number, search_re, clean_string
 
 DELAY = 0.34  # ~3 requests per second
@@ -107,19 +106,6 @@ class VkApi(object):
         }
 
         self.lock = threading.Lock()
-
-    def get(self, **kwargs):
-        response = self.http.get('https://m.vk.com/audios{}?offset={}'.format(kwargs['owner_id'],
-                                                                              kwargs.get('offset', 0)),
-                                 allow_redirects=False)
-        if response.text == '':
-            raise AccessRightsError("You dont have permissions to browse {}'s audios".format(kwargs['owner_id']))
-        return response.text
-
-    def search(self, **kwargs):
-        response = self.http.get('https://m.vk.com/audio?act=search&q={}&offset={}'.format(quote(kwargs['q']),
-                                                                                           kwargs.get('offset', 0)))
-        return response.text
 
     def auth(self, reauth=False):
         """ Полная авторизация с получением токена
@@ -484,17 +470,3 @@ class VkApiMethod:
 
     def __call__(self, **kwargs):
         return self._vk.method(self._method, kwargs)
-
-
-class VKAudio:
-
-    def __init__(self, vk):
-        self._vk = vk
-
-    def get(self, **kwargs):
-        scrap = scrap_data(self._vk.get(**kwargs))
-        return scrap
-
-    def search(self, **kwargs):
-        scrap = scrap_data(self._vk.search(**kwargs))
-        return scrap

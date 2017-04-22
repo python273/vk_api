@@ -1,8 +1,30 @@
 from bs4 import BeautifulSoup
 import re
+from .exceptions import AccessRightsError
 
 RE_VALUE = re.compile(r'>(.*?)<')
 RE_DURATION = re.compile(r'data-dur="([0-9]*)"')
+
+
+class VKAudio:
+    def __init__(self, vk):
+        self._vk = vk
+
+    def get(self, **kwargs):
+        response = self._vk.http.get('https://m.vk.com/audios{}'.format(kwargs['owner_id']),
+                                     params={'offset': kwargs.get('offset', 0)},
+                                     allow_redirects=False)
+
+        if response.text == '':
+            raise AccessRightsError("You dont have permissions to browse {}'s audios".format(kwargs['owner_id']))
+
+        return scrap_data(response.text)
+
+    def search(self, **kwargs):
+        response = self._vk.http.get('https://m.vk.com/audio', params={'act': 'search',
+                                                                       'q': kwargs['q'],
+                                                                       'offset': kwargs.get('offset', 0)})
+        return scrap_data(response.text)
 
 
 def value(tag, duration=False):

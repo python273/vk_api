@@ -28,7 +28,7 @@ def main():
     count = 0
     artists = {}
     while True:
-        audios = vk.audio.get(owner_id=19688539, offset=count)
+        audios = vk.audio.get(owner_id=-99463083, offset=count)
         print('offset=', count)
         for audio in audios:
             try:
