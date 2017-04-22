@@ -452,7 +452,7 @@ class VkApi(object):
         return response if raw else response['response']
 
 
-class VkApiMethod:
+class VkApiMethod(object):
     def __init__(self, vk, method=None):
         self._vk = vk
         self._method = method
