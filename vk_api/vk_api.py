@@ -466,3 +466,16 @@ class VkApiMethod:
 
     def __call__(self, **kwargs):
         return self._vk.method(self._method, kwargs)
+
+    def __repr__(self):
+        return '<{0}.{1} object at {2}>'.format(
+            self.__class__.__module__,
+            self.__class__.__name__,
+            hex(id(self))
+        )
+
+    def __str__(self):
+        return "{0}({1})".format(
+            self.__class__,
+            self.__dict__
+        )
