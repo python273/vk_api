@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
+import collections
 import vk_api
 
 
@@ -14,7 +15,7 @@ def main():
         print(error_msg)
         return
 
-    vk = vk_session.get_api()
+    vkaudio = vk_session.get_audio()
 
     """
         VkApi.audio.get и VkApi.audio.search делает запросы к странице m.vk.com
@@ -26,15 +27,12 @@ def main():
     """
 
     count = 0
-    artists = {}
+    artists = collections.Counter()
     while True:
-        audios = vk.audio.get(owner_id=-99463083, offset=count)
+        audios = vkaudio.get(owner_id=-99463083, offset=count)
         print('offset=', count)
         for audio in audios:
-            try:
-                artists[audio['artist']] += 1
-            except KeyError:
-                artists[audio['artist']] = 1
+            artists[audio['artist']] += 1
 
         count += len(audios)
 
@@ -42,12 +40,14 @@ def main():
             break
 
     # состаляем рейтинг первых 15
+    print('\nTop 15:')
     sorted_artists = sorted(artists, key=artists.get, reverse=True)
     for artist in sorted_artists[:15]:
         print('{} - {} tracks added'.format(artist, artists[artist]))
 
     # ищем треки самого популярного
-    tracks = vk.audio.search(q=sorted_artists[0])
+    print('\nSearch for ', sorted_artists[0])
+    tracks = vkaudio.search(q=sorted_artists[0])
     for n, track in enumerate(tracks[:10]):
         print('{}. {}'.format(n+1, track['title']))
 

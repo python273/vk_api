@@ -15,7 +15,7 @@ class VkApiError(Exception):
     pass
 
 
-class AccessRightsError(Exception):
+class AccessDenied (VkApiError):
     pass
 
 

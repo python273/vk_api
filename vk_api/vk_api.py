@@ -378,6 +378,9 @@ class VkApi(object):
     def get_api(self):
         return VkApiMethod(self)
 
+    def get_audio(self):
+        return VKAudio(self)
+
     def method(self, method, values=None, captcha_sid=None, captcha_key=None, raw=False):
         """ Использование методов API
 
@@ -458,8 +461,6 @@ class VkApiMethod(object):
     def __init__(self, vk, method=None):
         self._vk = vk
         self._method = method
-
-        self.audio = VKAudio(vk)  # audio branch
 
     def __getattr__(self, method):
         if self._method:
