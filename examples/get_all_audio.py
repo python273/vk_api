@@ -41,13 +41,13 @@ def main():
 
     # состаляем рейтинг первых 15
     print('\nTop 15:')
-    sorted_artists = sorted(artists, key=artists.get, reverse=True)
-    for artist in sorted_artists[:15]:
-        print('{} - {} tracks added'.format(artist, artists[artist]))
+    for artist, tracks in artists.most_common(15):
+        print('{} - {} tracks added'.format(artist, tracks))
 
     # ищем треки самого популярного
-    print('\nSearch for ', sorted_artists[0])
-    tracks = vkaudio.search(q=sorted_artists[0])
+    most_common = artists.most_common(1)[0][0]
+    print('\nSearch for ', most_common)
+    tracks = vkaudio.search(q=most_common)
     for n, track in enumerate(tracks[:10]):
         print('{}. {}'.format(n+1, track['title']))
 
