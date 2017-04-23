@@ -457,7 +457,6 @@ class VkApi(object):
 
 
 class VkApiMethod(object):
-
     def __init__(self, vk, method=None):
         self._vk = vk
         self._method = method
