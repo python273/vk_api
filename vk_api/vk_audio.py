@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from bs4 import BeautifulSoup
 import re
-from .vk_audio_decoder import decode
 from .exceptions import AccessDenied
 
 RE_VALUE = re.compile(r'>(.*?)<')
@@ -49,11 +48,10 @@ def scrap_data(html):
         ai_artist = audio.select('.ai_artist')
         artist = ai_artist[0].text
         link = audio.select('.ai_body')[0].input['value']
-        url = decode(link)
         data = {'artist': artist,
                 'title': value(audio.select('.ai_title')),
                 'dur': value(audio.select('.ai_dur'), duration=True),
                 'id': audio['id'],
-                'url': url}
+                'url': link}
         songs.append(data)
     return songs
