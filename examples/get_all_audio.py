@@ -49,7 +49,7 @@ def main():
     print('\nSearch for ', most_common)
     tracks = vkaudio.search(q=most_common)
     for n, track in enumerate(tracks[:10]):
-        print('{}. {}'.format(n+1, track['title']))
+        print('{}. {}\nURL: {}'.format(n+1, track['title'], track['url']))
 
 if __name__ == '__main__':
     main()
