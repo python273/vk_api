@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 @author: Kirill Python
 @contact: https://vk.com/python273

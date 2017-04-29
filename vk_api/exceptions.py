@@ -15,6 +15,10 @@ class VkApiError(Exception):
     pass
 
 
+class AccessDenied(VkApiError):
+    pass
+
+
 class AuthorizationError(VkApiError):  # todo: delete
     pass
 
