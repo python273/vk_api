@@ -14,7 +14,6 @@ import time
 import requests
 
 import jconfig
-from vk_api.vk_audio import VKAudio
 from .exceptions import *
 from .utils import code_from_number, search_re, clean_string
 
@@ -377,9 +376,6 @@ class VkApi(object):
 
     def get_api(self):
         return VkApiMethod(self)
-
-    def get_audio(self):
-        return VKAudio(self)
 
     def method(self, method, values=None, captcha_sid=None, captcha_key=None, raw=False):
         """ Использование методов API
