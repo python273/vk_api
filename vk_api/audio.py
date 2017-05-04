@@ -32,7 +32,7 @@ class VKAudio:
 
         return scrap_data(response.text)
 
-    def get_search(self, owner_id, q='', offset=0):
+    def search_user(self, owner_id, q='', offset=0):
         """ Поиск аудиозаписей пользователя
 
         :param owner_id: ID владельца (отрицательные значения для групп)
