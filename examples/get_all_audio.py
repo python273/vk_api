@@ -2,7 +2,7 @@
 import collections
 
 import vk_api
-from vk_api.audio import VKAudio
+from vk_api.audio import VkAudio
 
 
 def main():
@@ -17,7 +17,7 @@ def main():
         print(error_msg)
         return
 
-    vkaudio = VKAudio(vk_session)
+    vkaudio = VkAudio(vk_session)
 
     artists = collections.Counter()
 

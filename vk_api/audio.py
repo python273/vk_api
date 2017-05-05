@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from .exceptions import AccessDenied
 
 
-class VKAudio:
+class VkAudio:
     def __init__(self, vk):
         self._vk = vk
 
