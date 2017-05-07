@@ -32,6 +32,33 @@ class VkAudio:
 
         return scrap_data(response.text)
 
+    def search_user(self, owner_id, q='', offset=0):
+        """ Поиск по аудиозаписям пользователя
+
+        :param owner_id: ID владельца (отрицательные значения для групп)
+        :param q: запрос
+        :param offset: смещение
+        """
+
+        response = self._vk.http.get(
+            'https://m.vk.com/audio',
+            params={
+                'id': owner_id,
+                'q': q,
+                'offset': offset
+            },
+            allow_redirects=False
+        )
+
+        if not response.text:
+            raise AccessDenied(
+                'You don\'t have permissions to browse {}\'s audio'.format(
+                    owner_id
+                )
+            )
+
+        return scrap_data(response.text)    
+    
     def search(self, q='', offset=0):
         """ Поиск аудиозаписей
 
