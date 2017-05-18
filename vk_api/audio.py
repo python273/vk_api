@@ -32,20 +32,18 @@ class VkAudio:
 
         return scrap_data(response.text)
 
-    def search_user(self, owner_id, q='', offset=0):
+    def search_user(self, owner_id, q=''):
         """ Поиск по аудиозаписям пользователя
 
         :param owner_id: ID владельца (отрицательные значения для групп)
         :param q: запрос
-        :param offset: смещение
         """
 
         response = self._vk.http.get(
             'https://m.vk.com/audio',
             params={
                 'id': owner_id,
-                'q': q,
-                'offset': offset
+                'q': q
             },
             allow_redirects=False
         )
