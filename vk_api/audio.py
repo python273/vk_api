@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
+import re
+
 from bs4 import BeautifulSoup
 
 from .exceptions import AccessDenied
+
+RE_AUDIO = re.compile(r'audio\d+_\d+_audios\d+')
 
 
 class VkAudio:
@@ -32,20 +36,18 @@ class VkAudio:
 
         return scrap_data(response.text)
 
-    def search_user(self, owner_id, q='', offset=0):
+    def search_user(self, owner_id, q=''):
         """ Поиск по аудиозаписям пользователя
 
         :param owner_id: ID владельца (отрицательные значения для групп)
         :param q: запрос
-        :param offset: смещение
         """
 
         response = self._vk.http.get(
             'https://m.vk.com/audio',
             params={
                 'id': owner_id,
-                'q': q,
-                'offset': offset
+                'q': q
             },
             allow_redirects=False
         )
@@ -57,8 +59,11 @@ class VkAudio:
                 )
             )
 
-        return scrap_data(response.text)    
-    
+        return [
+            i for i in scrap_data(response.text)
+            if RE_AUDIO.search(i['id'])
+        ]
+
     def search(self, q='', offset=0):
         """ Поиск аудиозаписей
 
