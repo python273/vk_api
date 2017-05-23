@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import re
 from .exceptions import AccessDenied
 
+RE_AUDIO = re.compile(r'audio\d+_\d+_audios\d+')
+
 
 class VkAudio:
     def __init__(self, vk):
@@ -54,12 +56,12 @@ class VkAudio:
                     owner_id
                 )
             )
-            
-        if re.search(r'audio\d+_\d+_audios\d+', response.text):
-            return [data for data in scrap_data(response.text) if not re.search(r'audio\d+_\d+_search\d+', data['id'])]
 
-        return []
-    
+        return [
+            i for i in scrap_data(response.text)
+            if RE_AUDIO.search(i['id'])
+        ]
+
     def search(self, q='', offset=0):
         """ Поиск аудиозаписей
 
