@@ -133,11 +133,13 @@ class VkUpload(object):
         values = {'chat_id': chat_id}
         url = self.vk.method('photos.getChatUploadServer', values)['upload_url']
 
-        photo_file = open_files(photo)
+        photo_file = open_files(photo, key_format='file')
         response = self.vk.http.post(url, files=photo_file)
         close_files(photo_file)
 
-        response = self.vk.method('messages.setChatPhoto', response.json())
+        response = self.vk.method('messages.setChatPhoto', {
+            'file': response.json()['response']
+        })
 
         return response
 
