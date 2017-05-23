@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-from bs4 import BeautifulSoup
 import re
+
+from bs4 import BeautifulSoup
+
 from .exceptions import AccessDenied
 
 RE_AUDIO = re.compile(r'audio\d+_\d+_audios\d+')
