@@ -53,10 +53,7 @@ class VkTools(object):
         :type limit: int
         """
 
-        if values:
-            values = values.copy()
-        else:
-            values = {}
+        values = values.copy() if values else {}
 
         items_count = 0
         offset = 0
@@ -111,21 +108,16 @@ class VkTools(object):
                             но может прийти больше
         """
 
-        if not values:
-            values = {}
-        else:
-            values = values.copy()
+        values = values.copy() if values else {}
 
-        values.update({'count': max_count})
+        values['count'] = max_count
 
         response = self.vk.method(method, values)
         count = response['count']
         items_count = 0
 
-        for i in range(max_count, count + 1, max_count):
-            values.update({
-                'offset': i
-            })
+        for offset in range(max_count, count + 1, max_count):
+            values['offset'] = offset
 
             response = self.vk.method(method, values)
             items = response[key]

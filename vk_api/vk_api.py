@@ -26,7 +26,9 @@ TWOFACTOR_CODE = -2
 RE_LOGIN_HASH = re.compile(r'name="lg_h" value="([a-z0-9]+)"')
 RE_CAPTCHAID = re.compile(r"onLoginCaptcha\('(\d+)'")
 RE_NUMBER_HASH = re.compile(r"al_page: '3', hash: '([a-z0-9]+)'")
-RE_AUTH_HASH = re.compile(r"\{.*?act: 'a_authcheck_code'.+?hash: '([a-z_0-9]+)'.*?\}")
+RE_AUTH_HASH = re.compile(
+    r"\{.*?act: 'a_authcheck_code'.+?hash: '([a-z_0-9]+)'.*?\}"
+)
 RE_TOKEN_URL = re.compile(r'location\.href = "(.*?)"\+addr;')
 
 RE_PHONE_PREFIX = re.compile(r'label ta_r">\+(.*?)<')
@@ -372,7 +374,7 @@ class VkApi(object):
         return error.try_method()
 
     def auth_handler(self):
-        raise AuthError("No handler for two-factor authorization.")
+        raise AuthError('No handler for two-factor authentication')
 
     def get_api(self):
         return VkApiMethod(self)
@@ -389,23 +391,17 @@ class VkApi(object):
         """
 
         url = 'https://api.vk.com/method/%s' % method
-
-        if values:
-            values = values.copy()
-        else:
-            values = {}
+        values = values.copy() if values else {}
 
         if 'v' not in values:
-            values.update({'v': self.api_version})
+            values['v'] = self.api_version
 
         if self.token:
-            values.update({'access_token': self.token['access_token']})
+            values['access_token'] = self.token['access_token']
 
         if captcha_sid and captcha_key:
-            values.update({
-                'captcha_sid': captcha_sid,
-                'captcha_key': captcha_key
-            })
+            values['captcha_sid'] = captcha_sid
+            values['captcha_key'] = captcha_key
 
         with self.lock:
             # Ограничение 3 запроса в секунду
