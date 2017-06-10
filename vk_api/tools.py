@@ -80,7 +80,7 @@ class VkTools(object):
             if offset >= response['count']:
                 break
 
-            if limit and len(items) >= limit:
+            if limit and items_count >= limit:
                 break
 
     def get_all(self, method, max_count, values=None, key='items', limit=None):
@@ -134,7 +134,7 @@ class VkTools(object):
             for item in items:
                 yield item
 
-            if limit and len(items_count) >= limit:
+            if limit and items_count >= limit:
                 break
 
     def get_all_slow(self, method, max_count, values=None, key='items',
