@@ -247,9 +247,10 @@ class VkUpload(object):
             'repeat': repeat
         }
 
-        url = self.vk.method('video.save', values)['upload_url']
+        response = self.vk.method('video.save', values)
+        url = response['upload_url']
 
-        response = self.vk.http.post(
+        self.vk.http.post(
             url,
             files={'video_file': video_file} if not link else None
         ).json()
