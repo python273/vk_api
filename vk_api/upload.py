@@ -195,6 +195,66 @@ class VkUpload(object):
         response = self.vk.method('audio.save', response)
 
         return response
+    
+        def video(self, video, name=None, description=None,
+              is_private=False, wallpost=False, group_id=None,
+              album_id=None, privacy_view=None, privacy_comment=None,
+              no_comments=False, repeat=False):
+
+        """ Загрузка видео
+
+        :param video: url для встраивания видео с внешнего сайта, например, с Youtube.
+                или file-like объект
+        :param name: название видеофайла
+        :param description: описание видеофайла
+        :param is_private: указывается 1, если видео загружается для отправки личным сообщением.
+            После загрузки с этим параметром видеозапись не будет отображаться в списке видеозаписей
+            пользователя и не будет доступна другим пользователям по ее идентификатору.
+        :param wallpost: требуется ли после сохранения опубликовать запись с видео на стене.
+        :param group_id: идентификатор сообщества, в которое будет сохранен видеофайл.
+            По умолчанию файл сохраняется на страницу текущего пользователя.
+        :param album_id: идентификатор альбома, в который будет загружен видео файл.
+        :param privacy_view: настройки приватности просмотра видеозаписи в специальном формате.
+            Приватность доступна для видеозаписей, которые пользователь загрузил в профиль.
+            (список слов, разделенных через запятую)
+        :param privacy_comment: настройки приватности комментирования видеозаписи в специальном формате.
+            (https://vk.com/dev/objects/privacy)
+        :param no_comments: 1 — закрыть комментарии (для видео из сообществ).
+        :param repeat: зацикливание воспроизведения видеозаписи. флаг, может принимать значения 1 или 0
+        """
+
+        if hasattr(video, 'read'):
+            video_file = video
+            link = None
+
+            if hasattr(video, 'name') and not name:
+                name = file.name
+        else:
+            link = video
+            video_file = None
+
+        values = {
+            'name': name,
+            'description': description,
+            'is_private': is_private,
+            'wallpost': wallpost,
+            'link': link,
+            'group_id': group_id,
+            'album_id': album_id,
+            'privacy_view': privacy_view,
+            'privacy_comment': privacy_comment,
+            'no_comments': no_comments,
+            'repeat': repeat
+        }
+
+        url = self.vk.method('video.save', values)['upload_url']
+
+        response = self.vk.http.post(
+            url,
+            files={'video_file': video_file} if not link else None
+        ).json()
+
+        return response
 
     def document(self, doc, title=None, tags=None, group_id=None,
                  to_wall=False):
