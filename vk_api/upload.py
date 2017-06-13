@@ -196,42 +196,71 @@ class VkUpload(object):
 
         return response
     
-        def video(self, video, name=None, description=None,
+    def video(self, video_file=None, link=None, name=None, description=None,
               is_private=False, wallpost=False, group_id=None,
               album_id=None, privacy_view=None, privacy_comment=None,
               no_comments=False, repeat=False):
 
         """ Загрузка видео
 
-        :param video: url для встраивания видео с внешнего сайта, например, с Youtube.
-                или file-like объект
+        :param video_file: путь до файла или file-like объект.
+        :type video_file: object, str
+
+        :param link: url для встраивания видео с внешнего сайта,
+            например, с Youtube.
+        :type link: str
+
         :param name: название видеофайла
+        :type name: str
+
         :param description: описание видеофайла
-        :param is_private: указывается 1, если видео загружается для отправки личным сообщением.
-            После загрузки с этим параметром видеозапись не будет отображаться в списке видеозаписей
-            пользователя и не будет доступна другим пользователям по ее идентификатору.
-        :param wallpost: требуется ли после сохранения опубликовать запись с видео на стене.
-        :param group_id: идентификатор сообщества, в которое будет сохранен видеофайл.
-            По умолчанию файл сохраняется на страницу текущего пользователя.
-        :param album_id: идентификатор альбома, в который будет загружен видео файл.
-        :param privacy_view: настройки приватности просмотра видеозаписи в специальном формате.
-            Приватность доступна для видеозаписей, которые пользователь загрузил в профиль.
-            (список слов, разделенных через запятую)
-        :param privacy_comment: настройки приватности комментирования видеозаписи в специальном формате.
+        :type description: str
+
+        :param is_private: указывается 1, если видео загружается для отправки
+            личным сообщением. После загрузки с этим параметром видеозапись
+            не будет отображаться в списке видеозаписей пользователя и не будет
+            доступна другим пользователям по ее идентификатору.
+        :type is_private: bool
+
+        :param wallpost: требуется ли после сохранения опубликовать
+            запись с видео на стене.
+        :type wallpost: bool
+
+        :param group_id: идентификатор сообщества, в которое будет сохранен
+            видеофайл. По умолчанию файл сохраняется на страницу текущего
+            пользователя.
+        :type group_id: int
+
+        :param album_id: идентификатор альбома, в который будет загружен
+            видео файл.
+        :type album_id: int
+
+        :param privacy_view: настройки приватности просмотра видеозаписи в
+            специальном формате. (https://vk.com/dev/objects/privacy)
+            Приватность доступна для видеозаписей, которые пользователь
+            загрузил в профиль. (список слов, разделенных через запятую)
+        :param privacy_comment: настройки приватности комментирования
+            видеозаписи в специальном формате.
             (https://vk.com/dev/objects/privacy)
+
         :param no_comments: 1 — закрыть комментарии (для видео из сообществ).
-        :param repeat: зацикливание воспроизведения видеозаписи. флаг, может принимать значения 1 или 0
+        :type no_comments: bool
+
+        :param repeat: зацикливание воспроизведения видеозаписи. флаг.
+        :type repeat: bool
         """
 
-        if hasattr(video, 'read'):
-            video_file = video
-            link = None
+        if not link and not video_file:
+            raise ValueError('Either link or video_file param is required')
 
-            if hasattr(video, 'name') and not name:
-                name = file.name
-        else:
-            link = video
-            video_file = None
+        if link and video_file:
+            raise ValueError('Both params link and video_file aren\'t allowed')
+
+        if video_file and not hasattr(video_file, 'read'):
+            video_file = open(video_file, 'rb')
+
+        if hasattr(video_file, 'name') and not name:
+            name = video_file.name
 
         values = {
             'name': name,
