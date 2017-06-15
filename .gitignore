@@ -8,6 +8,6 @@ MANIFEST
 .pydevproject
 .settings/
 testing/
-tests/config.py
-tests/vk_config.json
+tests/
 vk_config.json
+vk_config.v2.json
