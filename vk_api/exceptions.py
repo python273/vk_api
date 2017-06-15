@@ -19,11 +19,15 @@ class AccessDenied(VkApiError):
     pass
 
 
-class AuthorizationError(VkApiError):  # todo: delete
+class AuthError(VkApiError):
     pass
 
 
-class AuthError(AuthorizationError):
+class AuthorizationError(AuthError):  # todo: delete
+    pass
+
+
+class PasswordRequired(AuthError):
     pass
 
 

@@ -7,6 +7,7 @@
 Copyright (C) 2017
 """
 
+import logging
 import re
 import threading
 import time
@@ -36,27 +37,19 @@ RE_PHONE_POSTFIX = re.compile(r'phone_postfix">.*?(\d+).*?<')
 
 
 class VkApi(object):
-    def __init__(self, login=None, password=None, number=None, sec_number=None,
-                 token=None,
-                 proxies=None,
+    def __init__(self, login=None, password=None, token=None,
                  auth_handler=None, captcha_handler=None,
-                 config=None, config_filename='vk_config.json',
+                 config=jconfig.Config, config_filename='vk_config.v2.json',
                  api_version='5.63', app_id=2895443, scope=33554431,
                  client_secret=None):
         """
-        :param login: Логин ВКонтакте
-        :param password: Пароль ВКонтакте
-        :param number: Номер для проверки безопасности (указывать, если
-                        в качестве логина используется не номер)
-        :param sec_number: Часть номера, которая проверяется при проверке
-                            безопасности (указывать, если точно известно, что
-                            вводить и если автоматическое получение кода из
-                            номера работает не корректно)
+        :param login: Логин ВКонтакте (лучше использовать номер телефона для
+                       автоматического обхода проверки безопасности)
+        :param password: Пароль ВКонтакте (если пароль не передан, то будет
+                          попытка использовать сохраненные данные для
+                          аутентификации)
 
         :param token: access_token
-        :param proxies: proxy server
-                         {'http': 'http://127.0.0.1:8888/',
-                         'https': 'https://127.0.0.1:8888/'}
         :param auth_handler: Функция для обработки двухфакторной аутентификации,
                               должна возвращать строку с кодом и
                               булевое значение, означающее, стоит ли запомнить
@@ -74,8 +67,6 @@ class VkApi(object):
 
         self.login = login
         self.password = password
-        self.number = number
-        self.sec_number = sec_number
 
         self.sid = None
         self.token = {'access_token': token}
@@ -85,13 +76,9 @@ class VkApi(object):
         self.scope = scope
         self.client_secret = client_secret
 
-        if config is None:
-            self.settings = jconfig.Config(login, filename=config_filename)
-        else:
-            self.settings = config(login, filename=config_filename)
+        self.settings = config(self.login, filename=config_filename)
 
         self.http = requests.Session()
-        self.http.proxies = proxies
         self.http.headers.update({
             'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:40.0) '
             'Gecko/20100101 Firefox/40.0'
@@ -108,27 +95,94 @@ class VkApi(object):
 
         self.lock = threading.Lock()
 
-    def auth(self, reauth=False):
-        """ Полная авторизация с получением токена
+        self.logger = logging.getLogger('vk_api')
+
+    def auth(self, reauth=False, token_only=False):
+        """ Аутентификация
 
         :param reauth: Позволяет переавторизиваться, игнорируя сохраненные
-                        куки и токен
+                       куки и токен
+
+        :param token_only: Включает оптимальную стратегию аутентификации, если
+                            необходим только access_token
+
+                            Например если сохраненные куки не валидны,
+                            но токен валиден, то аутентификация пройдет успешно
+
+                            При token_only=False, сначала проверяется
+                            валидность куки. Если кука не будет валидна, то
+                            будет произведена попытка аутетификации с паролем.
+                            Тогда если пароль не верен или пароль не передан,
+                            то аутентификация закончится с ошибкой.
+
+                            Если вы не делаете запросы к веб версии сайта
+                            используя куки, то лучше использовать
+                            token_only=True
         """
 
-        if self.login and self.password:
-            if reauth:
-                self.settings.clear_section()
+        if not self.login:
+            self.logger.info('No login to auth')
+            return
 
-            self.sid = self.settings.remixsid
-            self.token = self.settings.token
+        self.logger.info('Auth with login: {}'.format(self.login))
 
-            if not self.check_sid():
-                self.vk_login()
-            else:
-                self.security_check()
+        self.sid = self.settings.remixsid
+        self.token = self.settings.setdefault('token', {}).get(str(self.scope))
 
-            if not self.check_token():
-                self.api_login()
+        if not token_only:
+            self._auth_cookies(reauth=reauth)
+        else:
+            self._auth_token(reauth=reauth)
+
+    def _auth_cookies(self, reauth=False):
+
+        if reauth:
+            self.logger.info('Auth forced')
+
+            self.settings.clear_section()
+
+            self.vk_login()
+            self.api_login()
+            return
+
+        if not self.check_sid():
+            self.logger.info(
+                'remixsid from config is not valid: {}'.format(
+                    self.sid
+                )
+            )
+
+            self.vk_login()
+        else:
+            self.security_check()
+
+        if not self.check_token():
+            self.logger.info(
+                'access_token from config is not valid: {}'.format(
+                    self.token
+                )
+            )
+
+            self.api_login()
+        else:
+            self.logger.info('access_token from config is valid')
+
+    def _auth_token(self, reauth=False):
+
+        if not reauth and self.check_token():
+            self.logger.info('access_token from config is valid')
+            return
+
+        if reauth:
+            self.logger.info('Auth (API) forced')
+
+        if self.check_sid():
+            self.security_check()
+            self.api_login()
+
+        elif self.password:
+            self.vk_login()
+            self.api_login()
 
     def authorization(self, *args, **kwargs):
         import warnings
@@ -143,6 +197,12 @@ class VkApi(object):
 
     def vk_login(self, captcha_sid=None, captcha_key=None):
         """ Авторизация ВКонтакте с получением cookies remixsid """
+
+        self.logger.info('Logging in...')
+
+        if not self.password:
+            self.logger.info('No password')
+            raise PasswordRequired('Password is required to login')
 
         self.http.cookies.clear()
 
@@ -160,6 +220,13 @@ class VkApi(object):
         }
 
         if captcha_sid and captcha_key:
+            self.logger.info(
+                'Using captcha code: {}: {}'.format(
+                    captcha_sid,
+                    captcha_key
+                )
+            )
+
             values.update({
                 'captcha_sid': captcha_sid,
                 'captcha_key': captcha_key
@@ -168,15 +235,20 @@ class VkApi(object):
         response = self.http.post('https://login.vk.com/', values)
 
         if 'onLoginCaptcha(' in response.text:
+            self.logger.info('Captcha code is required')
+
             captcha_sid = search_re(RE_CAPTCHAID, response.text)
             captcha = Captcha(self, captcha_sid, self.vk_login)
 
             return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
 
         if 'onLoginFailed(4' in response.text:
+            self.logger.info('Bad password')
             raise BadPassword('Bad password')
 
         if 'act=authcheck' in response.text:
+            self.logger.info('Two factor is required')
+
             response = self.http.get('https://vk.com/login?act=authcheck')
 
             self.twofactor(response)
@@ -187,6 +259,8 @@ class VkApi(object):
         )
 
         if remixsid:
+            self.logger.info('Got remixsid')
+
             self.settings.remixsid = remixsid
 
             # Нужно для авторизации в API
@@ -199,6 +273,8 @@ class VkApi(object):
 
             self.sid = remixsid
         else:
+            self.logger.info('Unknown auth error')
+
             raise AuthError(
                 'Unknown error. Please send bugreport: https://vk.com/python273'
             )
@@ -236,20 +312,19 @@ class VkApi(object):
         raise TwoFactorError('Two factor authentication failed')
 
     def security_check(self, response=None):
+        self.logger.info('Checking security check request')
+
         if response is None:
             response = self.http.get('https://vk.com/settings')
             if 'security_check' not in response.url:
+                self.logger.info('Security check is not required')
                 return response
 
         phone_prefix = clean_string(search_re(RE_PHONE_PREFIX, response.text))
         phone_postfix = clean_string(search_re(RE_PHONE_POSTFIX, response.text))
 
         code = None
-        if self.sec_number:
-            code = self.sec_number
-        elif self.number:
-            code = code_from_number(phone_prefix, phone_postfix, self.number)
-        elif self.login:
+        if self.login:
             code = code_from_number(phone_prefix, phone_postfix, self.login)
 
         if code:
@@ -277,18 +352,26 @@ class VkApi(object):
     def check_sid(self):
         """ Проверка Cookies remixsid на валидность """
 
-        if self.sid:
-            url = 'https://vk.com/feed2.php'
-            self.http.cookies.update({
-                'remixsid': self.sid,
-                'remixlang': '0',
-                'remixsslsid': '1'
-            })
+        self.logger.info('Checking remixsid...')
 
-            response = self.http.get(url).json()
+        if not self.sid:
+            self.logger.info('No remixsid')
+            return
 
-            if response['user']['id'] != -1:
-                return response
+        url = 'https://vk.com/feed2.php'
+        self.http.cookies.update({
+            'remixsid': self.sid,
+            'remixlang': '0',
+            'remixsslsid': '1'
+        })
+
+        response = self.http.get(url).json()
+
+        if response['user']['id'] != -1:
+            self.logger.info('remixsid is valid')
+            return response
+
+        self.logger.info('remixsid is not valid')
 
     def api_login(self):
         """ Получение токена через Desktop приложение """
@@ -322,9 +405,11 @@ class VkApi(object):
                 x = i.split('=')
                 token.update({x[0]: x[1]})
 
-            self.settings.token = token
+            self.settings.setdefault('token', {})[str(self.scope)] = token
             self.settings.save()
             self.token = token
+
+            self.logger.info('Got access_token')
         else:
             raise AuthError('Authorization error (api)')
 
