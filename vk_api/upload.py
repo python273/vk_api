@@ -286,13 +286,20 @@ class VkUpload(object):
 
         return response
 
-    def audio_message(self, audio):
+    def audio_message(self, audio, group_id=None):
         """ Загрузка аудио-сообщения
 
         :param audio: путь к аудиофайлу или file-like объект
+        :param group_id: идентификатор сообщества
+                         (если используется токен сообщества)
         """
 
-        return self.document(audio, audio_message=True)
+        return self.document(
+            audio,
+            audio_message=True,
+            group_id=group_id,
+            to_wall=group_id is not None
+        )
 
     def document(self, doc, title=None, tags=None, group_id=None,
                  to_wall=False, audio_message=False):
