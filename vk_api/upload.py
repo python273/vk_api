@@ -286,8 +286,16 @@ class VkUpload(object):
 
         return response
 
+    def audio_message(self, audio):
+        """ Загрузка аудио-сообщения
+
+        :param audio: путь к аудиофайлу или file-like объект
+        """
+
+        return self.document(audio, audio_message=True)
+
     def document(self, doc, title=None, tags=None, group_id=None,
-                 to_wall=False):
+                 to_wall=False, audio_message=False):
         """ Загрузка документа
 
         :param doc: путь к документу или file-like объект
@@ -298,6 +306,9 @@ class VkUpload(object):
         """
 
         values = {'group_id': group_id}
+
+        if audio_message:
+            values['type'] = 'audio_message'
 
         if to_wall:
             method = 'docs.getWallUploadServer'
