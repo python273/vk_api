@@ -131,8 +131,7 @@ class VkApi(object):
         """
 
         if not self.login:
-            self.logger.info('No login to auth')
-            return
+            raise LoginRequired('Login is required to auth')
 
         self.logger.info('Auth with login: {}'.format(self.login))
 
@@ -198,24 +197,12 @@ class VkApi(object):
             self.vk_login()
             self.api_login()
 
-    def authorization(self, *args, **kwargs):
-        import warnings
-        warnings.simplefilter('always', DeprecationWarning)
-        warnings.warn(
-            'Please replace `VkApi.authorization` with `VkApi.auth` and '
-            '`AuthorizationError` with `AuthError`',
-            DeprecationWarning
-        )
-
-        return self.auth(*args, **kwargs)
-
     def vk_login(self, captcha_sid=None, captcha_key=None):
         """ Авторизация ВКонтакте с получением cookies remixsid """
 
         self.logger.info('Logging in...')
 
         if not self.password:
-            self.logger.info('No password')
             raise PasswordRequired('Password is required to login')
 
         self.http.cookies.clear()
@@ -257,7 +244,6 @@ class VkApi(object):
             return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
 
         if 'onLoginFailed(4' in response.text:
-            self.logger.info('Bad password')
             raise BadPassword('Bad password')
 
         if 'act=authcheck' in response.text:
@@ -316,8 +302,10 @@ class VkApi(object):
 
         if response is None:
             response = self.http.get('https://vk.com/settings')
+
             if 'security_check' not in response.url:
                 self.logger.info('Security check is not required')
+
                 return response
 
         phone_prefix = clear_string(search_re(RE_PHONE_PREFIX, response.text))
@@ -426,7 +414,8 @@ class VkApi(object):
         }
 
         response = self.http.post(
-            'https://oauth.vk.com/access_token', values).json()
+            'https://oauth.vk.com/access_token', values
+        ).json()
 
         if 'error' in response:
             raise AuthError(response['error_description'])
@@ -467,18 +456,20 @@ class VkApi(object):
     def get_api(self):
         return VkApiMethod(self)
 
-    def method(self, method, values=None, captcha_sid=None, captcha_key=None, raw=False):
+    def method(self, method, values=None, captcha_sid=None, captcha_key=None,
+               raw=False):
         """ Использование методов API
 
         :param method: метод
         :param values: параметры
         :param captcha_sid:
         :param captcha_key:
-        :param raw: при False возвращает response['response'], при True возвращает response
-                    e.g. может понадобиться для метода execute для получения execute_errors
+        :param raw: при False возвращает response['response']
+                    при True возвращает response
+                    (может понадобиться для метода execute
+                    для получения execute_errors)
         """
 
-        url = 'https://api.vk.com/method/%s' % method
         values = values.copy() if values else {}
 
         if 'v' not in values:
@@ -498,7 +489,10 @@ class VkApi(object):
             if delay > 0:
                 time.sleep(delay)
 
-            response = self.http.post(url, values)
+            response = self.http.post(
+                'https://api.vk.com/method/' + method,
+                values
+            )
             self.last_request = time.time()
 
         if response.ok:
@@ -522,7 +516,7 @@ class VkApi(object):
                         error.error['captcha_sid'],
                         self.method,
                         (method,),
-                        {'values': values},
+                        {'values': values, 'raw': raw},
                         error.error['captcha_img']
                     )
 

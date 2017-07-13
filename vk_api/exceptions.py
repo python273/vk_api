@@ -27,6 +27,10 @@ class AuthorizationError(AuthError):  # todo: delete
     pass
 
 
+class LoginRequired(AuthError):
+    pass
+
+
 class PasswordRequired(AuthError):
     pass
 
