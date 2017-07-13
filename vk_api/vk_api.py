@@ -16,9 +16,13 @@ import requests
 
 import jconfig
 from .exceptions import *
-from .utils import code_from_number, search_re, clean_string
+from .utils import (
+    code_from_number, search_re, clean_string,
+    cookies_to_list, set_cookies_from_list
+)
 
 DELAY = 0.34  # ~3 requests per second
+
 TOO_MANY_RPS_CODE = 6
 NEED_VALIDATION_CODE = 17
 HTTP_ERROR_CODE = -1
@@ -68,7 +72,6 @@ class VkApi(object):
         self.login = login
         self.password = password
 
-        self.sid = None
         self.token = {'access_token': token}
 
         self.api_version = api_version
@@ -76,7 +79,7 @@ class VkApi(object):
         self.scope = scope
         self.client_secret = client_secret
 
-        self.settings = config(self.login, filename=config_filename)
+        self.storage = config(self.login, filename=config_filename)
 
         self.http = requests.Session()
         self.http.headers.update({
@@ -96,6 +99,13 @@ class VkApi(object):
         self.lock = threading.Lock()
 
         self.logger = logging.getLogger('vk_api')
+
+    @property
+    def sid(self):
+        return (
+            self.http.cookies.get('remixsid') or
+            self.http.cookies.get('remixsid6')
+        )
 
     def auth(self, reauth=False, token_only=False):
         """ Аутентификация
@@ -126,8 +136,12 @@ class VkApi(object):
 
         self.logger.info('Auth with login: {}'.format(self.login))
 
-        self.sid = self.settings.remixsid
-        self.token = self.settings.setdefault('token', {}).get(str(self.scope))
+        set_cookies_from_list(
+            self.http.cookies,
+            self.storage.setdefault('cookies', [])
+        )
+
+        self.token = self.storage.setdefault('token', {}).get(str(self.scope))
 
         if not token_only:
             self._auth_cookies(reauth=reauth)
@@ -139,7 +153,7 @@ class VkApi(object):
         if reauth:
             self.logger.info('Auth forced')
 
-            self.settings.clear_section()
+            self.storage.clear_section()
 
             self.vk_login()
             self.api_login()
@@ -253,25 +267,11 @@ class VkApi(object):
 
             self.twofactor(response)
 
-        remixsid = (
-            self.http.cookies.get('remixsid') or
-            self.http.cookies.get('remixsid6')
-        )
-
-        if remixsid:
+        if self.sid:
             self.logger.info('Got remixsid')
 
-            self.settings.remixsid = remixsid
-
-            # Нужно для авторизации в API
-            self.settings.forapilogin = {
-                'p': self.http.cookies['p'],
-                'l': self.http.cookies['l']
-            }
-
-            self.settings.save()
-
-            self.sid = remixsid
+            self.storage.cookies = cookies_to_list(self.http.cookies)
+            self.storage.save()
         else:
             self.logger.info('Unknown auth error')
 
@@ -358,14 +358,7 @@ class VkApi(object):
             self.logger.info('No remixsid')
             return
 
-        url = 'https://vk.com/feed2.php'
-        self.http.cookies.update({
-            'remixsid': self.sid,
-            'remixlang': '0',
-            'remixsslsid': '1'
-        })
-
-        response = self.http.get(url).json()
+        response = self.http.get('https://vk.com/feed2.php').json()
 
         if response['user']['id'] != -1:
             self.logger.info('remixsid is valid')
@@ -376,20 +369,21 @@ class VkApi(object):
     def api_login(self):
         """ Получение токена через Desktop приложение """
 
-        if not self.sid or not self.settings.forapilogin:
-            raise AuthError('API authorization error (no cookies)')
+        if not self.sid:
+            raise AuthError('API auth error (no remixsid)')
 
-        url = 'https://oauth.vk.com/authorize'
-        values = {
-            'client_id': self.app_id,
-            'scope': self.scope,
-            'response_type': 'token',
-        }
+        for cookie_name in ['p', 'l']:
+            if not self.http.cookies.get(cookie_name, domain='.login.vk.com'):
+                raise AuthError('API auth error (no login cookies)')
 
-        self.http.cookies.update(self.settings.forapilogin)
-        self.http.cookies.update({'remixsid': self.sid})
-
-        response = self.http.get(url, params=values)
+        response = self.http.get(
+            'https://oauth.vk.com/authorize',
+            params={
+                'client_id': self.app_id,
+                'scope': self.scope,
+                'response_type': 'token'
+            }
+        )
 
         if 'access_token' not in response.url:
             url = search_re(RE_TOKEN_URL, response.text)
@@ -398,20 +392,29 @@ class VkApi(object):
                 response = self.http.get(url)
 
         if 'access_token' in response.url:
-            params = response.url.split('#')[1].split('&')
+            params = response.url.split('#', 1)[1].split('&')
+            token = dict(param.split('=', 1) for param in params)
 
-            token = {}
-            for i in params:
-                x = i.split('=')
-                token.update({x[0]: x[1]})
-
-            self.settings.setdefault('token', {})[str(self.scope)] = token
-            self.settings.save()
             self.token = token
 
+            self.storage.setdefault('token', {})[str(self.scope)] = token
+            self.storage.save()
+
             self.logger.info('Got access_token')
+
+        elif 'oauth.vk.com/error' in response.url:
+            error_data = response.json()
+
+            error_text = error_data.get('error_description')
+
+            # Deletes confusing error text
+            if error_text and '@vk.com' in error_text:
+                error_text = error_data.get('error')
+
+            raise AuthError('API auth error: {}'.format(error_text))
+
         else:
-            raise AuthError('Authorization error (api)')
+            raise AuthError('Unknown API auth error')
 
     def server_auth(self):
         """ Серверная авторизация """
