@@ -17,7 +17,7 @@ import requests
 import jconfig
 from .exceptions import *
 from .utils import (
-    code_from_number, search_re, clean_string,
+    code_from_number, search_re, clear_string,
     cookies_to_list, set_cookies_from_list
 )
 
@@ -320,11 +320,11 @@ class VkApi(object):
                 self.logger.info('Security check is not required')
                 return response
 
-        phone_prefix = clean_string(search_re(RE_PHONE_PREFIX, response.text))
-        phone_postfix = clean_string(search_re(RE_PHONE_POSTFIX, response.text))
+        phone_prefix = clear_string(search_re(RE_PHONE_PREFIX, response.text))
+        phone_postfix = clear_string(search_re(RE_PHONE_POSTFIX, response.text))
 
         code = None
-        if self.login:
+        if self.login and phone_prefix and phone_postfix:
             code = code_from_number(phone_prefix, phone_postfix, self.login)
 
         if code:

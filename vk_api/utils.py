@@ -24,7 +24,7 @@ def search_re(reg, string):
         return groups[0]
 
 
-def clean_string(s):
+def clear_string(s):
     if s:
         return s.strip().replace('&nbsp;', '')
 
