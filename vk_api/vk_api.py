@@ -21,8 +21,6 @@ from .utils import (
     cookies_to_list, set_cookies_from_list
 )
 
-DELAY = 0.34  # ~3 requests per second
-
 TOO_MANY_RPS_CODE = 6
 NEED_VALIDATION_CODE = 17
 HTTP_ERROR_CODE = -1
@@ -41,6 +39,9 @@ RE_PHONE_POSTFIX = re.compile(r'phone_postfix">.*?(\d+).*?<')
 
 
 class VkApi(object):
+
+    RPS_DELAY = 0.34  # ~3 requests per second
+
     def __init__(self, login=None, password=None, token=None,
                  auth_handler=None, captcha_handler=None,
                  config=jconfig.Config, config_filename='vk_config.v2.json',
@@ -50,8 +51,7 @@ class VkApi(object):
         :param login: Логин ВКонтакте (лучше использовать номер телефона для
                        автоматического обхода проверки безопасности)
         :param password: Пароль ВКонтакте (если пароль не передан, то будет
-                          попытка использовать сохраненные данные для
-                          аутентификации)
+                          попытка использовать сохраненные данные)
 
         :param token: access_token
         :param auth_handler: Функция для обработки двухфакторной аутентификации,
@@ -59,12 +59,12 @@ class VkApi(object):
                               булевое значение, означающее, стоит ли запомнить
                               это устройство, для прохождения аутентификации.
         :param captcha_handler: Функция для обработки капчи
-        :param config: класс для сохранения настроек
+        :param config: Класс для сохранения настроек
         :param config_filename: Расположение config файла
 
         :param api_version: Версия API
         :param app_id: Standalone-приложение
-        :param scope: Запрашиваемые права. Можно передать строкой
+        :param scope: Запрашиваемые права (можно передать строкой или числом)
         :param client_secret: Защищенный ключ приложения для серверной
                                авторизации (https://vk.com/dev/auth_server)
         """
@@ -493,7 +493,7 @@ class VkApi(object):
 
         with self.lock:
             # Ограничение 3 запроса в секунду
-            delay = DELAY - (time.time() - self.last_request)
+            delay = self.RPS_DELAY - (time.time() - self.last_request)
 
             if delay > 0:
                 time.sleep(delay)
