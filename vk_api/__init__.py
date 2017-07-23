@@ -14,6 +14,6 @@ Copyright (C) 2017
 """
 
 __author__ = 'Kirill Python'
-__version__ = '8.8'
+__version__ = '8.9'
 __email__ = 'whoami@python273.pw'
 __contact__ = 'https://vk.com/python273'
