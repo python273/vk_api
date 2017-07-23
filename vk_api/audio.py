@@ -3,6 +3,7 @@ import re
 
 from bs4 import BeautifulSoup
 
+from .audio_url_decoder import decode_audio_url
 from .exceptions import AccessDenied
 
 RE_AUDIO = re.compile(r'audio\d+_\d+_audios\d+')
@@ -93,6 +94,9 @@ def scrap_data(html):
         ai_artist = audio.select('.ai_artist')
         artist = ai_artist[0].text
         link = audio.select('.ai_body')[0].input['value']
+
+        if 'audio_api_unavailable' in link:
+            link = decode_audio_url(link)
 
         tracks.append({
             'artist': artist,
