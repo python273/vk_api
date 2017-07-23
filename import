@@ -1,0 +1,5 @@
+import time
+import vk_api
+vk = vk_api.VkApi(login = '89990591561', password = 'mmmm1234')
+#vk_api.VkApi(token = 'a02d...e83fd') #Авторизоваться как сообщество
+vk.auth()
