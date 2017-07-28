@@ -349,6 +349,37 @@ class VkUpload(object):
 
         return self.document(doc, title, tags, group_id, True)
 
+    def photo_cover(self, photo, group_id=None, crop_x=None, crop_y=None,
+                      crop_x2=None, crop_y2=None):
+        """ Загрузка изображения профиля
+
+        :param photo: путь к изображению или file-like объект
+        :param group_id: идентификатор сообщества.
+        :param crop_x: координата X верхнего правого угла миниатюры.
+        :param crop_y: координата Y верхнего правого угла миниатюры.
+        :param crop_x2: координата X нижнего правого угла для обрезки изображения.
+        :param crop_y2: координата Y нижнего правого угла для обрезки изображения.
+        """
+        values = {'group_id': group_id}
+
+        crop_params = {}
+
+        if crop_x is not None and crop_y is not None and crop_x2 is not None and crop_y2 is not None:
+            crop_params['_square_crop'] = '{},{},{},{}'.format(
+                crop_x, crop_y, crop_x2, crop_y2
+            )
+
+        response = self.vk.method('photos.getOwnerCoverPhotoUploadServer', values)
+        url = response['upload_url']
+
+        photo_files = open_files(photo, key_format='file')
+        response = self.vk.http.post(url, data=crop_params, files=photo_files)
+        close_files(photo_files)
+
+        response = self.vk.method('photos.saveOwnerCoverPhoto', response.json())
+
+        return response
+
 
 def open_files(paths, key_format='file{}'):
     if not isinstance(paths, list):
