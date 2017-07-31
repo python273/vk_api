@@ -54,6 +54,8 @@ class VkApi(object):
                           попытка использовать сохраненные данные)
 
         :param token: access_token
+        :type token: str
+
         :param auth_handler: Функция для обработки двухфакторной аутентификации,
                               должна возвращать строку с кодом и
                               булевое значение, означающее, стоит ли запомнить
@@ -63,8 +65,14 @@ class VkApi(object):
         :param config_filename: Расположение config файла
 
         :param api_version: Версия API
+        :type api_version: str
+
         :param app_id: Standalone-приложение
+        :type app_id: int
+
         :param scope: Запрашиваемые права (можно передать строкой или числом)
+        :type scope: int, str
+
         :param client_secret: Защищенный ключ приложения для серверной
                                авторизации (https://vk.com/dev/auth_server)
         """
@@ -198,7 +206,14 @@ class VkApi(object):
             self.api_login()
 
     def vk_login(self, captcha_sid=None, captcha_key=None):
-        """ Авторизация ВКонтакте с получением cookies remixsid """
+        """ Авторизация ВКонтакте с получением cookies remixsid
+
+        :param captcha_sid: id капчи
+        :type captcha_key: int, str
+
+        :param captcha_key: ответ капчи
+        :type captcha_key: str
+        """
 
         self.logger.info('Logging in...')
 
@@ -298,6 +313,11 @@ class VkApi(object):
         raise TwoFactorError('Two factor authentication failed')
 
     def security_check(self, response=None):
+        """ Функция для обхода проверки безопасности (запрос номера телефона)
+
+        :param response: ответ предыдущего запроса, если есть
+        """
+
         self.logger.info('Checking security check request')
 
         if response is None:
@@ -434,40 +454,75 @@ class VkApi(object):
             return True
 
     def captcha_handler(self, captcha):
-        """ http://vk.com/dev/captcha_error """
+        """ Обработчик капчи (http://vk.com/dev/captcha_error)
+
+        :param captcha: объект исключения `Captcha`
+        """
+
         raise captcha
 
     def need_validation_handler(self, error):
-        """ http://vk.com/dev/need_validation """
-        # TODO: write me
-        pass
+        """ Обработчик проверки безопасности при запросе API
+            (http://vk.com/dev/need_validation)
+
+        :param error: исключение
+        """
+
+        pass  # TODO: write me
 
     def http_handler(self, error):
-        """ Handle connection errors """
+        """ Обработчик ошибок соединения
+        
+        :param error: исключение
+        """
+
         pass
 
     def too_many_rps_handler(self, error):
+        """ Обработчик ошибки "Слишком много запросов в секунду".
+            Ждет пол секунды и пробудет отправить запрос заново
+
+        :param error: исключение
+        """
+
         time.sleep(0.5)
         return error.try_method()
 
     def auth_handler(self):
+        """ Обработчик двухфакторной аутентификации """
+
         raise AuthError('No handler for two-factor authentication')
 
     def get_api(self):
+        """ Возвращает VkApiMethod(self)
+        
+            Позволяет обращаться к методам API как к обычным классам.
+            Например vk.wall.get(...)
+        """
+
         return VkApiMethod(self)
 
     def method(self, method, values=None, captcha_sid=None, captcha_key=None,
                raw=False):
-        """ Использование методов API
+        """ Вызов метода API
 
-        :param method: метод
+        :param method: имя метода
+        :type method: str
+
         :param values: параметры
-        :param captcha_sid:
-        :param captcha_key:
-        :param raw: при False возвращает response['response']
-                    при True возвращает response
-                    (может понадобиться для метода execute
-                    для получения execute_errors)
+        :type values: dict
+
+        :param captcha_sid: id капчи
+        :type captcha_key: int, str
+
+        :param captcha_key: ответ капчи
+        :type captcha_key: str
+
+        :param raw: при False возвращает `response['response']`
+                    при True возвращает `response`
+                    (может понадобиться для метода execute для получения
+                    execute_errors)
+        :type raw: bool
         """
 
         values = values.copy() if values else {}
