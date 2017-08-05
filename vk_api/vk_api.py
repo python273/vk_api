@@ -45,7 +45,7 @@ class VkApi(object):
     def __init__(self, login=None, password=None, token=None,
                  auth_handler=None, captcha_handler=None,
                  config=jconfig.Config, config_filename='vk_config.v2.json',
-                 api_version='5.63', app_id=2895443, scope=33554431,
+                 api_version='5.67', app_id=2895443, scope=33554431,
                  client_secret=None):
         """
         :param login: Логин ВКонтакте (лучше использовать номер телефона для
