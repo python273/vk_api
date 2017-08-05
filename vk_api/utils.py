@@ -76,6 +76,7 @@ def cookie_to_dict(cookie):
     }
 
     cookie_dict['rest'] = cookie._rest
+    cookie_dict['expires'] = None
 
     return cookie_dict
 
