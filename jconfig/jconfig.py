@@ -9,42 +9,26 @@ Copyright (C) 2017
 
 import json
 
+from .base import BaseConfig
 
-class Config(object):
-    __slots__ = ('_section', '_filename', '_settings')
+
+class Config(BaseConfig):
+
+    __slots__ = BaseConfig.__slots__ + ('_filename',)
 
     def __init__(self, section, filename='.jconfig'):
-        self._section = section
         self._filename = filename
-        self._settings = self.load()
 
-    def __getattr__(self, name):
-        return self._settings[self._section].get(name)
+        super(Config, self).__init__(section, filename=filename)
 
-    def __getitem__(self, key):
-        return self.__getattr__(key)
-
-    def __setattr__(self, name, value):
-        if name.startswith('_'):
-            super(Config, self).__setattr__(name, value)
-            return
-
-        self._settings[self._section][name] = value
-
-    def __setitem__(self, key, value):
-        return self.__setattr__(key, value)
-
-    def clear_section(self):
-        self._settings[self._section] = {}
-
-    def load(self):
+    def load(self, filename, **kwargs):
         try:
-            with open(self._filename, 'r') as f:
+            with open(filename, 'r') as f:
                 settings = json.load(f)
         except (IOError, ValueError):
             settings = {}
 
-        settings.setdefault(self._section, {})
+        settings.setdefault(self.section_name, {})
 
         return settings
 

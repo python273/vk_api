@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 """
-@author: Kirill Python
+@author: python273
 @contact: https://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
@@ -13,7 +13,7 @@ Copyright (C) 2017
 
 setup(
     name='vk_api',
-    version='8.9',
+    version='9.0',
     author='python273',
     author_email='whoami@python273.pw',
     url='https://github.com/python273/vk_api',

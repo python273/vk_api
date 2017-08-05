@@ -9,6 +9,10 @@ Copyright (C) 2017
 
 
 class VkUpload(object):
+    """ Загрузка файлов через API (https://vk.com/dev/upload_files) """
+
+    __slots__ = ('vk',)
+
     def __init__(self, vk):
         """
 
@@ -16,7 +20,6 @@ class VkUpload(object):
         """
 
         self.vk = vk
-        # https://vk.com/dev/upload_files
 
     def photo(self, photos, album_id,
               latitude=None, longitude=None, caption=None, description=None,

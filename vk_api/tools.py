@@ -31,19 +31,19 @@ class VkTools(object):
 
     def get_all_iter(self, method, max_count, values=None, key='items',
                      limit=None):
-        """ Получить все элементы
-        Работает в методах, где в ответе есть count и items или users
+        """ Получить все элементы.
+        Работает в методах, где в ответе есть count и items или users.
         За один запрос получает max_count * 25 элементов
 
-        :param method: метод
+        :param method: имя метода
         :type method: str
+
+        :param max_count: максимальное количество элементов, которое можно
+                          получить за один запрос
+        :type max_count: int
 
         :param values: параметры
         :type values: dict
-
-        :param max_count: максимальное количество элементов,
-                            которое можно получить за один раз
-        :type max_count: int
 
         :param key: ключ элементов, которые нужно получить
         :type key: str
@@ -96,16 +96,25 @@ class VkTools(object):
 
     def get_all_slow_iter(self, method, max_count, values=None, key='items',
                           limit=None):
-        """ Получить все элементы
+        """ Получить все элементы (без использования execute)
         Работает в методах, где в ответе есть count и items или users
 
-        :param method: метод
+        :param method: имя метода
+        :type method: str
+
+        :param max_count: максимальное количество элементов, которое можно
+                          получить за один запрос
+        :type max_count: int
+
         :param values: параметры
-        :param max_count: максимальное количество элементов,
-                            которое можно получить за один раз
+        :type values: dict
+
         :param key: ключ элементов, которые нужно получить
+        :type key: str
+
         :param limit: ограничение на кол-во получаемых элементов,
                             но может прийти больше
+        :type limit: int
         """
 
         values = values.copy() if values else {}

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: Kirill Python
+@author: python273
 @contact: https://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
@@ -19,11 +19,15 @@ class AccessDenied(VkApiError):
     pass
 
 
-class AuthorizationError(VkApiError):  # todo: delete
+class AuthError(VkApiError):
     pass
 
 
-class AuthError(AuthorizationError):
+class LoginRequired(AuthError):
+    pass
+
+
+class PasswordRequired(AuthError):
     pass
 
 
@@ -40,6 +44,7 @@ class TwoFactorError(AuthError):
 
 
 class SecurityCheck(AuthError):
+
     def __init__(self, phone_prefix=None, phone_postfix=None, response=None):
         self.phone_prefix = phone_prefix
         self.phone_postfix = phone_postfix
@@ -51,24 +56,24 @@ class SecurityCheck(AuthError):
                 self.phone_prefix, self.phone_postfix
             )
         else:
-            return ('Security check. Phone prefix and postfix not detected. '
-                    'Please send bugreport. Response in self.response')
+            return ('Security check. Phone prefix and postfix are not detected.'
+                    ' Please send bugreport (response in self.response)')
 
 
 class ApiError(VkApiError):
-    def __init__(self, vk, method, values, error):
+
+    def __init__(self, vk, method, values, raw, error):
         self.vk = vk
         self.method = method
         self.values = values
+        self.raw = raw
         self.code = error['error_code']
         self.error = error
 
     def try_method(self):
-        """ Пробует отправить запрос заново
+        """ Отправить запрос заново """
 
-        """
-
-        return self.vk.method(self.method, self.values)
+        return self.vk.method(self.method, self.values, raw=self.raw)
 
     def __str__(self):
         return '[{}] {}'.format(self.error['error_code'],
@@ -76,24 +81,25 @@ class ApiError(VkApiError):
 
 
 class ApiHttpError(VkApiError):
-    def __init__(self, vk, method, values, response):
+
+    def __init__(self, vk, method, values, raw, response):
         self.vk = vk
         self.method = method
         self.values = values
+        self.raw = raw
         self.response = response
 
     def try_method(self):
-        """ Пробует отправить запрос заново
+        """ Отправить запрос заново """
 
-        """
-
-        return self.vk.method(self.method, self.values)
+        return self.vk.method(self.method, self.values, raw=self.raw)
 
     def __str__(self):
         return 'Response code {}'.format(self.response.status_code)
 
 
 class Captcha(VkApiError):
+
     def __init__(self, vk, captcha_sid, func, args=None, kwargs=None, url=None):
         self.vk = vk
         self.sid = captcha_sid
@@ -108,9 +114,7 @@ class Captcha(VkApiError):
         self.image = None
 
     def get_url(self):
-        """ Возвращает ссылку на изображение капчи
-
-        """
+        """ Получить ссылку на изображение капчи """
 
         if not self.url:
             self.url = 'https://api.vk.com/captcha.php?sid={}'.format(self.sid)
@@ -118,18 +122,17 @@ class Captcha(VkApiError):
         return self.url
 
     def get_image(self):
-        """ Возвращает бинарное изображение капчи, получаемое по get_url()
-        """
+        """ Получить изображение капчи (jpg) """
 
         if not self.image:
             self.image = self.vk.http.get(self.get_url()).content
 
         return self.image
 
-    def try_again(self, key):
-        """ Отправляет запрос заново с ответом капчи
+    def try_again(self, key=None):
+        """ Отправить запрос заново с ответом капчи
 
-        :param key: текст капчи
+        :param key: ответ капчи
         """
 
         if key:

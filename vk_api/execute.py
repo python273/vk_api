@@ -12,12 +12,16 @@ from .vk_api import VkApi, VkApiMethod
 
 
 class VkFunction(object):
-    def __init__(self, code, args=None, clean_args=None, return_raw=False):
-        """ Wrapper around execute method
 
-        :param code: function code
-        :param args: tuple with args (will be converted via json.dumps)
-        :param clean_args: tuple with args (will be converted via str)
+    __slots__ = ('code', '_minified_code', 'args', 'clean_args', 'return_raw')
+
+    def __init__(self, code, args=None, clean_args=None, return_raw=False):
+        """ Обертка над методом execute
+
+        :param code: код функции (VKScript)
+        :param args: список аргументов (будут конвертированы в JSON)
+        :param clean_args: список raw аргументов (будут вставлены как строки)
+        :param return_raw: аргумент raw функции VkApi.method
         """
 
         self.code = code
@@ -42,7 +46,7 @@ class VkFunction(object):
     def __call__(self, vk, *args, **kwargs):
 
         if not isinstance(vk, (VkApi, VkApiMethod)):
-            raise VkFunctionException(
+            raise TypeError(
                 'The first arg should be VkApi or VkApiMethod instance'
             )
 

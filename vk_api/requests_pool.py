@@ -16,36 +16,50 @@ from .execute import VkFunction
 if sys.version_info.major == 2:
     range = xrange
 
+
+class VkRequestsPoolException(Exception):
+    pass
+
+
 PoolRequest = namedtuple('PoolRequest', ['method', 'values', 'result'])
 
 
 class RequestResult(object):
+
+    __slots__ = ('_result', 'ready', '_error')
+
     def __init__(self):
         self._result = None
         self.ready = False
-        self.error = False
-
-    def set_result(self, result):
-        self._result = result
-        self.ready = True
-
-    def set_error(self, error):
-        self.error = error
-        self.ready = True
+        self._error = False
 
     @property
-    def ok(self):
-        return not self.error
+    def error(self):
+        return self._error
+
+    @error.setter
+    def error(self, value):
+        self._error = value
+        self.ready = True
 
     @property
     def result(self):
         if not self.ready:
-            raise Exception('Result is not ready')
+            raise RuntimeError('Result is not available in `with` context')
 
-        if self.error:
-            raise Exception('Got error while executing request')
+        if self._error:
+            raise VkRequestsPoolException('Got error while executing request')
 
         return self._result
+
+    @result.setter
+    def result(self, result):
+        self._result = result
+        self.ready = True
+
+    @property
+    def ok(self):
+        return self.ready and not self._error
 
 
 class VkRequestsPool(object):
@@ -86,7 +100,7 @@ class VkRequestsPool(object):
         """
 
         if self.one_param:
-            raise Exception('One param mode is not working with self.method')
+            raise RuntimeError('One param mode does not work with self.method')
 
         if values is None:
             values = {}
@@ -115,7 +129,7 @@ class VkRequestsPool(object):
         """
 
         if not self.one_param and self.pool:
-            raise Exception('One param mode is not working with self.method')
+            raise RuntimeError('One param mode does not work with self.method')
 
         if default_values is None:
             default_values = {}
@@ -150,11 +164,11 @@ class VkRequestsPool(object):
             if response_errors:
                 self.execute_errors += response_errors[:-1]
 
-            for x, r in enumerate(response):
-                if r is not False:
-                    cur_pool[x].result.set_result(r)
+            for x, response in enumerate(response):
+                if response is not False:
+                    cur_pool[x].result.result = response
                 else:
-                    cur_pool[x].result.set_error(True)
+                    cur_pool[x].result.error = True
 
     def execute_one_param(self):
         result = {}
@@ -178,7 +192,7 @@ class VkRequestsPool(object):
                 if r is not False:
                     result[cur_pool[x]] = r
 
-        self.one_param['return'].set_result(result)
+        self.one_param['return'].result = result
 
 
 def check_one_method(pool):

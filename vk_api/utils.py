@@ -12,6 +12,11 @@ try:
 except ImportError:
     import json
 
+try:
+    from http.cookiejar import Cookie
+except ImportError:  # python2
+    from cookielib import Cookie
+
 
 def search_re(reg, string):
     """ Поиск по регулярке """
@@ -22,7 +27,7 @@ def search_re(reg, string):
         return groups[0]
 
 
-def clean_string(s):
+def clear_string(s):
     if s:
         return s.strip().replace('&nbsp;', '')
 
@@ -53,3 +58,36 @@ def sjson_dumps(*args, **kwargs):
     kwargs['separators'] = (',', ':')
 
     return json.dumps(*args, **kwargs)
+
+
+HTTP_COOKIE_ARGS = [
+    'version', 'name', 'value',
+    'port', 'port_specified',
+    'domain', 'domain_specified',
+    'domain_initial_dot',
+    'path', 'path_specified',
+    'secure', 'expires', 'discard', 'comment', 'comment_url', 'rest', 'rfc2109'
+]
+
+
+def cookie_to_dict(cookie):
+    cookie_dict = {
+        k: v for k, v in cookie.__dict__.items() if k in HTTP_COOKIE_ARGS
+    }
+
+    cookie_dict['rest'] = cookie._rest
+
+    return cookie_dict
+
+
+def cookie_from_dict(d):
+    return Cookie(**d)
+
+
+def cookies_to_list(cookies):
+    return [cookie_to_dict(cookie) for cookie in cookies]
+
+
+def set_cookies_from_list(cookie_jar, l):
+    for cookie in l:
+        cookie_jar.set_cookie(cookie_from_dict(cookie))
