@@ -12,7 +12,10 @@ try:
 except ImportError:
     import json
 
-from http.cookiejar import Cookie
+try:
+    from http.cookiejar import Cookie
+except ImportError:  # python2
+    from cookielib import Cookie
 
 
 def search_re(reg, string):
