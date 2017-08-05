@@ -62,17 +62,18 @@ class SecurityCheck(AuthError):
 
 class ApiError(VkApiError):
 
-    def __init__(self, vk, method, values, error):
+    def __init__(self, vk, method, values, raw, error):
         self.vk = vk
         self.method = method
         self.values = values
+        self.raw = raw
         self.code = error['error_code']
         self.error = error
 
     def try_method(self):
         """ Отправить запрос заново """
 
-        return self.vk.method(self.method, self.values)
+        return self.vk.method(self.method, self.values, raw=self.raw)
 
     def __str__(self):
         return '[{}] {}'.format(self.error['error_code'],
@@ -81,16 +82,17 @@ class ApiError(VkApiError):
 
 class ApiHttpError(VkApiError):
 
-    def __init__(self, vk, method, values, response):
+    def __init__(self, vk, method, values, raw, response):
         self.vk = vk
         self.method = method
         self.values = values
+        self.raw = raw
         self.response = response
 
     def try_method(self):
         """ Отправить запрос заново """
 
-        return self.vk.method(self.method, self.values)
+        return self.vk.method(self.method, self.values, raw=self.raw)
 
     def __str__(self):
         return 'Response code {}'.format(self.response.status_code)

@@ -483,6 +483,8 @@ class VkApi(object):
         :param error: исключение
         """
 
+        self.logger.warning('Too many requests! Sleeping 0.5 sec...')
+
         time.sleep(0.5)
         return error.try_method()
 
@@ -551,7 +553,7 @@ class VkApi(object):
         if response.ok:
             response = response.json()
         else:
-            error = ApiHttpError(self, method, values, response)
+            error = ApiHttpError(self, method, values, raw, response)
             response = self.http_handler(error)
 
             if response is not None:
@@ -560,7 +562,7 @@ class VkApi(object):
             raise error
 
         if 'error' in response:
-            error = ApiError(self, method, values, response['error'])
+            error = ApiError(self, method, values, raw, response['error'])
 
             if error.code in self.error_handlers:
                 if error.code == CAPTCHA_ERROR_CODE:
