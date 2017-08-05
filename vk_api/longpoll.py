@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: Kirill Python
+@author: python273
 @contact: https://vk.com/python273
 @license Apache License, Version 2.0
 
@@ -123,6 +123,7 @@ PARSE_PEER_ID_EVENTS = [
 
 
 class VkLongPoll(object):
+
     __slots__ = (
         'vk', 'wait', 'use_ssl', 'mode',
         'url', 'session',
@@ -213,6 +214,7 @@ class VkLongPoll(object):
 
 
 class Event(object):
+
     __slots__ = (
         'raw', 'type', 'message_flags', 'platform', 'offline_type',
         'user_id', 'group_id',

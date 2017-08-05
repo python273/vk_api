@@ -10,11 +10,14 @@ RE_AUDIO = re.compile(r'audio\d+_\d+_audios\d+')
 
 
 class VkAudio:
+
+    __slots__ = ('_vk',)
+
     def __init__(self, vk):
         self._vk = vk
 
     def get(self, owner_id, offset=0):
-        """ Получение списка аудиозаписей пользователя
+        """ Получить список аудиозаписей пользователя
 
         :param owner_id: ID владельца (отрицательные значения для групп)
         :param offset: смещение
@@ -38,7 +41,7 @@ class VkAudio:
         return scrap_data(response.text)
 
     def search_user(self, owner_id, q=''):
-        """ Поиск по аудиозаписям пользователя
+        """ Искать по аудиозаписям пользователя
 
         :param owner_id: ID владельца (отрицательные значения для групп)
         :param q: запрос
@@ -66,7 +69,7 @@ class VkAudio:
         ]
 
     def search(self, q='', offset=0):
-        """ Поиск аудиозаписей
+        """ Искать аудиозаписи
 
         :param q: запрос
         :param offset: смещение
@@ -85,7 +88,7 @@ class VkAudio:
 
 
 def scrap_data(html):
-    """ Парсинг списка аудиозаписей """
+    """ Парсинг списка аудиозаписей из html странцы """
 
     soup = BeautifulSoup(html, 'html.parser')
     tracks = []

@@ -6,7 +6,7 @@ from .upload import VkUpload
 from .vk_api import VkApi
 
 """
-@author: Kirill Python
+@author: python273
 @contact: https://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 

@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 """
-@author: Kirill Python
+@author: python273
 @contact: https://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
@@ -274,8 +274,6 @@ class VkApi(object):
             self.storage.cookies = cookies_to_list(self.http.cookies)
             self.storage.save()
         else:
-            self.logger.info('Unknown auth error')
-
             raise AuthError(
                 'Unknown error. Please send bugreport: https://vk.com/python273'
             )
@@ -586,16 +584,18 @@ class VkApi(object):
 
 
 class VkApiMethod(object):
+
+    __slots__ = ('_vk', '_method')
+
     def __init__(self, vk, method=None):
         self._vk = vk
         self._method = method
 
     def __getattr__(self, method):
-        if self._method:
-            self._method += '.' + method
-            return self
-
-        return VkApiMethod(self._vk, method)
+        return VkApiMethod(
+            self._vk,
+            (self._method + '.' if self._method else '') + method
+        )
 
     def __call__(self, **kwargs):
         return self._vk.method(self._method, kwargs)
