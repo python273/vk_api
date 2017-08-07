@@ -595,6 +595,13 @@ class VkApi(object):
 
 
 class VkApiMethod(object):
+    """ Дает возможность обращаться к методам API через:
+
+    >>> vk = VkApiMethod(...)
+    >>> vk.wall.getById(posts='...')
+    или
+    >>> vk.wall.get_by_id(posts='...')
+    """
 
     __slots__ = ('_vk', '_method')
 
@@ -603,6 +610,10 @@ class VkApiMethod(object):
         self._method = method
 
     def __getattr__(self, method):
+        if '_' in method:
+            m = method.split('_')
+            method = m[0] + ''.join(i.title() for i in m[1:])
+
         return VkApiMethod(
             self._vk,
             (self._method + '.' if self._method else '') + method
