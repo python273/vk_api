@@ -148,7 +148,11 @@ class VkApi(object):
             self.storage.setdefault('cookies', [])
         )
 
-        self.token = self.storage.setdefault('token', {}).get(str(self.scope))
+        self.token = self.storage.setdefault(
+            'token', {}
+        ).setdefault(
+            'app' + str(self.app_id), {}
+        ).get('scope_' + str(self.scope))
 
         if not token_only:
             self._auth_cookies(reauth=reauth)
@@ -403,7 +407,12 @@ class VkApi(object):
 
             self.token = token
 
-            self.storage.setdefault('token', {})[str(self.scope)] = token
+            self.storage.setdefault(
+                'token', {}
+            ).setdefault(
+                'app' + str(self.app_id), {}
+            )['scope_' + str(self.scope)] = token
+
             self.storage.save()
 
             self.logger.info('Got access_token')
