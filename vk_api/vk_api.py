@@ -262,6 +262,12 @@ class VkApi(object):
 
             return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
 
+        if 'onLoginReCaptcha(' in response.text:
+            captcha_sid = str(int(time.time()))
+            captcha = Captcha(self, captcha_sid, self.vk_login)
+
+            return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
+
         if 'onLoginFailed(4' in response.text:
             raise BadPassword('Bad password')
 
