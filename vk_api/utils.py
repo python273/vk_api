@@ -94,12 +94,13 @@ def set_cookies_from_list(cookie_jar, l):
         cookie_jar.set_cookie(cookie_from_dict(cookie))
 
 
-def enable_debug_mode(vk_session):
+def enable_debug_mode(vk_session, print_content=False):
     """ Включает режим отладки:
     - Вывод сообщений лога
     - Вывод http запросов
 
     :param vk_session: объект VkApi
+    :param print_content: печатать ответ http запросов
     """
 
     import logging
@@ -117,13 +118,17 @@ def enable_debug_mode(vk_session):
             total = end - start
 
             print(
-                '{:0.2f} {} {} {}'.format(
+                '{:0.2f} {} {} {} {}'.format(
                     total,
                     request.method,
                     request.url,
+                    response.status_code,
                     response.history
                 )
             )
+
+            if print_content:
+                print(response.text)
 
             return response
 
