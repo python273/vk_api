@@ -282,7 +282,7 @@ class VkApi(object):
                 'Unknown error. Please send bugreport: https://vk.com/python273'
             )
 
-        response = self.security_check()
+        response = self.security_check(response)
 
         if 'act=blocked' in response.url:
             raise AccountBlocked('Account is blocked')
@@ -325,10 +325,9 @@ class VkApi(object):
         if response is None:
             response = self.http.get('https://vk.com/settings')
 
-            if 'security_check' not in response.url:
-                self.logger.info('Security check is not required')
-
-                return response
+        if 'security_check' not in response.url:
+            self.logger.info('Security check is not required')
+            return response
 
         phone_prefix = clear_string(search_re(RE_PHONE_PREFIX, response.text))
         phone_postfix = clear_string(search_re(RE_PHONE_POSTFIX, response.text))
