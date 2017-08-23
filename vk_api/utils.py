@@ -92,3 +92,43 @@ def cookies_to_list(cookies):
 def set_cookies_from_list(cookie_jar, l):
     for cookie in l:
         cookie_jar.set_cookie(cookie_from_dict(cookie))
+
+
+def enable_debug_mode(vk_session):
+    """ Включает режим отладки:
+    - Вывод сообщений лога
+    - Вывод http запросов
+
+    :param vk_session: объект VkApi
+    """
+
+    import logging
+    import sys
+    import time
+
+    import requests
+
+    class DebugHTTPAdapter(requests.adapters.HTTPAdapter):
+        def send(self, request, **kwargs):
+            start = time.time()
+            response = super(DebugHTTPAdapter, self).send(request, **kwargs)
+            end = time.time()
+
+            total = end - start
+
+            print(
+                '{:0.2f} {} {} {}'.format(
+                    total,
+                    request.method,
+                    request.url,
+                    response.history
+                )
+            )
+
+            return response
+
+    vk_session.http.mount('http://', DebugHTTPAdapter())
+    vk_session.http.mount('https://', DebugHTTPAdapter())
+
+    vk_session.logger.setLevel(logging.INFO)
+    vk_session.logger.addHandler(logging.StreamHandler(sys.stdout))
