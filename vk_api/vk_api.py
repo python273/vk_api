@@ -8,6 +8,7 @@ Copyright (C) 2017
 """
 
 import logging
+import random
 import re
 import threading
 import time
@@ -258,6 +259,14 @@ class VkApi(object):
             self.logger.info('Captcha code is required')
 
             captcha_sid = search_re(RE_CAPTCHAID, response.text)
+            captcha = Captcha(self, captcha_sid, self.vk_login)
+
+            return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
+
+        if 'onLoginReCaptcha(' in response.text:
+            self.logger.info('Captcha code is required (recaptcha)')
+
+            captcha_sid = str(random.random())[2:16]
             captcha = Captcha(self, captcha_sid, self.vk_login)
 
             return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
