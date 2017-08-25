@@ -147,3 +147,11 @@ class Captcha(VkApiError):
 
     def __str__(self):
         return 'Captcha needed'
+
+
+class VkAudioException(Exception):
+    pass
+
+
+class VkAudioUrlDecodeError(VkAudioException):
+    pass
