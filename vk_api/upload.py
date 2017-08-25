@@ -21,6 +21,52 @@ class VkUpload(object):
 
         self.vk = vk
 
+    def marketPhoto(self, photos, album_id, main_photo=False,
+              latitude=None, longitude=None, caption=None, description=None,
+              group_id=None, ):
+        """ Загрузка изображений в маркет группы
+
+        :param photos: путь к изображению(ям) или file-like объект(ы)
+        :type photos: str, list
+
+        :param album_id: идентификатор альбома
+        :param latitude: географическая широта, заданная в градусах
+                            (от -90 до 90)
+        :param longitude: географическая долгота, заданная в градусах
+                            (от -180 до 180)
+        :param caption: текст описания изображения
+        :param description: текст описания альбома
+        :param group_id: идентификатор сообщества (если загрузка идет в группу)
+        """
+
+        values = {'album_id': album_id, 'main_photo':int(main_photo)}
+
+        if group_id:
+            values['group_id'] = group_id
+
+        # Получаем ссылку для загрузки
+        url = self.vk.method('photos.getMarketUploadServer', values)['upload_url']
+
+        # Загружаем
+        photo_files = open_files(photos)
+        response = self.vk.http.post(url, files=photo_files).json()
+        close_files(photo_files)
+
+        response.update({
+            'latitude': latitude,
+            'longitude': longitude,
+            'caption': caption,
+            'description': description
+        })
+
+        values.update(response)
+        del values['album_id']
+
+        # Сохраняем фото в альбоме
+        response = self.vk.method('photos.saveMarketPhoto', values)
+
+        return response
+
     def photo(self, photos, album_id,
               latitude=None, longitude=None, caption=None, description=None,
               group_id=None):
