@@ -7,6 +7,8 @@
 Copyright (C) 2017
 """
 
+from __future__ import print_function
+
 try:
     import simplejson as json
 except ImportError:
@@ -108,6 +110,22 @@ def enable_debug_mode(vk_session, print_content=False):
     import time
 
     import requests
+
+    from . import __version__
+
+    pypi_version = requests.get(
+        'https://pypi.python.org/pypi/vk_api/json'
+    ).json()['info']['version']
+
+    if __version__ != pypi_version:
+        print()
+        print('######### MODULE IS NOT UPDATED!!1 ##########')
+        print()
+        print('Installed vk_api version is:', __version__)
+        print('PyPI vk_api version is:', pypi_version)
+        print()
+        print('######### MODULE IS NOT UPDATED!!1 ##########')
+        print()
 
     class DebugHTTPAdapter(requests.adapters.HTTPAdapter):
         def send(self, request, **kwargs):
