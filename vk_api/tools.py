@@ -30,7 +30,7 @@ class VkTools(object):
         self.vk = vk
 
     def get_all_iter(self, method, max_count, values=None, key='items',
-                     limit=None):
+                     limit=None, dt_limit=None):
         """ Получить все элементы.
         Работает в методах, где в ответе есть count и items или users.
         За один запрос получает max_count * 25 элементов
@@ -51,6 +51,9 @@ class VkTools(object):
         :param limit: ограничение на кол-во получаемых элементов,
                             но может прийти больше
         :type limit: int
+
+        :param dt_limit: ограничение на время публикации элемента
+        :type dt_limit: int
         """
 
         values = values.copy() if values else {}
@@ -80,7 +83,11 @@ class VkTools(object):
             if limit and items_count >= limit:
                 break
 
-    def get_all(self, method, max_count, values=None, key='items', limit=None):
+            if dt_limit and items[len(items) - 1]['date'] <= dt_limit:
+                break
+
+    def get_all(self, method, max_count, values=None, key='items', limit=None,
+                dt_limit=None):
         """ Использовать только если нужно загрузить все объекты в память.
 
             Eсли вы можете обрабатывать объекты по частям, то лучше
@@ -90,7 +97,8 @@ class VkTools(object):
             все данные в память
         """
 
-        items = list(self.get_all_iter(method, max_count, values, key, limit))
+        items = list(self.get_all_iter(method, max_count, values, key, limit,
+                                       dt_limit))
 
         return {'count': len(items), key: items}
 
