@@ -34,4 +34,4 @@ class Config(BaseConfig):
 
     def save(self):
         with open(self._filename, 'w') as f:
-            json.dump(self._settings, f)
+            json.dump(self._settings, f, indent=2, sort_keys=True)
