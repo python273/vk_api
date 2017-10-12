@@ -30,7 +30,7 @@ class VkTools(object):
         self.vk = vk
 
     def get_all_iter(self, method, max_count, values=None, key='items',
-                     limit=None, dt_limit=None):
+                     limit=None, stop_fn=None):
         """ Получить все элементы.
         Работает в методах, где в ответе есть count и items или users.
         За один запрос получает max_count * 25 элементов
@@ -52,8 +52,8 @@ class VkTools(object):
                             но может прийти больше
         :type limit: int
 
-        :param dt_limit: ограничение на время публикации элемента
-        :type dt_limit: int
+        :param stop_fn: функция, отвечающая за выход из цикла
+        :type stop_fn: func
         """
 
         values = values.copy() if values else {}
@@ -83,11 +83,11 @@ class VkTools(object):
             if limit and items_count >= limit:
                 break
 
-            if dt_limit and items[len(items) - 1]['date'] <= dt_limit:
+            if stop_fn and stop_fn(items):
                 break
 
     def get_all(self, method, max_count, values=None, key='items', limit=None,
-                dt_limit=None):
+                stop_fn=None):
         """ Использовать только если нужно загрузить все объекты в память.
 
             Eсли вы можете обрабатывать объекты по частям, то лучше
@@ -98,12 +98,12 @@ class VkTools(object):
         """
 
         items = list(self.get_all_iter(method, max_count, values, key, limit,
-                                       dt_limit))
+                                       stop_fn))
 
         return {'count': len(items), key: items}
 
     def get_all_slow_iter(self, method, max_count, values=None, key='items',
-                          limit=None):
+                          limit=None, stop_fn=None):
         """ Получить все элементы (без использования execute)
         Работает в методах, где в ответе есть count и items или users
 
@@ -123,6 +123,9 @@ class VkTools(object):
         :param limit: ограничение на кол-во получаемых элементов,
                             но может прийти больше
         :type limit: int
+
+        :param stop_fn: функция, отвечающая за выход из цикла
+        :type stop_fn: func
         """
 
         values = values.copy() if values else {}
@@ -146,8 +149,11 @@ class VkTools(object):
             if limit and items_count >= limit:
                 break
 
+            if stop_fn and stop_fn(items):
+                break
+
     def get_all_slow(self, method, max_count, values=None, key='items',
-                     limit=None):
+                     limit=None, stop_fn=None):
         """ Использовать только если нужно загрузить все объекты в память.
 
             Eсли вы можете обрабатывать объекты по частям, то лучше
@@ -158,7 +164,8 @@ class VkTools(object):
         """
 
         items = list(
-            self.get_all_slow_iter(method, max_count, values, key, limit)
+            self.get_all_slow_iter(method, max_count, values, key, limit, 
+                                   stop_fn)
         )
         return {'count': len(items), key: items}
 
