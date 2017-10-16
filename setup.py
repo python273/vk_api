@@ -13,7 +13,7 @@ Copyright (C) 2017
 
 setup(
     name='vk_api',
-    version='9.1',
+    version='9.1.1',
     author='python273',
     author_email='whoami@python273.pw',
     url='https://github.com/python273/vk_api',
