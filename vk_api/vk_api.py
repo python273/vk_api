@@ -46,7 +46,7 @@ class VkApi(object):
     def __init__(self, login=None, password=None, token=None,
                  auth_handler=None, captcha_handler=None,
                  config=jconfig.Config, config_filename='vk_config.v2.json',
-                 api_version='5.67', app_id=2895443, scope=33554431,
+                 api_version='5.67', app_id=6222115, scope=140492191,
                  client_secret=None):
         """
         :param login: Логин ВКонтакте (лучше использовать номер телефона для
@@ -92,8 +92,8 @@ class VkApi(object):
 
         self.http = requests.Session()
         self.http.headers.update({
-            'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:40.0) '
-            'Gecko/20100101 Firefox/40.0'
+            'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:52.0) '
+                          'Gecko/20100101 Firefox/52.0'
         })
 
         self.last_request = 0.0
