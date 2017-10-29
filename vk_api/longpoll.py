@@ -272,7 +272,7 @@ class Event(object):
             self.chat_id = self.peer_id - CHAT_START_ID
 
             if 'from' in self.attachments:
-                self.user_id = self.attachments['from']
+                self.user_id = int(self.attachments['from'])
 
         else:  # Сообщение от/для пользователя
             self.from_user = True
