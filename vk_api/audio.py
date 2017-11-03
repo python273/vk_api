@@ -16,15 +16,27 @@ class VkAudio:
     def __init__(self, vk):
         self._vk = vk
 
-    def get(self, owner_id, offset=0):
+    def get(self, owner_id=None, album_id=None, offset=0):
         """ Получить список аудиозаписей пользователя
 
         :param owner_id: ID владельца (отрицательные значения для групп)
+        :param album_id: ID альбома (отрицательные значения для групп)
         :param offset: смещение
         """
 
+        if owner_id is None and album_id is None:
+            raise TypeError("get() missing 1 required argument: 'album_id' or 'owner_id'")
+        elif owner_id is not None and album_id is not None:
+            raise TypeError("get() too many arguments")
+
+        id = owner_id
+        url = "https://m.vk.com/audios{}"
+        if album_id is not None:
+            id = album_id
+            url = "https://m.vk.com/audio?act=audio_playlist{}"
+
         response = self._vk.http.get(
-            'https://m.vk.com/audios{}'.format(owner_id),
+            url.format(id),
             params={
                 'offset': offset
             },
@@ -34,7 +46,7 @@ class VkAudio:
         if not response.text:
             raise AccessDenied(
                 'You don\'t have permissions to browse {}\'s audio'.format(
-                    owner_id
+                    id
                 )
             )
 
@@ -92,8 +104,7 @@ def scrap_data(html):
 
     soup = BeautifulSoup(html, 'html.parser')
     tracks = []
-
-    for audio in soup.find_all('div', {'class': 'audio_item ai_has_btn'}):
+    for audio in soup.find_all('div', {'class': 'audio_item'}):
         ai_artist = audio.select('.ai_artist')
         artist = ai_artist[0].text
         link = audio.select('.ai_body')[0].input['value']
