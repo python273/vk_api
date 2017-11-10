@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from .audio_url_decoder import decode_audio_url
 from .exceptions import AccessDenied
 
-RE_AUDIO = re.compile(r'audio\d+_\d+_audios\d+')
+RE_AUDIO = re.compile(r'audio[-\d]+_\d+_audios\d+')
 
 
 class VkAudio:
@@ -30,12 +30,16 @@ class VkAudio:
             )
         elif owner_id is not None and album_id is not None:
             raise TypeError('get() too many arguments')
+        if album_id is not None and get_albums is True:
+            raise TypeError('get() too many arguments')
 
         id = owner_id
         url = 'https://m.vk.com/audios{}'
         if album_id is not None:
             id = album_id
             url = 'https://m.vk.com/audio?act=audio_playlist{}'
+        if get_albums is True:
+            url = 'https://m.vk.com/audio?act=audio_playlists{}'
 
         response = self._vk.http.get(
             url.format(id),
@@ -52,6 +56,8 @@ class VkAudio:
                 )
             )
 
+        if get_albums:
+            return scrap_albums(response.text)
         return scrap_data(response.text)
 
     def search_user(self, owner_id, q=''):
@@ -123,3 +129,22 @@ def scrap_data(html):
         })
 
     return tracks
+
+
+def scrap_albums(html):
+    """ Парсинг списка альбомов из html странцы """
+
+    soup = BeautifulSoup(html, 'html.parser')
+    albums = []
+    for album in soup.find_all('div', {'class': 'audioPlaylistsPage__item'}):
+        link = album.select('.audioPlaylistsPage__itemLink')[0]['href']
+
+        albums.append({
+            'artist': album.select('.audioPlaylistsPage__author')[0].text,
+            'title': album.select('.audioPlaylistsPage__title')[0].text,
+            'plays': album.select('.audioPlaylistsPage__stats')[0].text,
+            'id': album['class'][1],
+            'url': 'https://m.vk.com/audio?act=audio_playlist{}'.format(link)
+        })
+
+    return albums

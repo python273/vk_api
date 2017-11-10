@@ -24,27 +24,26 @@ def main():
     offset = 0
 
     while True:
-        audios = vkaudio.get(album_id='-89975290_74038117', offset=offset)
+        albums = vkaudio.get(owner_id='194957739', get_albums=True, offset=offset)
 
-        if not audios:
+        if not albums:
             break
 
-        for audio in audios:
-            artists[audio['artist']] += 1
+        for album in albums:
+            artists[album['artist']] += 1
 
-        offset += len(audios)
+        offset += len(albums)
 
     # Составляем рейтинг первых 15
     print('\nTop 15:')
     for artist, tracks in artists.most_common(15):
         print('{} - {} tracks'.format(artist, tracks))
 
-    # Ищем треки самого популярного
-    most_common_artist = artists.most_common(1)[0][0]
+    # Ищем треки последнего альбома
+    album = vkaudio.get(owner_id='194957739', get_albums=True)[0]
+    print('\nSearch for', album['title'])
 
-    print('\nSearch for', most_common_artist)
-
-    tracks = vkaudio.search(q=most_common_artist)[:10]
+    tracks = vkaudio.get(album_id=album['id'][25:])
 
     for n, track in enumerate(tracks, 1):
         print('{}. {} {}'.format(n, track['title'], track['url']))
