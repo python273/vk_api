@@ -25,15 +25,17 @@ class VkAudio:
         """
 
         if owner_id is None and album_id is None:
-            raise TypeError("get() missing 1 required argument: 'album_id' or 'owner_id'")
+            raise TypeError(
+                'get() missing 1 required argument: album_id or owner_id'
+            )
         elif owner_id is not None and album_id is not None:
-            raise TypeError("get() too many arguments")
+            raise TypeError('get() too many arguments')
 
         id = owner_id
-        url = "https://m.vk.com/audios{}"
+        url = 'https://m.vk.com/audios{}'
         if album_id is not None:
             id = album_id
-            url = "https://m.vk.com/audio?act=audio_playlist{}"
+            url = 'https://m.vk.com/audio?act=audio_playlist{}'
 
         response = self._vk.http.get(
             url.format(id),
