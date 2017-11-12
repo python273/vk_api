@@ -31,14 +31,13 @@ class VkAudio:
         elif owner_id is not None and album_id is not None:
             raise TypeError('get() too many arguments')
 
-        user_id = owner_id
-        url = 'https://m.vk.com/audios{}'
         if album_id is not None:
-            user_id = album_id
-            url = 'https://m.vk.com/audio?act=audio_playlist{}'
+            url = 'https://m.vk.com/audio?act=audio_playlist{}'.format(album_id)
+        else:
+            url = 'https://m.vk.com/audios{}'.format(owner_id)
 
         response = self._vk.http.get(
-            url.format(user_id),
+            url,
             params={
                 'offset': offset
             },
@@ -47,9 +46,7 @@ class VkAudio:
 
         if not response.text:
             raise AccessDenied(
-                'You don\'t have permissions to browse {}\'s audio'.format(
-                    user_id
-                )
+                'You don\'t have permissions to browse user\'s audio'
             )
 
         return scrap_data(response.text)
