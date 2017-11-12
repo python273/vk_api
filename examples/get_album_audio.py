@@ -24,7 +24,7 @@ def main():
     offset = 0
 
     while True:
-        albums = vkaudio.get(owner_id='194957739', get_albums=True, offset=offset)
+        albums = vkaudio.get_albums(owner_id='194957739', offset=offset)
 
         if not albums:
             break

@@ -30,19 +30,15 @@ class VkAudio:
             )
         elif owner_id is not None and album_id is not None:
             raise TypeError('get() too many arguments')
-        if album_id is not None and get_albums is True:
-            raise TypeError('get() too many arguments')
 
-        id = owner_id
+        user_id = owner_id
         url = 'https://m.vk.com/audios{}'
         if album_id is not None:
-            id = album_id
+            user_id = album_id
             url = 'https://m.vk.com/audio?act=audio_playlist{}'
-        if get_albums is True:
-            url = 'https://m.vk.com/audio?act=audio_playlists{}'
 
         response = self._vk.http.get(
-            url.format(id),
+            url.format(user_id),
             params={
                 'offset': offset
             },
@@ -52,13 +48,35 @@ class VkAudio:
         if not response.text:
             raise AccessDenied(
                 'You don\'t have permissions to browse {}\'s audio'.format(
-                    id
+                    user_id
                 )
             )
 
-        if get_albums:
-            return scrap_albums(response.text)
         return scrap_data(response.text)
+
+    def get_albums(self, owner_id, offset=0):
+        """ Получить список альбомов пользователя
+
+        :param owner_id: ID владельца (отрицательные значения для групп)
+        :param offset: смещение
+        """
+
+        response = self._vk.http.get(
+            'https://m.vk.com/audio?act=audio_playlists{}'.format(owner_id),
+            params={
+                'offset': offset
+            },
+            allow_redirects=False
+        )
+
+        if not response.text:
+            raise AccessDenied(
+                'You don\'t have permissions to browse {}\'s albums'.format(
+                    owner_id
+                )
+            )
+
+        return scrap_albums(response.text)
 
     def search_user(self, owner_id, q=''):
         """ Искать по аудиозаписям пользователя
