@@ -158,7 +158,7 @@ def scrap_albums(html):
             'artist': album.select('.audioPlaylistsPage__author')[0].text,
             'title': album.select('.audioPlaylistsPage__title')[0].text,
             'plays': album.select('.audioPlaylistsPage__stats')[0].text,
-            'id': album['class'][1],
+            'id': album['class'][1][25:],
             'url': 'https://m.vk.com/audio?act=audio_playlist{}'.format(link)
         })
 

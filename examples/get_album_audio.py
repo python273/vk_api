@@ -6,7 +6,7 @@ from vk_api.audio import VkAudio
 
 
 def main():
-    """ Пример составления топа исполнителей для альбома вк """
+    """ Пример отображения 5 последних альбомов пользователя """
 
     login, password = 'login', 'password'
     vk_session = vk_api.VkApi(login, password)
@@ -28,9 +28,7 @@ def main():
         if not temp_albums:
             break
 
-        for album in temp_albums:
-            albums.append(album)
-
+        albums += temp_albums
         offset += len(temp_albums)
 
     print('\nLast 5:')
@@ -39,7 +37,7 @@ def main():
 
     # Ищем треки последнего альбома
     print('\nSearch for', albums[0]['title'])
-    tracks = vkaudio.get(album_id=albums[0]['id'][25:])
+    tracks = vkaudio.get(album_id=albums[0]['id'])
 
     for n, track in enumerate(tracks, 1):
         print('{}. {} {}'.format(n, track['title'], track['url']))
