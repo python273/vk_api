@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from .audio_url_decoder import decode_audio_url
 from .exceptions import AccessDenied
 
-RE_AUDIO = re.compile(r'audio\d+_\d+_audios\d+')
+RE_AUDIO = re.compile(r'audio[-\d]+_\d+_audios\d+')
 
 
 class VkAudio:
@@ -16,15 +16,28 @@ class VkAudio:
     def __init__(self, vk):
         self._vk = vk
 
-    def get(self, owner_id, offset=0):
+    def get(self, owner_id=None, album_id=None, offset=0):
         """ Получить список аудиозаписей пользователя
 
         :param owner_id: ID владельца (отрицательные значения для групп)
+        :param album_id: ID альбома (отрицательные значения для групп)
         :param offset: смещение
         """
 
+        if owner_id is None and album_id is None:
+            raise TypeError(
+                'get() missing 1 required argument: album_id or owner_id'
+            )
+        elif owner_id is not None and album_id is not None:
+            raise TypeError('get() too many arguments')
+
+        if album_id is not None:
+            url = 'https://m.vk.com/audio?act=audio_playlist{}'.format(album_id)
+        else:
+            url = 'https://m.vk.com/audios{}'.format(owner_id)
+
         response = self._vk.http.get(
-            'https://m.vk.com/audios{}'.format(owner_id),
+            url,
             params={
                 'offset': offset
             },
@@ -33,12 +46,34 @@ class VkAudio:
 
         if not response.text:
             raise AccessDenied(
-                'You don\'t have permissions to browse {}\'s audio'.format(
+                'You don\'t have permissions to browse user\'s audio'
+            )
+
+        return scrap_data(response.text)
+
+    def get_albums(self, owner_id, offset=0):
+        """ Получить список альбомов пользователя
+
+        :param owner_id: ID владельца (отрицательные значения для групп)
+        :param offset: смещение
+        """
+
+        response = self._vk.http.get(
+            'https://m.vk.com/audio?act=audio_playlists{}'.format(owner_id),
+            params={
+                'offset': offset
+            },
+            allow_redirects=False
+        )
+
+        if not response.text:
+            raise AccessDenied(
+                'You don\'t have permissions to browse {}\'s albums'.format(
                     owner_id
                 )
             )
 
-        return scrap_data(response.text)
+        return scrap_albums(response.text)
 
     def search_user(self, owner_id, q=''):
         """ Искать по аудиозаписям пользователя
@@ -92,8 +127,7 @@ def scrap_data(html):
 
     soup = BeautifulSoup(html, 'html.parser')
     tracks = []
-
-    for audio in soup.find_all('div', {'class': 'audio_item ai_has_btn'}):
+    for audio in soup.find_all('div', {'class': 'audio_item'}):
         ai_artist = audio.select('.ai_artist')
         artist = ai_artist[0].text
         link = audio.select('.ai_body')[0].input['value']
@@ -110,3 +144,22 @@ def scrap_data(html):
         })
 
     return tracks
+
+
+def scrap_albums(html):
+    """ Парсинг списка альбомов из html странцы """
+
+    soup = BeautifulSoup(html, 'html.parser')
+    albums = []
+    for album in soup.find_all('div', {'class': 'audioPlaylistsPage__item'}):
+        link = album.select('.audioPlaylistsPage__itemLink')[0]['href']
+
+        albums.append({
+            'artist': album.select('.audioPlaylistsPage__author')[0].text,
+            'title': album.select('.audioPlaylistsPage__title')[0].text,
+            'plays': album.select('.audioPlaylistsPage__stats')[0].text,
+            'id': album['class'][1][25:],
+            'url': 'https://m.vk.com/audio?act=audio_playlist{}'.format(link)
+        })
+
+    return albums
