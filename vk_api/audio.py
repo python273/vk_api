@@ -128,20 +128,21 @@ def scrap_data(html):
     soup = BeautifulSoup(html, 'html.parser')
     tracks = []
     for audio in soup.find_all('div', {'class': 'audio_item'}):
-        ai_artist = audio.select('.ai_artist')
-        artist = ai_artist[0].text
-        link = audio.select('.ai_body')[0].input['value']
+        if 'audio_item_disabled' not in audio["class"]:
+            ai_artist = audio.select('.ai_artist')
+            artist = ai_artist[0].text
+            link = audio.select('.ai_body')[0].input['value']
 
-        if 'audio_api_unavailable' in link:
-            link = decode_audio_url(link)
+            if 'audio_api_unavailable' in link:
+                link = decode_audio_url(link)
 
-        tracks.append({
-            'artist': artist,
-            'title': audio.select('.ai_title')[0].text,
-            'dur': audio.select('.ai_dur')[0]['data-dur'],
-            'id': audio['id'],
-            'url': link
-        })
+            tracks.append({
+                'artist': artist,
+                'title': audio.select('.ai_title')[0].text,
+                'dur': audio.select('.ai_dur')[0]['data-dur'],
+                'id': audio['id'],
+                'url': link
+            })
 
     return tracks
 
