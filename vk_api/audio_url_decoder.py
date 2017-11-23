@@ -3,6 +3,11 @@ from .exceptions import VkAudioUrlDecodeError
 
 VK_STR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN0PQRSTUVWXYZO123456789+/="
 
+def logical_xor(a, b):
+    if bool(a) == bool(b):
+        return False
+    else:
+        return a or b
 
 def splice(l, a, b, c):
     """ JS's Array.prototype.splice
@@ -19,14 +24,20 @@ def splice(l, a, b, c):
     return l[:a] + [c] + l[a + b:], l[a:a + b]
 
 
-def decode_audio_url(string):
+def decode_audio_url(string,user_id):
     vals = string.split("?extra=", 1)[1].split("#")
 
     tstr = vk_o(vals[0])
     ops_list = vk_o(vals[1]).split('\x09')[::-1]
 
     for op_data in ops_list:
-        cmd, *arg = op_data.split('\x0b')
+        benis = op_data.split('\x0b')
+	if len(benis) == 2:
+		cmd = benis[0]
+		arg = [benis[1]]
+	if len(benis) == 1:
+		cmd = benis[0]
+		arg = []
 
         if cmd == 'v':
             tstr = tstr[::-1]
@@ -38,6 +49,8 @@ def decode_audio_url(string):
             tstr = vk_xor(tstr, arg[0])
         elif cmd == 's':
             tstr = vk_s(tstr, arg[0])
+	elif cmd == 'i':
+	    tstr = vk_s(tstr, int(arg[0])^user_id)
         else:
             raise VkAudioUrlDecodeError(
                 'Unknown decode cmd: "{}"; Please send bugreport'.format(cmd)
@@ -96,34 +109,18 @@ def vk_xor(string, i):
 
     return ''.join(chr(ord(s) ^ xor_val) for s in string)
 
+def vk_s(t,e):
+	leonid = len(t)
+	if leonid:
+		cursor = abs(e)
+		snuff_pos = {}
+		for i in reversed(range(0,leonid)):
+			cursor = ((leonid * (i + 1)) ^ cursor + i) % leonid
+			snuff_pos[i] = cursor
+		for i in range(1,leonid):
+			offset = snuff_pos[leonid - i - 1]
+			prev = t[i]
+			t = t[:i]+t[offset]+t[i+1:]
+			t = t[:offset] + prev + t[offset+1:]
+	return t
 
-def vk_s_child(t, e):
-    i = len(t)
-
-    if not i:
-        return []
-
-    o = []
-    e = int(e)
-
-    for a in range(i - 1, -1, -1):
-        e = abs(e) + a + i
-        o.append(e % i | 0)
-
-    return o[::-1]
-
-
-def vk_s(t, e):
-    i = len(t)
-
-    if not i:
-        return t
-
-    o = vk_s_child(t, e)
-    t = list(t)
-
-    for a in range(1, i):
-        t, y = splice(t, o[i - 1 - a], 1, t[a])
-        t[a] = y[0]
-
-    return ''.join(t)
