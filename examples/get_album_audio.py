@@ -1,5 +1,4 @@
-﻿# -*- coding: utf-8 -*-
-import collections
+# -*- coding: utf-8 -*-
 
 import vk_api
 from vk_api.audio import VkAudio

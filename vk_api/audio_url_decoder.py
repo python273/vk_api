@@ -19,7 +19,7 @@ def splice(l, a, b, c):
     return l[:a] + [c] + l[a + b:], l[a:a + b]
 
 
-def decode_audio_url(string):
+def decode_audio_url(string, user_id):
     vals = string.split("?extra=", 1)[1].split("#")
 
     tstr = vk_o(vals[0])
@@ -38,6 +38,8 @@ def decode_audio_url(string):
             tstr = vk_xor(tstr, arg[0])
         elif cmd == 's':
             tstr = vk_s(tstr, arg[0])
+        elif cmd == 'i':
+            tstr = vk_i(tstr, arg[0], user_id)
         else:
             raise VkAudioUrlDecodeError(
                 'Unknown decode cmd: "{}"; Please send bugreport'.format(cmd)
@@ -107,8 +109,8 @@ def vk_s_child(t, e):
     e = int(e)
 
     for a in range(i - 1, -1, -1):
-        e = abs(e) + a + i
-        o.append(e % i | 0)
+        e = (i * (a + 1) ^ e + a) % i
+        o.append(e)
 
     return o[::-1]
 
@@ -127,3 +129,7 @@ def vk_s(t, e):
         t[a] = y[0]
 
     return ''.join(t)
+
+
+def vk_i(t, e, user_id):
+    return vk_s(t, int(e) ^ user_id)
