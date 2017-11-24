@@ -129,8 +129,14 @@ def scrap_data(html, user_id):
     soup = BeautifulSoup(html, 'html.parser')
     tracks = []
     for audio in soup.find_all('div', {'class': 'audio_item'}):
-        ai_artist = audio.select('.ai_artist')
-        artist = ai_artist[0].text
+        if 'audio_item_disabled' in audio["class"]:
+            # TODO: implement getting data of unavailable track
+            continue
+
+        artist = audio.select('.ai_artist')[0].text
+        title = audio.select('.ai_title')[0].text
+        duration = audio.select('.ai_dur')[0]['data-dur']
+        track_id = audio['id']
         link = audio.select('.ai_body')[0].input['value']
 
         if 'audio_api_unavailable' in link:
@@ -138,9 +144,9 @@ def scrap_data(html, user_id):
 
         tracks.append({
             'artist': artist,
-            'title': audio.select('.ai_title')[0].text,
-            'dur': audio.select('.ai_dur')[0]['data-dur'],
-            'id': audio['id'],
+            'title': title,
+            'dur': duration,
+            'id': track_id,
             'url': link
         })
 
