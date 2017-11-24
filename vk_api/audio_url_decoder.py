@@ -45,7 +45,7 @@ def decode_audio_url(string, user_id):
                 'Unknown decode cmd: "{}"; Please send bugreport'.format(cmd)
             )
 
-    return tstr[:-151]
+    return tstr
 
 
 def vk_o(string):
