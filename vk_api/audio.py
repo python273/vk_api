@@ -11,9 +11,10 @@ RE_AUDIO = re.compile(r'audio[-\d]+_\d+_audios\d+')
 
 class VkAudio:
 
-    __slots__ = ('_vk',)
+    __slots__ = ('_vk', 'user_id')
 
     def __init__(self, vk):
+        self.user_id = vk.get_api().users.get()[0]['id']
         self._vk = vk
 
     def get(self, owner_id=None, album_id=None, offset=0):
@@ -49,7 +50,7 @@ class VkAudio:
                 'You don\'t have permissions to browse user\'s audio'
             )
 
-        return scrap_data(response.text)
+        return scrap_data(response.text, self.user_id)
 
     def get_albums(self, owner_id, offset=0):
         """ Получить список альбомов пользователя
@@ -99,7 +100,7 @@ class VkAudio:
             )
 
         return [
-            i for i in scrap_data(response.text)
+            i for i in scrap_data(response.text, self.user_id)
             if RE_AUDIO.search(i['id'])
         ]
 
@@ -119,10 +120,10 @@ class VkAudio:
             }
         )
 
-        return scrap_data(response.text)
+        return scrap_data(response.text, self.user_id)
 
 
-def scrap_data(html):
+def scrap_data(html, user_id):
     """ Парсинг списка аудиозаписей из html странцы """
 
     soup = BeautifulSoup(html, 'html.parser')
@@ -133,7 +134,7 @@ def scrap_data(html):
         link = audio.select('.ai_body')[0].input['value']
 
         if 'audio_api_unavailable' in link:
-            link = decode_audio_url(link)
+            link = decode_audio_url(link, user_id)
 
         tracks.append({
             'artist': artist,
