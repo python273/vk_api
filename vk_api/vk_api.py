@@ -402,6 +402,9 @@ class VkApi(object):
                 'response_type': 'token'
             }
         )
+        
+        if 'act=blocked' in response.url:
+            raise AccountBlocked('Account is blocked')
 
         if 'access_token' not in response.url:
             url = search_re(RE_TOKEN_URL, response.text)
