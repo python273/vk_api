@@ -4,7 +4,7 @@
 @contact: https://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2017
+Copyright (C) 2018
 """
 
 import logging
@@ -46,7 +46,7 @@ class VkApi(object):
     def __init__(self, login=None, password=None, token=None,
                  auth_handler=None, captcha_handler=None,
                  config=jconfig.Config, config_filename='vk_config.v2.json',
-                 api_version='5.67', app_id=6222115, scope=140492191,
+                 api_version='5.73', app_id=6222115, scope=140492255,
                  client_secret=None):
         """
         :param login: Логин ВКонтакте (лучше использовать номер телефона для

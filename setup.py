@@ -7,13 +7,13 @@ from distutils.core import setup
 @contact: https://vk.com/python273
 @license Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2017
+Copyright (C) 2018
 """
 
 
 setup(
     name='vk_api',
-    version='9.3',
+    version='9.3.1',
     author='python273',
     author_email='whoami@python273.pw',
     url='https://github.com/python273/vk_api',

@@ -10,9 +10,9 @@
 - captcha_handler (default: `None`) — Функция для обработки капчи
 - config (default: `<class 'jconfig.jconfig.Config'>`) — Класс для сохранения настроек
 - config_filename (default: `'vk_config.v2.json'`) — Расположение config файла
-- api_version (default: `'5.63'`; type: `str`) — Версия API
-- app_id (default: `2895443`; type: `int`) — Standalone-приложение
-- scope (default: `33554431`; types: `int`, `str`) — Запрашиваемые права (можно передать строкой или числом)
+- api_version (default: `'5.73'`; type: `str`) — Версия API
+- app_id (default: `6222115`; type: `int`) — Standalone-приложение
+- scope (default: `140492255`; types: `int`, `str`) — Запрашиваемые права (можно передать строкой или числом)
 - client_secret (default: `None`) — Защищенный ключ приложения для серверной авторизации ([https://vk.com/dev/auth_server](https://vk.com/dev/auth_server))
 
 ### api_login
