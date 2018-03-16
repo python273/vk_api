@@ -385,12 +385,12 @@ class VkUpload(object):
 
         return response
 
-    def story_photo(self, photo, add_to_news=True, user_ids=None,
+    def story(self, file, type, add_to_news=True, user_ids=None,
                     reply_to_story=None, link_text=None, 
                     link_url=None, group_id=None):
-        """ Загрузка истории-фотографии
+        """ Загрузка истории
 
-        :param photo: путь к изображению или file-like объект
+        :param file: путь к изображению, гифке или видео или file-like объект
         :param add_to_news: размещать ли историю в новостях
         :param user_ids: идентификаторы пользователей, которые будут видеть историю
         :param reply_to_story: идентификатор истории, в ответ на которую создается новая
@@ -398,9 +398,16 @@ class VkUpload(object):
         :param link_url: адрес ссылки для перехода из истории
         :param group_id: идентификатор сообщества, в которое должна быть загружена история
         """
-        
+
         if user_ids is None:
             user_ids = []
+
+        if type == "photo":
+            method = "stories.getPhotoUploadServer"
+        elif type == "video":
+            method = "stories.getVideoUploadServer"
+        else:
+            raise ValueError('type should be either photo or video')
 
         if not add_to_news and not user_ids:
             raise ValueError('Either add_to_news or user_ids param is required')
@@ -435,15 +442,14 @@ class VkUpload(object):
         }
 
         url = self.vk.method(
-            'stories.getPhotoUploadServer', values
+            method, values
         )['upload_url']
 
-        photo_files = open_files(photo, key_format='file')
+        photo_files = open_files(file, key_format='file')
         response = self.vk.http.post(url, files=photo_files)
         close_files(photo_files)
 
         return response
-
 
 
 def open_files(paths, key_format='file{}'):
