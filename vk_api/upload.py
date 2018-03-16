@@ -385,6 +385,66 @@ class VkUpload(object):
 
         return response
 
+    def story_photo(self, photo, add_to_news=True, user_ids=None,
+                    reply_to_story=None, link_text=None, 
+                    link_url=None, group_id=None):
+        """ Загрузка истории-фотографии
+
+        :param photo: путь к изображению или file-like объект
+        :param add_to_news: размещать ли историю в новостях
+        :param user_ids: идентификаторы пользователей, которые будут видеть историю
+        :param reply_to_story: идентификатор истории, в ответ на которую создается новая
+        :param link_text: текст ссылки для перехода из истории
+        :param link_url: адрес ссылки для перехода из истории
+        :param group_id: идентификатор сообщества, в которое должна быть загружена история
+        """
+        
+        if user_ids is None:
+            user_ids = []
+
+        if not add_to_news and not user_ids:
+            raise ValueError('Either add_to_news or user_ids param is required')
+
+        if (link_text or link_url) and not group_id:
+            raise ValueError('Link params available only for communities') 
+
+        if (not link_text) != (not link_url):
+            raise ValueError('Either both link_text and link_url or neither one are required')
+
+        allowed_link_texts = ["to_store", "vote", "more", "book", "order",
+                             "enroll", "fill", "signup", "buy", "ticket",
+                             "write", "open", "learn_more", "view", "go_to",
+                             "contact", "watch", "play", "install", "read"] 
+
+        if link_text and link_text not in allowed_link_texts:
+            raise ValueError('Invalid link_text')
+
+        if link_url and not link_url.startswith("https://vk.com"):
+            raise ValueError('Only internal https://vk.com links are allowed for link_url')
+
+        if link_url and len(link_url) > 2048:
+            raise ValueError('link_url is too long. Max length - 2048')
+
+        values = {
+            'add_to_news': int(add_to_news),
+            'user_ids': ",".join(map(str,user_ids)),
+            'reply_to_story': reply_to_story,
+            'link_text': link_text,
+            'link_url': link_url,
+            "group_id": group_id
+        }
+
+        url = self.vk.method(
+            'stories.getPhotoUploadServer', values
+        )['upload_url']
+
+        photo_files = open_files(photo, key_format='file')
+        response = self.vk.http.post(url, files=photo_files)
+        close_files(photo_files)
+
+        return response
+
+
 
 def open_files(paths, key_format='file{}'):
     if not isinstance(paths, list):
