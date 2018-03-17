@@ -411,10 +411,10 @@ class VkUpload(object):
         if user_ids is None:
             user_ids = []
 
-        if file_type == "photo":
-            method = "stories.getPhotoUploadServer"
-        elif file_type == "video":
-            method = "stories.getVideoUploadServer"
+        if file_type == 'photo':
+            method = 'stories.getPhotoUploadServer'
+        elif file_type == 'video':
+            method = 'stories.getVideoUploadServer'
         else:
             raise ValueError('type should be either photo or video')
 
@@ -430,7 +430,7 @@ class VkUpload(object):
         if link_text and link_text not in STORY_ALLOWED_LINK_TEXTS:
             raise ValueError('Invalid link_text')
 
-        if link_url and not link_url.startswith("https://vk.com"):
+        if link_url and not link_url.startswith('https://vk.com'):
             raise ValueError('Only internal https://vk.com links are allowed for link_url')
 
         if link_url and len(link_url) > 2048:
@@ -438,11 +438,11 @@ class VkUpload(object):
 
         values = {
             'add_to_news': int(add_to_news),
-            'user_ids': ",".join(map(str,user_ids)),
+            'user_ids': ','.join(map(str,user_ids)),
             'reply_to_story': reply_to_story,
             'link_text': link_text,
             'link_url': link_url,
-            "group_id": group_id
+            'group_id': group_id
         }
 
         url = self.vk.method(
