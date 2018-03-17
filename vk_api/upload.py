@@ -8,10 +8,12 @@ Copyright (C) 2018
 """
 
 
-STORY_ALLOWED_LINK_TEXTS = ['to_store', 'vote', 'more', 'book', 'order',
-                            'enroll', 'fill', 'signup', 'buy', 'ticket',
-                            'write', 'open', 'learn_more', 'view', 'go_to',
-                            'contact', 'watch', 'play', 'install', 'read'] 
+STORY_ALLOWED_LINK_TEXTS = [
+    'to_store', 'vote', 'more', 'book', 'order',
+    'enroll', 'fill', 'signup', 'buy', 'ticket',
+    'write', 'open', 'learn_more', 'view', 'go_to',
+    'contact', 'watch', 'play', 'install', 'read'
+]
 
 
 class VkUpload(object):
