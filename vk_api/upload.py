@@ -8,6 +8,14 @@ Copyright (C) 2018
 """
 
 
+STORY_ALLOWED_LINK_TEXTS = [
+    'to_store', 'vote', 'more', 'book', 'order',
+    'enroll', 'fill', 'signup', 'buy', 'ticket',
+    'write', 'open', 'learn_more', 'view', 'go_to',
+    'contact', 'watch', 'play', 'install', 'read'
+]
+
+
 class VkUpload(object):
     """ Загрузка файлов через API (https://vk.com/dev/upload_files) """
 
@@ -382,6 +390,68 @@ class VkUpload(object):
         close_files(photo_files)
 
         response = self.vk.method('photos.saveOwnerCoverPhoto', response.json())
+
+        return response
+
+    def story(self, file, file_type, add_to_news=True, user_ids=None,
+                    reply_to_story=None, link_text=None, 
+                    link_url=None, group_id=None):
+        """ Загрузка истории
+
+        :param file: путь к изображению, гифке или видео или file-like объект
+        :param file_type: тип истории (photo или video)
+        :param add_to_news: размещать ли историю в новостях
+        :param user_ids: идентификаторы пользователей, которые будут видеть историю
+        :param reply_to_story: идентификатор истории, в ответ на которую создается новая
+        :param link_text: текст ссылки для перехода из истории
+        :param link_url: адрес ссылки для перехода из истории
+        :param group_id: идентификатор сообщества, в которое должна быть загружена история
+        """
+
+        if user_ids is None:
+            user_ids = []
+
+        if file_type == 'photo':
+            method = 'stories.getPhotoUploadServer'
+        elif file_type == 'video':
+            method = 'stories.getVideoUploadServer'
+        else:
+            raise ValueError('type should be either photo or video')
+
+        if not add_to_news and not user_ids:
+            raise ValueError('Either add_to_news or user_ids param is required')
+
+        if (link_text or link_url) and not group_id:
+            raise ValueError('Link params available only for communities') 
+
+        if (not link_text) != (not link_url):
+            raise ValueError('Either both link_text and link_url or neither one are required')
+
+        if link_text and link_text not in STORY_ALLOWED_LINK_TEXTS:
+            raise ValueError('Invalid link_text')
+
+        if link_url and not link_url.startswith('https://vk.com'):
+            raise ValueError('Only internal https://vk.com links are allowed for link_url')
+
+        if link_url and len(link_url) > 2048:
+            raise ValueError('link_url is too long. Max length - 2048')
+
+        values = {
+            'add_to_news': int(add_to_news),
+            'user_ids': ','.join(map(str,user_ids)),
+            'reply_to_story': reply_to_story,
+            'link_text': link_text,
+            'link_url': link_url,
+            'group_id': group_id
+        }
+
+        url = self.vk.method(
+            method, values
+        )['upload_url']
+
+        photo_files = open_files(file, key_format='file')
+        response = self.vk.http.post(url, files=photo_files)
+        close_files(photo_files)
 
         return response
 
