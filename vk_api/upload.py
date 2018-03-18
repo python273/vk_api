@@ -52,16 +52,12 @@ class VkUpload(object):
         if group_id:
             values['group_id'] = group_id
 
-        # Получаем ссылку для загрузки
         url = self.vk.method('photos.getUploadServer', values)['upload_url']
 
-        # Загружаем
         photo_files = open_files(photos)
         response = self.vk.http.post(url, files=photo_files).json()
         close_files(photo_files)
 
-        # Олег Илларионов:
-        # это не могу к сожалению просто пофиксить
         if 'album_id' not in response:
             response['album_id'] = response['aid']
 
@@ -74,7 +70,6 @@ class VkUpload(object):
 
         values.update(response)
 
-        # Сохраняем фото в альбоме
         response = self.vk.method('photos.save', values)
 
         return response
@@ -401,11 +396,14 @@ class VkUpload(object):
         :param file: путь к изображению, гифке или видео или file-like объект
         :param file_type: тип истории (photo или video)
         :param add_to_news: размещать ли историю в новостях
-        :param user_ids: идентификаторы пользователей, которые будут видеть историю
-        :param reply_to_story: идентификатор истории, в ответ на которую создается новая
+        :param user_ids: идентификаторы пользователей,
+                         которые будут видеть историю
+        :param reply_to_story: идентификатор истории,
+                               в ответ на которую создается новая
         :param link_text: текст ссылки для перехода из истории
         :param link_url: адрес ссылки для перехода из истории
-        :param group_id: идентификатор сообщества, в которое должна быть загружена история
+        :param group_id: идентификатор сообщества,
+                         в которое должна быть загружена история
         """
 
         if user_ids is None:
@@ -425,33 +423,35 @@ class VkUpload(object):
             raise ValueError('Link params available only for communities') 
 
         if (not link_text) != (not link_url):
-            raise ValueError('Either both link_text and link_url or neither one are required')
+            raise ValueError(
+                'Either both link_text and link_url or neither one are required'
+            )
 
         if link_text and link_text not in STORY_ALLOWED_LINK_TEXTS:
             raise ValueError('Invalid link_text')
 
         if link_url and not link_url.startswith('https://vk.com'):
-            raise ValueError('Only internal https://vk.com links are allowed for link_url')
+            raise ValueError(
+                'Only internal https://vk.com links are allowed for link_url'
+            )
 
         if link_url and len(link_url) > 2048:
             raise ValueError('link_url is too long. Max length - 2048')
 
         values = {
             'add_to_news': int(add_to_news),
-            'user_ids': ','.join(map(str,user_ids)),
+            'user_ids': ','.join(map(str, user_ids)),
             'reply_to_story': reply_to_story,
             'link_text': link_text,
             'link_url': link_url,
             'group_id': group_id
         }
 
-        url = self.vk.method(
-            method, values
-        )['upload_url']
+        url = self.vk.method(method, values)['upload_url']
 
-        photo_files = open_files(file, key_format='file')
-        response = self.vk.http.post(url, files=photo_files)
-        close_files(photo_files)
+        files = open_files(file, key_format='file')
+        response = self.vk.http.post(url, files=files)
+        close_files(files)
 
         return response
 
