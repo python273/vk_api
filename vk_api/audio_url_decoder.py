@@ -26,20 +26,26 @@ def decode_audio_url(string, user_id):
     ops_list = vk_o(vals[1]).split('\x09')[::-1]
 
     for op_data in ops_list:
-        cmd, *arg = op_data.split('\x0b')
+
+        split_op_data = op_data.split('\x0b')
+        cmd = split_op_data[0]
+        if len(split_op_data) > 1:
+            arg = split_op_data[1]
+        else:
+            arg = None
 
         if cmd == 'v':
             tstr = tstr[::-1]
 
         elif cmd == 'r':
-            tstr = vk_r(tstr, arg[0])
+            tstr = vk_r(tstr, arg)
 
         elif cmd == 'x':
-            tstr = vk_xor(tstr, arg[0])
+            tstr = vk_xor(tstr, arg)
         elif cmd == 's':
-            tstr = vk_s(tstr, arg[0])
+            tstr = vk_s(tstr, arg)
         elif cmd == 'i':
-            tstr = vk_i(tstr, arg[0], user_id)
+            tstr = vk_i(tstr, arg, user_id)
         else:
             raise VkAudioUrlDecodeError(
                 'Unknown decode cmd: "{}"; Please send bugreport'.format(cmd)
