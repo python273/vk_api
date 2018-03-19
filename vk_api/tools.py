@@ -138,6 +138,15 @@ class VkTools(object):
             response = self.vk.method(method, values)
             new_count = response['count']
             count_diff = new_count-(count or new_count)
+
+            if new_count == 0:
+                break
+
+            if count_diff < 0:
+                values['offset'] += count_diff
+                count = new_count
+                continue
+
             items = response[key][count_diff:]
             items_count += len(items)
 
