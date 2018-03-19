@@ -136,7 +136,7 @@ class VkTools(object):
         count = response['count']
         items_count = 0
 
-        for offset in range(max_count, count + 1, max_count):
+        for offset in range(0, count + 1, max_count):
             values['offset'] = offset
 
             response = self.vk.method(method, values)
