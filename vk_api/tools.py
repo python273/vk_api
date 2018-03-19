@@ -131,16 +131,14 @@ class VkTools(object):
         values = values.copy() if values else {}
 
         values['count'] = max_count
-
-        response = self.vk.method(method, values)
-        count = response['count']
+        values['offset'] = 0
         items_count = 0
-
-        for offset in range(0, count + 1, max_count):
-            values['offset'] = offset
-
+        count = None
+        while values['offset'] < (count or 1):
             response = self.vk.method(method, values)
-            items = response[key]
+            new_count = response['count']
+            count_diff = new_count-(count or new_count)
+            items = response[key][count_diff:]
             items_count += len(items)
 
             for item in items:
@@ -151,6 +149,9 @@ class VkTools(object):
 
             if stop_fn and stop_fn(items):
                 break
+
+            values['offset'] += max_count + count_diff
+            count = new_count
 
     def get_all_slow(self, method, max_count, values=None, key='items',
                      limit=None, stop_fn=None):
@@ -164,7 +165,7 @@ class VkTools(object):
         """
 
         items = list(
-            self.get_all_slow_iter(method, max_count, values, key, limit, 
+            self.get_all_slow_iter(method, max_count, values, key, limit,
                                    stop_fn)
         )
         return {'count': len(items), key: items}
