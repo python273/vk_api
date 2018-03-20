@@ -58,33 +58,40 @@ class VkTools(object):
 
         values = values.copy() if values else {}
 
+        values['count'] = max_count
+        values['offset'] = 0
         items_count = 0
-        offset = 0
+        count = None
 
-        while True:
+        while values['offset'] < (count or 1):
             response = vk_get_all_items(
-                self.vk, method, values, key, max_count, offset
+                self.vk, method=method, key=key, values=values
             )
+            new_count = response['count']
+            count_diff = new_count-(count or new_count)
 
-            items = response.get('items')
-            offset = response.get('offset')
+            if new_count == 0:
+                break
 
-            if items is None or response.get('count') is None:
-                break  # Error
+            if count_diff < 0:
+                values['offset'] += count_diff
+                count = new_count
+                continue
 
+            items = response[key][count_diff:]
             items_count += len(items)
 
             for item in items:
                 yield item
-
-            if offset >= response['count']:
-                break
 
             if limit and items_count >= limit:
                 break
 
             if stop_fn and stop_fn(items):
                 break
+
+            values['offset'] += len(items) + count_diff
+            count = new_count
 
     def get_all(self, method, max_count, values=None, key='items', limit=None,
                 stop_fn=None):
@@ -137,7 +144,7 @@ class VkTools(object):
         while values['offset'] < (count or 1):
             response = self.vk.method(method, values)
             new_count = response['count']
-            count_diff = new_count-(count or new_count)
+            count_diff = new_count - (count or new_count)
 
             if new_count == 0:
                 break
@@ -159,7 +166,7 @@ class VkTools(object):
             if stop_fn and stop_fn(items):
                 break
 
-            values['offset'] += max_count + count_diff
+            values['offset'] += len(items) + count_diff
             count = new_count
 
     def get_all_slow(self, method, max_count, values=None, key='items',
@@ -181,27 +188,35 @@ class VkTools(object):
 
 
 vk_get_all_items = VkFunction(
-    args=('method', 'values', 'key', 'max_count', 'start_offset'),
-    clean_args=('method', 'max_count', 'start_offset'),
+    args=('method', 'key', 'values'),
+    clean_args=('method', 'key'),
     code='''
-    var max_count = %(max_count)s,
-        offset = %(start_offset)s,
-        key = %(key)s;
+    var params = %(values)s,
+        calls = 0,
+        items = [],
+        count, new_count, count_diff, response;
 
-    var params = {count: max_count, offset: offset} + %(values)s;
+    while(calls < 25 && (count == null || params.offset < count)) {
+        calls = calls + 1;
+        response = API.%(method)s(params);
+        new_count = response.count;
 
-    var r = API.%(method)s(params),
-        items = r[key],
-        i = 1;
+        if (count == null) {
+            count = new_count;
+        }
+        count_diff = new_count - count;
 
-    while(i < 25 && offset + max_count <= r.count) {
-        offset = offset + max_count;
-        params.offset = offset;
-
-        items = items + API.%(method)s(params)[key];
-
-        i = i + 1;
+        if (new_count == 0) {
+            calls = 25;
+        } else if (count_diff < 0) {
+            params.offset = params.offset + count_diff;
+            count = new_count;
+        } else {
+            items = items + response.%(key)s.slice(count_diff);
+            params.offset = params.offset+  params.count + count_diff;
+            count = new_count;
+        }
     };
 
-    return {count: r.count, items: items, offset: offset + max_count};
+    return {count: count, items: items};
 ''')
