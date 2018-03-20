@@ -65,7 +65,7 @@ class VkTools(object):
 
         while values['offset'] < (count or 1):
             response = vk_get_all_items(
-                self.vk, method=method, key=key, values=values
+                self.vk, method=method, key=key, values=values, count = count
             )
             new_count = response['count']
             count_diff = new_count-(count or new_count)
@@ -188,23 +188,19 @@ class VkTools(object):
 
 
 vk_get_all_items = VkFunction(
-    args=('method', 'key', 'values'),
+    args=('method', 'key', 'values', 'count'),
     clean_args=('method', 'key'),
     code='''
     var params = %(values)s,
         calls = 0,
         items = [],
-        count, new_count, count_diff, response;
+        count = %(count)s;
 
     while(calls < 25 && (count == null || params.offset < count)) {
         calls = calls + 1;
-        response = API.%(method)s(params);
-        new_count = response.count;
-
-        if (count == null) {
-            count = new_count;
-        }
-        count_diff = new_count - count;
+        var response = API.%(method)s(params), 
+            new_count = response.count,
+            count_diff = (count == null : 0 ? new_count - count);
 
         if (new_count == 0) {
             calls = 25;
