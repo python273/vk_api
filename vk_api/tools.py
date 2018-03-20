@@ -200,7 +200,7 @@ vk_get_all_items = VkFunction(
         calls = calls + 1;
         var response = API.%(method)s(params), 
             new_count = response.count,
-            count_diff = (count == null : 0 ? new_count - count);
+            count_diff = (count == null ? 0 : new_count - count);
 
         if (new_count == 0) {
             calls = 25;
