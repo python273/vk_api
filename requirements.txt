@@ -1,4 +1,5 @@
 beautifulsoup4
 requests
 enum34
+websocket-client
 six
