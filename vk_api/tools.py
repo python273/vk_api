@@ -100,7 +100,7 @@ class VkTools(object):
         return {'count': len(items), key: items}
 
     def get_all_slow_iter(self, method, max_count, values=None, key='items',
-                          limit=None, stop_fn=None):
+                          limit=None, stop_fn=None, negative_offset=False):
         """ Получить все элементы (без использования execute)
         Работает в методах, где в ответе есть count и items или users
 
@@ -126,13 +126,16 @@ class VkTools(object):
         """
 
         values = values.copy() if values else {}
-
         values['count'] = max_count
         values['offset'] = 0
+
+        offset_mul = -1 if negative_offset else 1
         items_count = 0
         count = None
         while values['offset'] < (count or 1):
+            values['offset'] *= offset_mul
             response = self.vk.method(method, values)
+            values['offset'] *= offset_mul
             new_count = response['count']
             count_diff = new_count - (count or new_count)
 
@@ -145,6 +148,8 @@ class VkTools(object):
                 continue
 
             items = response[key][count_diff:]
+            if not items:
+                break
             items_count += len(items)
 
             for item in items:
