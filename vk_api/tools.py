@@ -30,7 +30,7 @@ class VkTools(object):
         self.vk = vk
 
     def get_all_iter(self, method, max_count, values=None, key='items',
-                     limit=None, stop_fn=None):
+                     limit=None, stop_fn=None, negative_offset=False):
         """ Получить все элементы.
         Работает в методах, где в ответе есть count и items или users.
         За один запрос получает max_count * 25 элементов
@@ -62,10 +62,12 @@ class VkTools(object):
         values['offset'] = 0
         items_count = 0
         count = None
+        have_more = True
 
-        while values['offset'] < (count or 1):
+        while have_more:
             response = vk_get_all_items(
-                self.vk, method=method, key=key, values=values, count=count
+                self.vk, method=method, key=key, values=values, count=count,
+                offset_mul=-1 if negative_offset else 1
             )
             count = response['count']
 
@@ -82,6 +84,7 @@ class VkTools(object):
                 break
 
             values['offset'] = response['offset']
+            have_more = response['have_more']
 
     def get_all(self, method, max_count, values=None, key='items', limit=None,
                 stop_fn=None):
@@ -148,8 +151,6 @@ class VkTools(object):
                 continue
 
             items = response[key][count_diff:]
-            if not items:
-                break
             items_count += len(items)
 
             for item in items:
@@ -159,6 +160,9 @@ class VkTools(object):
                 break
 
             if stop_fn and stop_fn(items):
+                break
+
+            if len(items) < max_count:
                 break
 
             values['offset'] += len(items) + count_diff
@@ -183,30 +187,39 @@ class VkTools(object):
 
 
 vk_get_all_items = VkFunction(
-    args=('method', 'key', 'values', 'count'),
-    clean_args=('method', 'key'),
+    args=('method', 'key', 'values', 'count', 'offset_mul'),
+    clean_args=('method', 'key', 'offset_mul'),
     code='''
     var params = %(values)s,
         calls = 0,
         items = [],
         count = %(count)s;
 
-    while(calls < 25 && (count == null || params.offset < count)) {
+    while(calls < 25) {
         calls = calls + 1;
+        params.offset = params.offset * %(offset_mul)s;
         var response = API.%(method)s(params), 
             new_count = response.count,
             count_diff = (count == null ? 0 : new_count - count);
+        params.offset = params.offset * %(offset_mul)s;
         if (new_count == 0) {
-            calls = 25;
+            calls = 99;
         } else if (count_diff < 0) {
             params.offset = params.offset + count_diff;
             count = new_count;
         } else {
-            items = items + response.%(key)s.slice(count_diff);
+            var r_items = response.%(key)s.slice(count_diff);
+            if (r_items.length < params.count) {
+                calls = 99;
+            }
+            items = items + r_items;
             params.offset = params.offset + params.count + count_diff;
             count = new_count;
         }
+        if (count != null && params.offset >= count) {
+            calls = 99;
+        }
     };
 
-    return {count: count, items: items, offset: params.offset};
+    return {count: count, items: items, offset: params.offset, have_more: calls != 99};
 ''')
