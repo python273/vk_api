@@ -147,7 +147,7 @@ class VkTools(object):
 
         offset_mul = -1 if negative_offset else 1
 
-        offset = 0
+        offset = max_count if negative_offset else 0
         count = None
 
         items_count = 0
