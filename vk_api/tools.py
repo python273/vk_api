@@ -78,7 +78,7 @@ class VkTools(object):
                     'Can\'t load items. Check access to requested items'
                 )
 
-            items = response['items']
+            items = response[key]
             items_count += len(items)
 
             for item in items:
@@ -172,7 +172,7 @@ class VkTools(object):
             for item in items:
                 yield item
 
-            if len(response_items) < max_count:
+            if len(response_items) < max_count - count_diff:
                 break
 
             if limit and items_count >= limit:
@@ -228,7 +228,7 @@ vk_get_all_items = VkFunction(
             ri = response.%(key)s.slice(count_diff);
             items = items + ri;
             offset = offset + params.count + count_diff;
-            if (ri.length < params.count) {
+            if (ri.length < params.count - count_diff) {
                 calls = 99;
             }
         }
