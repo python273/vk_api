@@ -97,7 +97,7 @@ class VkTools(object):
             offset = response['offset']
 
     def get_all(self, method, max_count, values=None, key='items', limit=None,
-                stop_fn=None):
+                stop_fn=None, negative_offset=False):
         """ Использовать только если нужно загрузить все объекты в память.
 
             Eсли вы можете обрабатывать объекты по частям, то лучше
@@ -108,7 +108,9 @@ class VkTools(object):
         """
 
         items = list(
-            self.get_all_iter(method, max_count, values, key, limit, stop_fn)
+            self.get_all_iter(
+                method, max_count, values, key, limit, stop_fn, negative_offset
+            )
         )
 
         return {'count': len(items), key: items}
@@ -185,7 +187,7 @@ class VkTools(object):
             count = new_count
 
     def get_all_slow(self, method, max_count, values=None, key='items',
-                     limit=None, stop_fn=None):
+                     limit=None, stop_fn=None, negative_offset=False):
         """ Использовать только если нужно загрузить все объекты в память.
 
             Eсли вы можете обрабатывать объекты по частям, то лучше
@@ -197,7 +199,7 @@ class VkTools(object):
 
         items = list(
             self.get_all_slow_iter(
-                method, max_count, values, key, limit, stop_fn
+                method, max_count, values, key, limit, stop_fn, negative_offset
             )
         )
         return {'count': len(items), key: items}
@@ -225,10 +227,10 @@ vk_get_all_items = VkFunction(
         if (count_diff < 0) {
             offset = offset + count_diff;
         } else {
-            ri = response.%(key)s.slice(count_diff);
-            items = items + ri;
+            ri = response.%(key)s;
+            items = items + ri.slice(count_diff);
             offset = offset + params.count + count_diff;
-            if (ri.length < params.count - count_diff) {
+            if (ri.length < params.count) {
                 calls = 99;
             }
         }
