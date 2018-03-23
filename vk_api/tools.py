@@ -9,6 +9,7 @@ Copyright (C) 2018
 
 import sys
 
+from .exceptions import ApiError, VkToolsException
 from .execute import VkFunction
 
 
@@ -30,7 +31,7 @@ class VkTools(object):
         self.vk = vk
 
     def get_all_iter(self, method, max_count, values=None, key='items',
-                     limit=None, stop_fn=None):
+                     limit=None, stop_fn=None, negative_offset=False):
         """ Получить все элементы.
         Работает в методах, где в ответе есть count и items или users.
         За один запрос получает max_count * 25 элементов
@@ -54,30 +55,36 @@ class VkTools(object):
 
         :param stop_fn: функция, отвечающая за выход из цикла
         :type stop_fn: func
+
+        :param negative_offset: True если offset должен быть отрицательный
+        :type negative_offset: bool
         """
 
         values = values.copy() if values else {}
+        values['count'] = max_count
 
-        items_count = 0
         offset = 0
+        items_count = 0
+        count = None
 
         while True:
-            response = vk_get_all_items(
-                self.vk, method, values, key, max_count, offset
-            )
+            try:
+                response = vk_get_all_items(
+                    self.vk, method, key, values, count, offset,
+                    offset_mul=-1 if negative_offset else 1
+                )
+            except ApiError:
+                raise VkToolsException(
+                    'Can\'t load items. Check access to requested items'
+                )
 
-            items = response.get('items')
-            offset = response.get('offset')
-
-            if items is None or response.get('count') is None:
-                break  # Error
-
+            items = response["items"]
             items_count += len(items)
 
             for item in items:
                 yield item
 
-            if offset >= response['count']:
+            if not response['more']:
                 break
 
             if limit and items_count >= limit:
@@ -86,8 +93,11 @@ class VkTools(object):
             if stop_fn and stop_fn(items):
                 break
 
+            count = response['count']
+            offset = response['offset']
+
     def get_all(self, method, max_count, values=None, key='items', limit=None,
-                stop_fn=None):
+                stop_fn=None, negative_offset=False):
         """ Использовать только если нужно загрузить все объекты в память.
 
             Eсли вы можете обрабатывать объекты по частям, то лучше
@@ -97,13 +107,16 @@ class VkTools(object):
             все данные в память
         """
 
-        items = list(self.get_all_iter(method, max_count, values, key, limit,
-                                       stop_fn))
+        items = list(
+            self.get_all_iter(
+                method, max_count, values, key, limit, stop_fn, negative_offset
+            )
+        )
 
         return {'count': len(items), key: items}
 
     def get_all_slow_iter(self, method, max_count, values=None, key='items',
-                          limit=None, stop_fn=None):
+                          limit=None, stop_fn=None, negative_offset=False):
         """ Получить все элементы (без использования execute)
         Работает в методах, где в ответе есть count и items или users
 
@@ -126,25 +139,43 @@ class VkTools(object):
 
         :param stop_fn: функция, отвечающая за выход из цикла
         :type stop_fn: func
+
+        :param negative_offset: True если offset должен быть отрицательный
+        :type negative_offset: bool
         """
 
         values = values.copy() if values else {}
-
         values['count'] = max_count
 
-        response = self.vk.method(method, values)
-        count = response['count']
+        offset_mul = -1 if negative_offset else 1
+
+        offset = max_count if negative_offset else 0
+        count = None
+
         items_count = 0
 
-        for offset in range(max_count, count + 1, max_count):
-            values['offset'] = offset
-
+        while count is None or offset < count:
+            values['offset'] = offset * offset_mul
             response = self.vk.method(method, values)
-            items = response[key]
+
+            new_count = response['count']
+
+            count_diff = (new_count - count) if count is not None else 0
+
+            if count_diff < 0:
+                offset += count_diff
+                count = new_count
+                continue
+
+            response_items = response[key]
+            items = response_items[count_diff:]
             items_count += len(items)
 
             for item in items:
                 yield item
+
+            if len(response_items) < max_count - count_diff:
+                break
 
             if limit and items_count >= limit:
                 break
@@ -152,8 +183,11 @@ class VkTools(object):
             if stop_fn and stop_fn(items):
                 break
 
+            offset += max_count
+            count = new_count
+
     def get_all_slow(self, method, max_count, values=None, key='items',
-                     limit=None, stop_fn=None):
+                     limit=None, stop_fn=None, negative_offset=False):
         """ Использовать только если нужно загрузить все объекты в память.
 
             Eсли вы можете обрабатывать объекты по частям, то лучше
@@ -164,34 +198,54 @@ class VkTools(object):
         """
 
         items = list(
-            self.get_all_slow_iter(method, max_count, values, key, limit, 
-                                   stop_fn)
+            self.get_all_slow_iter(
+                method, max_count, values, key, limit, stop_fn, negative_offset
+            )
         )
         return {'count': len(items), key: items}
 
 
 vk_get_all_items = VkFunction(
-    args=('method', 'values', 'key', 'max_count', 'start_offset'),
-    clean_args=('method', 'max_count', 'start_offset'),
+    args=('method', 'key', 'values', 'count', 'offset', 'offset_mul'),
+    clean_args=('method', 'key', 'offset', 'offset_mul'),
     code='''
-    var max_count = %(max_count)s,
-        offset = %(start_offset)s,
-        key = %(key)s;
+    var params = %(values)s,
+        calls = 0,
+        items = [],
+        count = %(count)s,
+        offset = %(offset)s,
+        ri;
 
-    var params = {count: max_count, offset: offset} + %(values)s;
+    while(calls < 25) {
+        calls = calls + 1;
 
-    var r = API.%(method)s(params),
-        items = r[key],
-        i = 1;
+        params.offset = offset * %(offset_mul)s;
+        var response = API.%(method)s(params), 
+            new_count = response.count,
+            count_diff = (count == null ? 0 : new_count - count);
 
-    while(i < 25 && offset + max_count <= r.count) {
-        offset = offset + max_count;
-        params.offset = offset;
+        if (count_diff < 0) {
+            offset = offset + count_diff;
+        } else {
+            ri = response.%(key)s;
+            items = items + ri.slice(count_diff);
+            offset = offset + params.count + count_diff;
+            if (ri.length < params.count) {
+                calls = 99;
+            }
+        }
 
-        items = items + API.%(method)s(params)[key];
+        count = new_count;
 
-        i = i + 1;
+        if (count != null && offset >= count) {
+            calls = 99;
+        }
     };
 
-    return {count: r.count, items: items, offset: offset + max_count};
+    return {
+        count: count,
+        items: items,
+        offset: offset,
+        more: calls != 99
+    };
 ''')
