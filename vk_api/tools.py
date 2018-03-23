@@ -78,7 +78,7 @@ class VkTools(object):
                     'Can\'t load items. Check access to requested items'
                 )
 
-            items = response[key]
+            items = response["items"]
             items_count += len(items)
 
             for item in items:
