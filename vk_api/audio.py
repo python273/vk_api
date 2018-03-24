@@ -6,7 +6,11 @@ from bs4 import BeautifulSoup
 from .audio_url_decoder import decode_audio_url
 from .exceptions import AccessDenied
 
-RE_AUDIO = re.compile(r'audio[-\d]+_\d+_audios\d+')
+RE_AUDIO_ID = re.compile(r'audio(-?\d*)_(\d*)')
+RE_ALBUM_ID = re.compile(r'act=audio_playlist(-?\d+)_(\d+)')
+AUDIOS_PER_USER_PAGE = 50
+AUDIOS_PER_ALBUM_PAGE = 100
+ALBUMS_PER_USER_PAGE = 100
 
 
 class VkAudio:
@@ -14,10 +18,49 @@ class VkAudio:
     __slots__ = ('_vk', 'user_id')
 
     def __init__(self, vk):
-        self.user_id = vk.get_api().users.get()[0]['id']
+        self.user_id = vk.method("users.get")[0]['id']
         self._vk = vk
 
-    def get(self, owner_id=None, album_id=None, offset=0):
+    def get_iter(self, owner_id, album_id=None):
+
+        if album_id is not None:
+            url = 'https://m.vk.com/audio?act=audio_playlist{}_{}'.format(
+                owner_id, album_id
+            )
+            offset_diff = AUDIOS_PER_ALBUM_PAGE
+        else:
+            url = 'https://m.vk.com/audios{}'.format(owner_id)
+            offset_diff = AUDIOS_PER_USER_PAGE
+
+        offset = 0
+        while True:
+            response = self._vk.http.get(
+                url,
+                params={
+                    'offset': offset
+                },
+                allow_redirects=False
+            )
+
+            if not response.text:
+                raise AccessDenied(
+                    'You don\'t have permissions to browse user\'s audio'
+                )
+
+            audios = scrap_data(response.text, self.user_id)
+
+            # на сравнение с offset_diff менять не нужно:
+            # вк не всегда возвращает страницу с тем кол-вом элементов,
+            # которое должно быть
+            if not audios:
+                break
+
+            for i in audios:
+                yield i
+
+            offset += offset_diff
+
+    def get(self, owner_id, album_id=None):
         """ Получить список аудиозаписей пользователя
 
         :param owner_id: ID владельца (отрицательные значения для групп)
@@ -25,56 +68,47 @@ class VkAudio:
         :param offset: смещение
         """
 
-        if owner_id is None and album_id is None:
-            raise TypeError(
-                'get() missing 1 required argument: album_id or owner_id'
-            )
-        elif owner_id is not None and album_id is not None:
-            raise TypeError('get() too many arguments')
+        return list(self.get_iter(owner_id, album_id))
 
-        if album_id is not None:
-            url = 'https://m.vk.com/audio?act=audio_playlist{}'.format(album_id)
-        else:
-            url = 'https://m.vk.com/audios{}'.format(owner_id)
+    def get_albums_iter(self, owner_id):
+        offset = 0
 
-        response = self._vk.http.get(
-            url,
-            params={
-                'offset': offset
-            },
-            allow_redirects=False
-        )
-
-        if not response.text:
-            raise AccessDenied(
-                'You don\'t have permissions to browse user\'s audio'
+        while True:
+            response = self._vk.http.get(
+                'https://m.vk.com/audio?act=audio_playlists{}'.format(
+                    owner_id
+                ),
+                params={
+                    'offset': offset
+                },
+                allow_redirects=False
             )
 
-        return scrap_data(response.text, self.user_id)
+            if not response.text:
+                raise AccessDenied(
+                    'You don\'t have permissions to browse {}\'s albums'.format(
+                        owner_id
+                    )
+                )
 
-    def get_albums(self, owner_id, offset=0):
+            albums = scrap_albums(response.text)
+
+            if not albums:
+                break
+
+            for i in albums:
+                yield i
+
+            offset += ALBUMS_PER_USER_PAGE
+
+    def get_albums(self, owner_id):
         """ Получить список альбомов пользователя
 
         :param owner_id: ID владельца (отрицательные значения для групп)
         :param offset: смещение
         """
 
-        response = self._vk.http.get(
-            'https://m.vk.com/audio?act=audio_playlists{}'.format(owner_id),
-            params={
-                'offset': offset
-            },
-            allow_redirects=False
-        )
-
-        if not response.text:
-            raise AccessDenied(
-                'You don\'t have permissions to browse {}\'s albums'.format(
-                    owner_id
-                )
-            )
-
-        return scrap_albums(response.text)
+        return list(self.get_albums_iter(owner_id))
 
     def search_user(self, owner_id, q=''):
         """ Искать по аудиозаписям пользователя
@@ -101,7 +135,7 @@ class VkAudio:
 
         return [
             i for i in scrap_data(response.text, self.user_id)
-            if RE_AUDIO.search(i['id'])
+            if i['owner_id'] == owner_id
         ]
 
     def search(self, q='', offset=0):
@@ -130,13 +164,13 @@ def scrap_data(html, user_id):
     tracks = []
     for audio in soup.find_all('div', {'class': 'audio_item'}):
         if 'audio_item_disabled' in audio["class"]:
-            # TODO: implement getting data of unavailable track
             continue
 
         artist = audio.select('.ai_artist')[0].text
         title = audio.select('.ai_title')[0].text
         duration = audio.select('.ai_dur')[0]['data-dur']
-        track_id = audio['id']
+        duration = int(duration)
+        full_id = [int(i) for i in RE_AUDIO_ID.findall(audio['id'])[0]]
         link = audio.select('.ai_body')[0].input['value']
 
         if 'audio_api_unavailable' in link:
@@ -145,8 +179,9 @@ def scrap_data(html, user_id):
         tracks.append({
             'artist': artist,
             'title': title,
-            'dur': duration,
-            'id': track_id,
+            'duration': duration,
+            'id': full_id[1],
+            'owner_id': full_id[0],
             'url': link
         })
 
@@ -160,13 +195,13 @@ def scrap_albums(html):
     albums = []
     for album in soup.find_all('div', {'class': 'audioPlaylistsPage__item'}):
         link = album.select('.audioPlaylistsPage__itemLink')[0]['href']
-
+        full_id = [int(i) for i in RE_ALBUM_ID.findall(link)[0]]
         albums.append({
-            'artist': album.select('.audioPlaylistsPage__author')[0].text,
             'title': album.select('.audioPlaylistsPage__title')[0].text,
-            'plays': album.select('.audioPlaylistsPage__stats')[0].text,
-            'id': album['class'][1][25:],
-            'url': 'https://m.vk.com/audio?act=audio_playlist{}'.format(link)
+            'plays': int(album.select('.audioPlaylistsPage__stats')[0].text.split()[0]),
+            'id': full_id[1],
+            'owner_id': full_id[0],
+            'url': 'https://m.vk.com/audio?act=audio_playlist{}_{}'.format(full_id[0], full_id[1])
         })
 
     return albums

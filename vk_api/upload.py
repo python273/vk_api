@@ -406,7 +406,7 @@ class VkUpload(object):
 
         if not add_to_news and not user_ids:
             raise ValueError(
-                'Either add_to_news or user_ids param is required')
+                'add_to_news and/or user_ids param is required')
 
         if (link_text or link_url) and not group_id:
             raise ValueError('Link params available only for communities')
