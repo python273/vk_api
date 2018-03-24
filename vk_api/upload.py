@@ -438,10 +438,9 @@ class VkUpload(object):
 
         url = self.vk.method(method, values)['upload_url']
 
-        files = open_files(file, key_format='file')
-        response = self.vk.http.post(url, files=files)
-        close_files(files)
-
+        with FilesOpener(file, key_format='file') as files:
+            response = self.vk.http.post(url, files=files)
+        
         return response
 
 
