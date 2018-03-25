@@ -8,20 +8,26 @@ from .exceptions import AccessDenied
 
 RE_AUDIO_ID = re.compile(r'audio(-?\d*)_(\d*)')
 RE_ALBUM_ID = re.compile(r'act=audio_playlist(-?\d+)_(\d+)')
+
 AUDIOS_PER_USER_PAGE = 50
 AUDIOS_PER_ALBUM_PAGE = 100
 ALBUMS_PER_USER_PAGE = 100
 
 
-class VkAudio:
+class VkAudio(object):
 
     __slots__ = ('_vk', 'user_id')
 
     def __init__(self, vk):
-        self.user_id = vk.method("users.get")[0]['id']
+        self.user_id = vk.method('users.get')[0]['id']
         self._vk = vk
 
     def get_iter(self, owner_id, album_id=None):
+        """ Получить список аудиозаписей пользователя (по частям)
+
+        :param owner_id: ID владельца (отрицательные значения для групп)
+        :param album_id: ID альбома
+        """
 
         if album_id is not None:
             url = 'https://m.vk.com/audio?act=audio_playlist{}_{}'.format(
@@ -64,13 +70,17 @@ class VkAudio:
         """ Получить список аудиозаписей пользователя
 
         :param owner_id: ID владельца (отрицательные значения для групп)
-        :param album_id: ID альбома (отрицательные значения для групп)
-        :param offset: смещение
+        :param album_id: ID альбома
         """
 
         return list(self.get_iter(owner_id, album_id))
 
     def get_albums_iter(self, owner_id):
+        """ Получить список альбомов пользователя (по частям)
+
+        :param owner_id: ID владельца (отрицательные значения для групп)
+        """
+
         offset = 0
 
         while True:
@@ -105,7 +115,6 @@ class VkAudio:
         """ Получить список альбомов пользователя
 
         :param owner_id: ID владельца (отрицательные значения для групп)
-        :param offset: смещение
         """
 
         return list(self.get_albums_iter(owner_id))

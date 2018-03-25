@@ -444,7 +444,7 @@ class VkUpload(object):
         return response
 
 
-class FilesOpener():
+class FilesOpener(object):
     def __init__(self, paths, key_format='file{}'):
         if not isinstance(paths, list):
             paths = [paths]

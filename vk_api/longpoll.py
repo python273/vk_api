@@ -123,7 +123,8 @@ EVENT_ATTRS_MAPPING = {
     VkEventType.USER_CALL: ['user_id', 'call_id'],
 
     VkEventType.MESSAGES_COUNTER_UPDATE: ['count'],
-    VkEventType.NOTIFICATION_SETTINGS_UPDATE: ['peer_id', 'sound', 'disabled_until']
+    VkEventType.NOTIFICATION_SETTINGS_UPDATE: [
+        'peer_id', 'sound', 'disabled_until']
 }
 
 
@@ -138,7 +139,8 @@ def get_all_event_attrs():
 
 ALL_EVENT_ATTRS = get_all_event_attrs()
 
-PARSE_PEER_ID_EVENTS = [k for k, v in EVENT_ATTRS_MAPPING.items() if 'peer_id' in v]
+PARSE_PEER_ID_EVENTS = [
+    k for k, v in EVENT_ATTRS_MAPPING.items() if 'peer_id' in v]
 
 
 class VkLongPoll(object):
@@ -235,13 +237,13 @@ class VkLongPoll(object):
 
 class Event(object):
 
-    __slots__ = (
+    __slots__ = frozenset((
         'raw', 'type', 'platform', 'offline_type',
         'user_id', 'group_id', 'peer_id',
         'flags', 'mask',
         'message_flags', 'peer_flags',
         'from_user', 'from_chat', 'from_group', 'from_me', 'to_me'
-    ) + ALL_EVENT_ATTRS
+    )).union(ALL_EVENT_ATTRS)
 
     def __init__(self, raw):
 
@@ -307,7 +309,7 @@ class Event(object):
             self.user_id = self.peer_id
 
     def _parse_message_flags(self):
-        self.message_flags = [x for x in VkMessageFlag if self.flags & x.value] 
+        self.message_flags = [x for x in VkMessageFlag if self.flags & x.value]
 
     def _parse_peer_flags(self):
         self.peer_flags = [x for x in VkPeerFlag if self.flags & x.value]
