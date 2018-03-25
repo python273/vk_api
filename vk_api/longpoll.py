@@ -8,6 +8,7 @@ Copyright (C) 2018
 """
 
 import requests
+import datetime
 from enum import Enum
 
 
@@ -240,7 +241,7 @@ class Event(object):
     __slots__ = frozenset((
         'raw', 'type', 'platform', 'offline_type',
         'user_id', 'group_id', 'peer_id',
-        'flags', 'mask',
+        'flags', 'mask', 'datetime',
         'message_flags', 'peer_flags',
         'from_user', 'from_chat', 'from_group', 'from_me', 'to_me'
     )).union(ALL_EVENT_ATTRS)
@@ -285,6 +286,10 @@ class Event(object):
         if self.type in [VkEventType.USER_ONLINE, VkEventType.USER_OFFLINE]:
             self.user_id = abs(self.user_id)
             self._parse_online_status()
+
+        if self.timestamp:
+            self.datetime = datetime.datetime.fromtimestamp(self.timestamp)
+
 
     def _list_to_attr(self, raw, attrs):
 
