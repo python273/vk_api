@@ -12,6 +12,7 @@ import random
 import re
 import threading
 import time
+from enum import Enum
 
 import requests
 
@@ -39,6 +40,31 @@ RE_PHONE_PREFIX = re.compile(r'label ta_r">\+(.*?)<')
 RE_PHONE_POSTFIX = re.compile(r'phone_postfix">.*?(\d+).*?<')
 
 
+class VkUserPermissions(Enum):
+    NOTIFY = 1
+    FRIEND = 2
+    PHOTOS = 2**2
+    AUDIO = 2**3
+    VIDEO = 2**4
+    STORIES = 2**6
+    PAGES = 2**7
+    ADD_LINK = 2**8
+    STATUS = 2**10
+    NOTES = 2**11
+    MESSAGES = 2**12
+    WALL = 2**13
+    ADS = 2**15
+    OFFLINE = 2**16
+    DOCS = 2**17
+    GROUPS = 2**18
+    NOTIFICATIONS = 2**19
+    STATS = 2**20
+    EMAIL = 2**22
+    MARKET = 2**27
+
+DEFAULT_USER_SCOPE = sum([x.value for x in VkUserPermissions])
+
+
 class VkApi(object):
 
     RPS_DELAY = 0.34  # ~3 requests per second
@@ -46,7 +72,7 @@ class VkApi(object):
     def __init__(self, login=None, password=None, token=None,
                  auth_handler=None, captcha_handler=None,
                  config=jconfig.Config, config_filename='vk_config.v2.json',
-                 api_version='5.73', app_id=6222115, scope=140492255,
+                 api_version='5.73', app_id=6222115, scope=DEFAULT_USER_SCOPE,
                  client_secret=None):
         """
         :param login: Логин ВКонтакте (лучше использовать номер телефона для
@@ -92,7 +118,7 @@ class VkApi(object):
 
         self.http = requests.Session()
         self.http.headers.update({
-            'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:52.0) '
+            'User-agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:52.0) '
                           'Gecko/20100101 Firefox/52.0'
         })
 
@@ -155,10 +181,10 @@ class VkApi(object):
             'app' + str(self.app_id), {}
         ).get('scope_' + str(self.scope))
 
-        if not token_only:
-            self._auth_cookies(reauth=reauth)
-        else:
+        if token_only:
             self._auth_token(reauth=reauth)
+        else:
+            self._auth_cookies(reauth=reauth)
 
     def _auth_cookies(self, reauth=False):
 
@@ -465,7 +491,7 @@ class VkApi(object):
 
         if self.token:
             try:
-                self.method('stats.trackVisitor')
+                self.method('users.get')
             except ApiError:
                 return False
 

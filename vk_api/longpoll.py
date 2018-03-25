@@ -66,11 +66,6 @@ class VkPlatform(Enum):
     WEB = 7
 
 
-class VkMessageType(Enum):
-    FROM_ME = 'from_me'
-    TO_ME = 'to_me'
-
-
 class VkOfflineType(Enum):
     EXIT = 0
     AWAY = 1
