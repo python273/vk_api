@@ -63,7 +63,7 @@ class VkTools(object):
         values = values.copy() if values else {}
         values['count'] = max_count
 
-        offset = 0
+        offset = max_count if negative_offset else 0
         items_count = 0
         count = None
 
