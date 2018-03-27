@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from .audio_url_decoder import decode_audio_url
 from .exceptions import AccessDenied
 
-RE_AUDIO_ID = re.compile(r'audio(-?\d*)_(\d*)')
+RE_AUDIO_ID = re.compile(r'audio(-?\d+)_(\d+)')
 RE_ALBUM_ID = re.compile(r'act=audio_playlist(-?\d+)_(\d+)')
 
 AUDIOS_PER_USER_PAGE = 50
@@ -179,7 +179,7 @@ def scrap_data(html, user_id):
         title = audio.select('.ai_title')[0].text
         duration = audio.select('.ai_dur')[0]['data-dur']
         duration = int(duration)
-        full_id = [int(i) for i in RE_AUDIO_ID.findall(audio['id'])[0]]
+        full_id = tuple(int(i) for i in RE_AUDIO_ID.findall(audio['id'])[0])
         link = audio.select('.ai_body')[0].input['value']
 
         if 'audio_api_unavailable' in link:
@@ -204,7 +204,7 @@ def scrap_albums(html):
     albums = []
     for album in soup.find_all('div', {'class': 'audioPlaylistsPage__item'}):
         link = album.select('.audioPlaylistsPage__itemLink')[0]['href']
-        full_id = [int(i) for i in RE_ALBUM_ID.findall(link)[0]]
+        full_id = tuple(int(i) for i in RE_ALBUM_ID.findall(link)[0])
         albums.append({
             'title': album.select('.audioPlaylistsPage__title')[0].text,
             'plays': int(album.select('.audioPlaylistsPage__stats')[0].text.split()[0]),
