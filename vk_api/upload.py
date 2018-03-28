@@ -438,7 +438,7 @@ class FilesOpener(object):
 
         self.paths = paths
         self.key_format = key_format
-        self.files = []
+        self.opened_files = []
 
     def __enter__(self):
         return self.open_files()
@@ -448,6 +448,8 @@ class FilesOpener(object):
 
     def open_files(self):
         self.close_files()
+
+        files = []
 
         for x, file in enumerate(self.paths):
             if hasattr(file, 'read'):
@@ -460,16 +462,17 @@ class FilesOpener(object):
             else:
                 filename = file
                 f = open(filename, 'rb')
+                self.opened_files.append(f)
 
             ext = filename.split('.')[-1]
-            self.files.append(
+            files.append(
                 (self.key_format.format(x), ('file{}.{}'.format(x, ext), f))
             )
 
-        return self.files
+        return files
 
     def close_files(self):
-        for f in self.files:
-            f[1][1].close()
-
-        self.files.clear()
+        for f in self.opened_files:
+            f.close()
+    
+        self.opened_files.clear()
