@@ -11,6 +11,9 @@ from .base import BaseConfig
 
 
 class MemoryConfig(BaseConfig):
+
+    __slots__ = tuple()
+
     def load(self, settings=None, **kwargs):
         return {} if settings is None else settings
 
