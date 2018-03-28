@@ -8,12 +8,12 @@ Copyright (C) 2018
 """
 
 
-STORY_ALLOWED_LINK_TEXTS = [
+STORY_ALLOWED_LINK_TEXTS = {
     'to_store', 'vote', 'more', 'book', 'order',
     'enroll', 'fill', 'signup', 'buy', 'ticket',
     'write', 'open', 'learn_more', 'view', 'go_to',
     'contact', 'watch', 'play', 'install', 'read'
-]
+}
 
 
 class VkUpload(object):
@@ -69,9 +69,7 @@ class VkUpload(object):
 
         values.update(response)
 
-        response = self.vk.method('photos.save', values)
-
-        return response
+        return self.vk.method('photos.save', values)
 
     def photo_messages(self, photos):
         """ Загрузка изображений в сообщения
@@ -85,9 +83,7 @@ class VkUpload(object):
         with FilesOpener(photos) as photo_files:
             response = self.vk.http.post(url, files=photo_files)
 
-        response = self.vk.method('photos.saveMessagesPhoto', response.json())
-
-        return response
+        return self.vk.method('photos.saveMessagesPhoto', response.json())
 
     def photo_profile(self, photo, owner_id=None, crop_x=None, crop_y=None,
                       crop_width=None):
@@ -121,11 +117,12 @@ class VkUpload(object):
 
         with FilesOpener(photo, key_format='file') as photo_files:
             response = self.vk.http.post(
-                url, data=crop_params, files=photo_files)
+                url,
+                data=crop_params,
+                files=photo_files
+            )
 
-        response = self.vk.method('photos.saveOwnerPhoto', response.json())
-
-        return response
+        return self.vk.method('photos.saveOwnerPhoto', response.json())
 
     def photo_chat(self, photo, chat_id):
         """ Загрузка и смена обложки в беседе
@@ -135,17 +132,14 @@ class VkUpload(object):
         """
 
         values = {'chat_id': chat_id}
-        url = self.vk.method('photos.getChatUploadServer', values)[
-            'upload_url']
+        url = self.vk.method('photos.getChatUploadServer', values)['upload_url']
 
         with FilesOpener(photo, key_format='file') as photo_file:
             response = self.vk.http.post(url, files=photo_file)
 
-        response = self.vk.method('messages.setChatPhoto', {
+        return self.vk.method('messages.setChatPhoto', {
             'file': response.json()['response']
         })
-
-        return response
 
     def photo_wall(self, photos, user_id=None, group_id=None):
         """ Загрузка изображений на стену пользователя или в группу
@@ -172,9 +166,7 @@ class VkUpload(object):
 
         values.update(response.json())
 
-        response = self.vk.method('photos.saveWallPhoto', values)
-
-        return response
+        return self.vk.method('photos.saveWallPhoto', values)
 
     def audio(self, audio, artist, title):
         """ Загрузка аудио
@@ -194,9 +186,7 @@ class VkUpload(object):
             'title': title
         })
 
-        response = self.vk.method('audio.save', response)
-
-        return response
+        return self.vk.method('audio.save', response)
 
     def video(self, video_file=None, link=None, name=None, description=None,
               is_private=None, wallpost=None, group_id=None,
@@ -326,9 +316,7 @@ class VkUpload(object):
             'tags': tags
         })
 
-        response = self.vk.method('docs.save', response)
-
-        return response
+        return self.vk.method('docs.save', response)
 
     def document_wall(self, doc, title=None, tags=None, group_id=None):
         """ Загрузка документа в папку Отправленные,
@@ -371,10 +359,10 @@ class VkUpload(object):
         with FilesOpener(photo, key_format='file') as photo_files:
             response = self.vk.http.post(url, files=photo_files)
 
-        response = self.vk.method(
-            'photos.saveOwnerCoverPhoto', response.json())
-
-        return response
+        return self.vk.method(
+            'photos.saveOwnerCoverPhoto',
+            response.json()
+        )
 
     def story(self, file, file_type, add_to_news=True, user_ids=None,
               reply_to_story=None, link_text=None,
@@ -406,7 +394,8 @@ class VkUpload(object):
 
         if not add_to_news and not user_ids:
             raise ValueError(
-                'add_to_news and/or user_ids param is required')
+                'add_to_news and/or user_ids param is required'
+            )
 
         if (link_text or link_url) and not group_id:
             raise ValueError('Link params available only for communities')
@@ -439,15 +428,14 @@ class VkUpload(object):
         url = self.vk.method(method, values)['upload_url']
 
         with FilesOpener(file, key_format='file') as files:
-            response = self.vk.http.post(url, files=files)
-        
-        return response
+            return self.vk.http.post(url, files=files)
 
 
 class FilesOpener(object):
     def __init__(self, paths, key_format='file{}'):
         if not isinstance(paths, list):
             paths = [paths]
+
         self.paths = paths
         self.key_format = key_format
         self.files = []
@@ -460,6 +448,7 @@ class FilesOpener(object):
 
     def open_files(self):
         self.close_files()
+
         for x, file in enumerate(self.paths):
             if hasattr(file, 'read'):
                 f = file
@@ -476,9 +465,11 @@ class FilesOpener(object):
             self.files.append(
                 (self.key_format.format(x), ('file{}.{}'.format(x, ext), f))
             )
+
         return self.files
 
     def close_files(self):
         for f in self.files:
             f[1][1].close()
+
         self.files.clear()

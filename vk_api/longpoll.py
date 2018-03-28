@@ -7,10 +7,10 @@
 Copyright (C) 2018
 """
 
-import requests
 import datetime
 from enum import Enum
 
+import requests
 
 CHAT_START_ID = int(2E9)  # id с которого начинаются беседы
 

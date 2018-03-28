@@ -12,11 +12,11 @@ import random
 import re
 import threading
 import time
-from enum import Enum
 
 import requests
 
 import jconfig
+from .enums import VkUserPermissions
 from .exceptions import *
 from .utils import (
     code_from_number, search_re, clear_string,
@@ -39,28 +39,6 @@ RE_TOKEN_URL = re.compile(r'location\.href = "(.*?)"\+addr;')
 RE_PHONE_PREFIX = re.compile(r'label ta_r">\+(.*?)<')
 RE_PHONE_POSTFIX = re.compile(r'phone_postfix">.*?(\d+).*?<')
 
-
-class VkUserPermissions(Enum):
-    NOTIFY = 1
-    FRIEND = 2
-    PHOTOS = 2**2
-    AUDIO = 2**3
-    VIDEO = 2**4
-    STORIES = 2**6
-    PAGES = 2**7
-    ADD_LINK = 2**8
-    STATUS = 2**10
-    NOTES = 2**11
-    MESSAGES = 2**12
-    WALL = 2**13
-    ADS = 2**15
-    OFFLINE = 2**16
-    DOCS = 2**17
-    GROUPS = 2**18
-    NOTIFICATIONS = 2**19
-    STATS = 2**20
-    EMAIL = 2**22
-    MARKET = 2**27
 
 DEFAULT_USER_SCOPE = sum([x.value for x in VkUserPermissions])
 
@@ -118,7 +96,7 @@ class VkApi(object):
 
         self.http = requests.Session()
         self.http.headers.update({
-            'User-agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:52.0) '
+            'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:52.0) '
                           'Gecko/20100101 Firefox/52.0'
         })
 

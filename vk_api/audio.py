@@ -9,8 +9,8 @@ from .exceptions import AccessDenied
 RE_AUDIO_ID = re.compile(r'audio(-?\d+)_(\d+)')
 RE_ALBUM_ID = re.compile(r'act=audio_playlist(-?\d+)_(\d+)')
 
-AUDIOS_PER_USER_PAGE = 50
-AUDIOS_PER_ALBUM_PAGE = 100
+TRACKS_PER_USER_PAGE = 50
+TRACKS_PER_ALBUM_PAGE = 100
 ALBUMS_PER_USER_PAGE = 100
 
 
@@ -33,10 +33,10 @@ class VkAudio(object):
             url = 'https://m.vk.com/audio?act=audio_playlist{}_{}'.format(
                 owner_id, album_id
             )
-            offset_diff = AUDIOS_PER_ALBUM_PAGE
+            offset_diff = TRACKS_PER_ALBUM_PAGE
         else:
             url = 'https://m.vk.com/audios{}'.format(owner_id)
-            offset_diff = AUDIOS_PER_USER_PAGE
+            offset_diff = TRACKS_PER_USER_PAGE
 
         offset = 0
         while True:
@@ -53,15 +53,12 @@ class VkAudio(object):
                     'You don\'t have permissions to browse user\'s audio'
                 )
 
-            audios = scrap_data(response.text, self.user_id)
+            tracks = scrap_data(response.text, self.user_id)
 
-            # на сравнение с offset_diff менять не нужно:
-            # вк не всегда возвращает страницу с тем кол-вом элементов,
-            # которое должно быть
-            if not audios:
+            if not tracks:
                 break
 
-            for i in audios:
+            for i in tracks:
                 yield i
 
             offset += offset_diff
@@ -205,12 +202,15 @@ def scrap_albums(html):
     for album in soup.find_all('div', {'class': 'audioPlaylistsPage__item'}):
         link = album.select('.audioPlaylistsPage__itemLink')[0]['href']
         full_id = tuple(int(i) for i in RE_ALBUM_ID.findall(link)[0])
+
         albums.append({
             'title': album.select('.audioPlaylistsPage__title')[0].text,
             'plays': int(album.select('.audioPlaylistsPage__stats')[0].text.split()[0]),
             'id': full_id[1],
             'owner_id': full_id[0],
-            'url': 'https://m.vk.com/audio?act=audio_playlist{}_{}'.format(full_id[0], full_id[1])
+            'url': 'https://m.vk.com/audio?act=audio_playlist{}_{}'.format(
+                *full_id
+            )
         })
 
     return albums
