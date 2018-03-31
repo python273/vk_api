@@ -7,7 +7,7 @@
 Copyright (C) 2018
 """
 
-import datetime
+from datetime import datetime
 from enum import Enum
 
 import requests
@@ -93,7 +93,7 @@ class VkPeerFlag(Enum):
 
 
 MESSAGE_EXTRA_FIELDS = [
-    'peer_id', 'timestamp', 'text', 'attachments', 'random_id'
+    'peer_id', 'timestamp', 'subject', 'text', 'attachments', 'random_id'
 ]
 
 EVENT_ATTRS_MAPPING = {
@@ -101,7 +101,7 @@ EVENT_ATTRS_MAPPING = {
     VkEventType.MESSAGE_FLAGS_SET: ['message_id', 'mask'] + MESSAGE_EXTRA_FIELDS,
     VkEventType.MESSAGE_FLAGS_RESET: ['message_id', 'mask'] + MESSAGE_EXTRA_FIELDS,
     VkEventType.MESSAGE_NEW: ['message_id', 'flags'] + MESSAGE_EXTRA_FIELDS,
-    VkEventType.MESSAGE_EDIT: ['message_id', 'mask', 'peer_id', 'timestamp', 'new_text', 'attachments'],
+    VkEventType.MESSAGE_EDIT: ['message_id', 'mask'] + MESSAGE_EXTRA_FIELDS,
 
     VkEventType.READ_ALL_INCOMING_MESSAGES: ['peer_id', 'local_id'],
     VkEventType.READ_ALL_OUTGOING_MESSAGES: ['peer_id', 'local_id'],
@@ -215,8 +215,7 @@ class VkLongPoll(object):
             if self.pts:
                 self.pts = response['pts']
 
-            for raw_event in response['updates']:
-                yield Event(raw_event)
+            return [Event(raw_event) for raw_event in response['updates']]
 
         elif response['failed'] == 1:
             self.ts = response['ts']
@@ -226,6 +225,8 @@ class VkLongPoll(object):
 
         elif response['failed'] == 3:
             self.update_longpoll_server()
+
+        return []
 
     def listen(self):
 
@@ -281,15 +282,14 @@ class Event(object):
             self._parse_message()
 
         if self.type == VkEventType.MESSAGE_EDIT:
-            self.new_text = self.new_text.replace('<br>', '\n')
+            self.text = self.text.replace('<br>', '\n')
 
         if self.type in [VkEventType.USER_ONLINE, VkEventType.USER_OFFLINE]:
             self.user_id = abs(self.user_id)
             self._parse_online_status()
 
         if self.timestamp:
-            self.datetime = datetime.datetime.fromtimestamp(self.timestamp)
-
+            self.datetime = datetime.utcfromtimestamp(self.timestamp)
 
     def _list_to_attr(self, raw, attrs):
 
@@ -314,10 +314,14 @@ class Event(object):
             self.user_id = self.peer_id
 
     def _parse_message_flags(self):
-        self.message_flags = [x for x in VkMessageFlag if self.flags & x.value]
+        self.message_flags = set(
+            x for x in VkMessageFlag if self.flags & x.value
+        )
 
     def _parse_peer_flags(self):
-        self.peer_flags = [x for x in VkPeerFlag if self.flags & x.value]
+        self.peer_flags = set(
+            x for x in VkPeerFlag if self.flags & x.value
+        )
 
     def _parse_message(self):
 

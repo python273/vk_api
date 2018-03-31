@@ -474,5 +474,5 @@ class FilesOpener(object):
     def close_files(self):
         for f in self.opened_files:
             f.close()
-    
+
         self.opened_files.clear()
