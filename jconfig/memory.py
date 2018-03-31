@@ -11,6 +11,11 @@ from .base import BaseConfig
 
 
 class MemoryConfig(BaseConfig):
+    """
+    Класс конфигурации в памяти
+
+    :param settings: существующий dict с конфигом
+    """
 
     __slots__ = tuple()
 

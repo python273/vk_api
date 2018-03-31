@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-@author: python273
-@contact: https://vk.com/python273
-@license Apache License, Version 2.0, see LICENSE file
+:authors: python273
+:contact: https://vk.com/python273
+:license: Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2018
+:copyright: (c) 2018 python273
 """
+
 
 import json
 
@@ -13,6 +14,11 @@ from .base import BaseConfig
 
 
 class Config(BaseConfig):
+    """
+    Класс конфигурации в файле
+
+    :param filename: имя файла
+    """
 
     __slots__ = ('_filename',)
 
