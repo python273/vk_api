@@ -7,6 +7,7 @@
 Copyright (C) 2018
 """
 
+from collections import defaultdict
 from datetime import datetime
 from enum import Enum
 
@@ -141,31 +142,43 @@ def get_all_event_attrs():
 ALL_EVENT_ATTRS = get_all_event_attrs()
 
 PARSE_PEER_ID_EVENTS = [
-    k for k, v in EVENT_ATTRS_MAPPING.items() if 'peer_id' in v]
+    k for k, v in EVENT_ATTRS_MAPPING.items() if 'peer_id' in v
+]
+PARSE_MESSAGE_FLAGS_EVENTS = [
+    VkEventType.MESSAGE_FLAGS_REPLACE,
+    VkEventType.MESSAGE_NEW
+]
 
 
 class VkLongPoll(object):
 
     __slots__ = (
-        'vk', 'wait', 'use_ssl', 'mode',
+        'vk', 'wait', 'mode', 'preload_messages',
         'url', 'session',
         'key', 'server', 'ts', 'pts'
     )
 
-    def __init__(self, vk, wait=25, mode=DEFAULT_MODE):
+    PRELOAD_MESSAGE_EVENTS = [
+        VkEventType.MESSAGE_NEW,
+        VkEventType.MESSAGE_EDIT
+    ]
+
+    def __init__(self, vk, wait=25, mode=DEFAULT_MODE, preload_messages=True):
         """
         https://vk.com/dev/using_longpoll
         https://vk.com/dev/using_longpoll_2
 
         :param vk: объект VkApi
         :param wait: время ожидания
-        :param use_ssl: использовать шифрование
         :param mode: дополнительные опции ответа
-        :param version: версия
+        :param preload_messages: предзагрузка данных сообщений для
+                                 получения ссылок на прикрепленные файлы
         """
+
         self.vk = vk
         self.wait = wait
         self.mode = mode
+        self.preload_messages = preload_messages
 
         self.url = None
         self.key = None
@@ -228,10 +241,34 @@ class VkLongPoll(object):
 
         return []
 
+    def preload_message_events_data(self, events):
+        message_ids = set()
+        event_by_message_id = defaultdict(list)
+
+        for event in events:
+            if event.type in self.PRELOAD_MESSAGE_EVENTS:
+                message_ids.add(event.message_id)
+                event_by_message_id[event.message_id].append(event)
+
+        if not message_ids:
+            return
+
+        messages_data = self.vk.method(
+            'messages.getById',
+            {'message_ids': message_ids}
+        )
+
+        for message in messages_data['items']:
+            for event in event_by_message_id[message['id']]:
+                event.message_data = message
+
     def listen(self):
 
         while True:
             events = self.check()
+
+            if self.preload_messages:
+                self.preload_message_events_data(events)
 
             for event in events:
                 yield event
@@ -244,7 +281,8 @@ class Event(object):
         'user_id', 'group_id', 'peer_id',
         'flags', 'mask', 'datetime',
         'message_flags', 'peer_flags',
-        'from_user', 'from_chat', 'from_group', 'from_me', 'to_me'
+        'from_user', 'from_chat', 'from_group', 'from_me', 'to_me',
+        'message_data'
     )).union(ALL_EVENT_ATTRS)
 
     def __init__(self, raw):
@@ -262,6 +300,7 @@ class Event(object):
         self.to_me = False
 
         self.attachments = {}
+        self.message_data = None
 
         try:
             self.type = VkEventType(raw[0])
@@ -272,16 +311,16 @@ class Event(object):
         if self.type in PARSE_PEER_ID_EVENTS:
             self._parse_peer_id()
 
-        if self.type in [VkEventType.MESSAGE_FLAGS_REPLACE, VkEventType.MESSAGE_NEW]:
+        if self.type in PARSE_MESSAGE_FLAGS_EVENTS:
             self._parse_message_flags()
 
-        if self.type == VkEventType.PEER_FLAGS_REPLACE:
+        if self.type is VkEventType.PEER_FLAGS_REPLACE:
             self._parse_peer_flags()
 
-        if self.type == VkEventType.MESSAGE_NEW:
+        if self.type is VkEventType.MESSAGE_NEW:
             self._parse_message()
 
-        if self.type == VkEventType.MESSAGE_EDIT:
+        if self.type is VkEventType.MESSAGE_EDIT:
             self.text = self.text.replace('<br>', '\n')
 
         if self.type in [VkEventType.USER_ONLINE, VkEventType.USER_OFFLINE]:
@@ -334,10 +373,10 @@ class Event(object):
 
     def _parse_online_status(self):
         try:
-            if self.type == VkEventType.USER_ONLINE:
+            if self.type is VkEventType.USER_ONLINE:
                 self.platform = VkPlatform(self.extra & 0xFF)
 
-            elif self.type == VkEventType.USER_OFFLINE:
+            elif self.type is VkEventType.USER_OFFLINE:
                 self.offline_type = VkOfflineType(self.flags)
 
         except ValueError:
