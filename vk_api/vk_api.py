@@ -186,7 +186,7 @@ class VkApi(object):
         else:
             self.security_check()
 
-        if not self.check_token():
+        if not self._check_token():
             self.logger.info(
                 'access_token from config is not valid: {}'.format(
                     self.token
@@ -199,7 +199,7 @@ class VkApi(object):
 
     def _auth_token(self, reauth=False):
 
-        if not reauth and self.check_token():
+        if not reauth and self._check_token():
             self.logger.info('access_token from config is valid')
             return
 
@@ -464,12 +464,12 @@ class VkApi(object):
         else:
             self.token = response
 
-    def check_token(self):
-        """ Проверка access_token на валидность """
+    def _check_token(self):
+        """ Проверка access_token юзера на валидность """
 
         if self.token:
             try:
-                self.method('users.get')
+                self.method('stats.trackVisitor')
             except ApiError:
                 return False
 
