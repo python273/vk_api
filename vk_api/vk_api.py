@@ -16,6 +16,7 @@ import time
 import requests
 
 import jconfig
+from .enums import VkUserPermissions
 from .exceptions import *
 from .utils import (
     code_from_number, search_re, clear_string,
@@ -39,6 +40,9 @@ RE_PHONE_PREFIX = re.compile(r'label ta_r">\+(.*?)<')
 RE_PHONE_POSTFIX = re.compile(r'phone_postfix">.*?(\d+).*?<')
 
 
+DEFAULT_USER_SCOPE = sum([x.value for x in VkUserPermissions])
+
+
 class VkApi(object):
 
     RPS_DELAY = 0.34  # ~3 requests per second
@@ -46,7 +50,7 @@ class VkApi(object):
     def __init__(self, login=None, password=None, token=None,
                  auth_handler=None, captcha_handler=None,
                  config=jconfig.Config, config_filename='vk_config.v2.json',
-                 api_version='5.73', app_id=6222115, scope=140492255,
+                 api_version='5.73', app_id=6222115, scope=DEFAULT_USER_SCOPE,
                  client_secret=None):
         """
         :param login: Логин ВКонтакте (лучше использовать номер телефона для
@@ -155,10 +159,10 @@ class VkApi(object):
             'app' + str(self.app_id), {}
         ).get('scope_' + str(self.scope))
 
-        if not token_only:
-            self._auth_cookies(reauth=reauth)
-        else:
+        if token_only:
             self._auth_token(reauth=reauth)
+        else:
+            self._auth_cookies(reauth=reauth)
 
     def _auth_cookies(self, reauth=False):
 
@@ -182,7 +186,7 @@ class VkApi(object):
         else:
             self.security_check()
 
-        if not self.check_token():
+        if not self._check_token():
             self.logger.info(
                 'access_token from config is not valid: {}'.format(
                     self.token
@@ -195,7 +199,7 @@ class VkApi(object):
 
     def _auth_token(self, reauth=False):
 
-        if not reauth and self.check_token():
+        if not reauth and self._check_token():
             self.logger.info('access_token from config is valid')
             return
 
@@ -460,8 +464,8 @@ class VkApi(object):
         else:
             self.token = response
 
-    def check_token(self):
-        """ Проверка access_token на валидность """
+    def _check_token(self):
+        """ Проверка access_token юзера на валидность """
 
         if self.token:
             try:

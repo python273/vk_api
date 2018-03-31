@@ -22,7 +22,7 @@ setup(
     license='Apache License, Version 2.0, see LICENSE file',
 
     packages=['vk_api', 'jconfig'],
-    install_requires=['requests', 'enum34'],
+    install_requires=['requests', 'enum34', 'beautifulsoup4'],
 
     classifiers=[
         'License :: OSI Approved :: Apache Software License',

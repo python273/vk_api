@@ -24,10 +24,10 @@ class BaseConfig(object):
     __getitem__ = __getattr__
 
     def __setattr__(self, name, value):
-        if name in self.__slots__:
-            return super(BaseConfig, self).__setattr__(name, value)
-
-        self._section[name] = value
+        try:
+            super(BaseConfig, self).__setattr__(name, value)
+        except AttributeError:
+            self._section[name] = value
 
     __setitem__ = __setattr__
 

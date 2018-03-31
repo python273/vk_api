@@ -14,7 +14,7 @@ from .base import BaseConfig
 
 class Config(BaseConfig):
 
-    __slots__ = BaseConfig.__slots__ + ('_filename',)
+    __slots__ = ('_filename',)
 
     def __init__(self, section, filename='.jconfig'):
         self._filename = filename
