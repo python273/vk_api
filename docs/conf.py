@@ -12,21 +12,28 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('../'))
 
+from datetime import datetime
+
+import vk_api
 
 # -- Project information -----------------------------------------------------
 
 project = 'vk_api'
-copyright = '2018, python273'
-author = 'python273'
+copyright = '{:%Y}, <a href="https://python273.pw">{}</a>'.format(
+    datetime.utcnow(),
+    vk_api.__author__
+)
+
+author = vk_api.__author__
 
 # The short X.Y version
-version = ''
+version = vk_api.__version__
 # The full version, including alpha/beta/rc tags
-release = ''
+release = vk_api.__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -42,7 +49,6 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.todo',
-    'sphinx.ext.githubpages',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -70,7 +76,7 @@ language = 'en'
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'colorful'
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -84,7 +90,13 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    'show_powered_by': False,
+    'github_user': 'python273',
+    'github_repo': 'vk_api',
+    'github_banner': True,
+    'show_related': False
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -99,7 +111,12 @@ html_static_path = ['_static']
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
 # 'searchbox.html']``.
 #
-# html_sidebars = {}
+html_sidebars = {
+    '**': [
+        'sidebarlogo.html', 'localtoc.html', 'relations.html',
+        'sourcelink.html', 'searchbox.html'
+    ]
+}
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
@@ -165,3 +182,7 @@ texinfo_documents = [
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
+
+
+def setup(app):
+    app.add_stylesheet('css/custom.css')

@@ -7,7 +7,7 @@
 Copyright (C) 2018
 """
 
-__author__ = 'Kirill Python'
+__author__ = 'python273'
 __version__ = '3.0'
 __email__ = 'whoami@python273.pw'
 __contact__ = 'https://vk.com/python273'

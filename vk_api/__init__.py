@@ -14,7 +14,7 @@ from .vk_api import VkApi
 Copyright (C) 2018
 """
 
-__author__ = 'Kirill Python'
+__author__ = 'python273'
 __version__ = '9.3.2'
 __email__ = 'whoami@python273.pw'
 __contact__ = 'https://vk.com/python273'
