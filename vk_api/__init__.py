@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from .enums import *
 from .exceptions import *
 from .requests_pool import VkRequestsPool
 from .tools import VkTools

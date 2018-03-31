@@ -19,15 +19,22 @@ class VkAudio(object):
     __slots__ = ('_vk', 'user_id')
 
     def __init__(self, vk):
+        """
+
+        :type vk: vk_api.VkApi
+        """
         self.user_id = vk.method('users.get')[0]['id']
         self._vk = vk
 
-    def get_iter(self, owner_id, album_id=None):
+    def get_iter(self, owner_id=None, album_id=None):
         """ Получить список аудиозаписей пользователя (по частям)
 
         :param owner_id: ID владельца (отрицательные значения для групп)
         :param album_id: ID альбома
         """
+
+        if owner_id is None:
+            owner_id = self.user_id
 
         if album_id is not None:
             url = 'https://m.vk.com/audio?act=audio_playlist{}_{}'.format(
@@ -63,7 +70,7 @@ class VkAudio(object):
 
             offset += offset_diff
 
-    def get(self, owner_id, album_id=None):
+    def get(self, owner_id=None, album_id=None):
         """ Получить список аудиозаписей пользователя
 
         :param owner_id: ID владельца (отрицательные значения для групп)
@@ -72,11 +79,14 @@ class VkAudio(object):
 
         return list(self.get_iter(owner_id, album_id))
 
-    def get_albums_iter(self, owner_id):
+    def get_albums_iter(self, owner_id=None):
         """ Получить список альбомов пользователя (по частям)
 
         :param owner_id: ID владельца (отрицательные значения для групп)
         """
+
+        if owner_id is None:
+            owner_id = self.user_id
 
         offset = 0
 
@@ -108,7 +118,7 @@ class VkAudio(object):
 
             offset += ALBUMS_PER_USER_PAGE
 
-    def get_albums(self, owner_id):
+    def get_albums(self, owner_id=None):
         """ Получить список альбомов пользователя
 
         :param owner_id: ID владельца (отрицательные значения для групп)
@@ -116,12 +126,15 @@ class VkAudio(object):
 
         return list(self.get_albums_iter(owner_id))
 
-    def search_user(self, owner_id, q=''):
+    def search_user(self, owner_id=None, q=''):
         """ Искать по аудиозаписям пользователя
 
         :param owner_id: ID владельца (отрицательные значения для групп)
         :param q: запрос
         """
+
+        if owner_id is None:
+            owner_id = self.user_id
 
         response = self._vk.http.get(
             'https://m.vk.com/audio',
@@ -168,27 +181,30 @@ def scrap_data(html, user_id):
 
     soup = BeautifulSoup(html, 'html.parser')
     tracks = []
+
     for audio in soup.find_all('div', {'class': 'audio_item'}):
-        if 'audio_item_disabled' in audio["class"]:
+        if 'audio_item_disabled' in audio['class']:
             continue
 
-        artist = audio.select('.ai_artist')[0].text
-        title = audio.select('.ai_title')[0].text
-        duration = audio.select('.ai_dur')[0]['data-dur']
-        duration = int(duration)
-        full_id = tuple(int(i) for i in RE_AUDIO_ID.findall(audio['id'])[0])
-        link = audio.select('.ai_body')[0].input['value']
+        artist = audio.select_one('.ai_artist').text
+        title = audio.select_one('.ai_title').text
+        duration = int(audio.select_one('.ai_dur')['data-dur'])
+        full_id = tuple(
+            int(i) for i in RE_AUDIO_ID.search(audio['id']).groups()
+        )
+        link = audio.select_one('.ai_body').input['value']
 
         if 'audio_api_unavailable' in link:
             link = decode_audio_url(link, user_id)
 
         tracks.append({
+            'id': full_id[1],
+            'owner_id': full_id[0],
+            'url': link,
+
             'artist': artist,
             'title': title,
             'duration': duration,
-            'id': full_id[1],
-            'owner_id': full_id[0],
-            'url': link
         })
 
     return tracks
@@ -199,18 +215,24 @@ def scrap_albums(html):
 
     soup = BeautifulSoup(html, 'html.parser')
     albums = []
+
     for album in soup.find_all('div', {'class': 'audioPlaylistsPage__item'}):
-        link = album.select('.audioPlaylistsPage__itemLink')[0]['href']
-        full_id = tuple(int(i) for i in RE_ALBUM_ID.findall(link)[0])
+
+        link = album.select_one('.audioPlaylistsPage__itemLink')['href']
+        full_id = tuple(int(i) for i in RE_ALBUM_ID.search(link).groups())
+
+        stats_text = album.select_one('.audioPlaylistsPage__stats').text
+        plays = int(stats_text.split(maxsplit=1)[0])
 
         albums.append({
-            'title': album.select('.audioPlaylistsPage__title')[0].text,
-            'plays': int(album.select('.audioPlaylistsPage__stats')[0].text.split()[0]),
             'id': full_id[1],
             'owner_id': full_id[0],
             'url': 'https://m.vk.com/audio?act=audio_playlist{}_{}'.format(
                 *full_id
-            )
+            ),
+
+            'title': album.select_one('.audioPlaylistsPage__title').text,
+            'plays': plays
         })
 
     return albums
