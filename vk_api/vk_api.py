@@ -1,10 +1,10 @@
 ﻿# -*- coding: utf-8 -*-
 """
-@author: python273
-@contact: https://vk.com/python273
-@license Apache License, Version 2.0, see LICENSE file
+:authors: python273
+:contact: https://vk.com/python273
+:license: Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2018
+:copyright: (c) 2018 python273
 """
 
 import logging
@@ -44,6 +44,35 @@ DEFAULT_USER_SCOPE = sum([x.value for x in VkUserPermissions])
 
 
 class VkApi(object):
+    """
+    :param login: Логин ВКонтакте (лучше использовать номер телефона для
+                    автоматического обхода проверки безопасности)
+    :param password: Пароль ВКонтакте (если пароль не передан, то будет
+                        попытка использовать сохраненные данные)
+
+    :param token: access_token
+    :type token: str
+
+    :param auth_handler: Функция для обработки двухфакторной аутентификации,
+                            должна возвращать строку с кодом и
+                            булево значение, означающее, стоит ли запомнить
+                            это устройство, для прохождения аутентификации.
+    :param captcha_handler: Функция для обработки капчи, см. :func:`captcha_handler`
+    :param config: Класс для сохранения настроек
+    :param config_filename: Расположение config файла
+
+    :param api_version: Версия API
+    :type api_version: str
+
+    :param app_id: Standalone-приложение
+    :type app_id: int
+
+    :param scope: Запрашиваемые права (можно передать строкой или числом)
+    :type scope: int, str
+
+    :param client_secret: Защищенный ключ приложения для серверной
+                            авторизации (https://vk.com/dev/auth_server)
+    """
 
     RPS_DELAY = 0.34  # ~3 requests per second
 
@@ -52,35 +81,6 @@ class VkApi(object):
                  config=jconfig.Config, config_filename='vk_config.v2.json',
                  api_version='5.73', app_id=6222115, scope=DEFAULT_USER_SCOPE,
                  client_secret=None):
-        """
-        :param login: Логин ВКонтакте (лучше использовать номер телефона для
-                       автоматического обхода проверки безопасности)
-        :param password: Пароль ВКонтакте (если пароль не передан, то будет
-                          попытка использовать сохраненные данные)
-
-        :param token: access_token
-        :type token: str
-
-        :param auth_handler: Функция для обработки двухфакторной аутентификации,
-                              должна возвращать строку с кодом и
-                              булевое значение, означающее, стоит ли запомнить
-                              это устройство, для прохождения аутентификации.
-        :param captcha_handler: Функция для обработки капчи
-        :param config: Класс для сохранения настроек
-        :param config_filename: Расположение config файла
-
-        :param api_version: Версия API
-        :type api_version: str
-
-        :param app_id: Standalone-приложение
-        :type app_id: int
-
-        :param scope: Запрашиваемые права (можно передать строкой или числом)
-        :type scope: int, str
-
-        :param client_secret: Защищенный ключ приложения для серверной
-                               авторизации (https://vk.com/dev/auth_server)
-        """
 
         self.login = login
         self.password = password

@@ -4,13 +4,20 @@ vk\_api package
 Submodules
 ----------
 
+Основной класс библиотеки
+-------------------------
+
+.. module:: vk_api.vk_api
+
+.. autoclass:: VkApi
+    :members:
+
+
 vk\_api.audio module
 --------------------
 
-.. automodule:: vk_api.audio
-    :members:
-    :undoc-members:
-    :show-inheritance:
+.. module:: vk_api.audio
+
 
 vk\_api.audio\_url\_decoder module
 ----------------------------------
@@ -80,23 +87,6 @@ vk\_api.utils module
 --------------------
 
 .. automodule:: vk_api.utils
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-vk\_api.vk\_api module
-----------------------
-
-.. automodule:: vk_api.vk_api
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: vk_api
     :members:
     :undoc-members:
     :show-inheritance:
