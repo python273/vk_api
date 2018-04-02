@@ -23,14 +23,16 @@ ALBUMS_PER_USER_PAGE = 100
 
 
 class VkAudio(object):
+    """
+    Модуль для получения аудиозаписей без использования официального API.
+
+    :type vk: vk_api.VkApi
+    """
 
     __slots__ = ('_vk', 'user_id')
 
     def __init__(self, vk):
-        """
 
-        :type vk: vk_api.VkApi
-        """
         self.user_id = vk.method('users.get')[0]['id']
         self._vk = vk
 

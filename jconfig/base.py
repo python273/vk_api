@@ -46,13 +46,9 @@ class BaseConfig(object):
         self._section.clear()
 
     def load(self, **kwargs):
-        """
-        Абстрактный метод, должен возвращать dict с конфигом
-        """
+        """Абстрактный метод, должен возвращать dict с конфигом"""
         raise NotImplementedError
 
     def save(self):
-        """
-        Абстрактный метод, должен сохранять конфиг
-        """
+        """Абстрактный метод, должен сохранять конфиг"""
         raise NotImplementedError

@@ -68,7 +68,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = 'en'
+language = 'ru'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -181,6 +181,7 @@ texinfo_documents = [
 # -- Options for autodoc extension -------------------------------------------
 
 autodoc_inherit_docstrings = False
+autodoc_member_order = 'bysource'
 
 # -- Options for todo extension ----------------------------------------------
 

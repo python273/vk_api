@@ -40,38 +40,50 @@ RE_PHONE_PREFIX = re.compile(r'label ta_r">\+(.*?)<')
 RE_PHONE_POSTFIX = re.compile(r'phone_postfix">.*?(\d+).*?<')
 
 
-DEFAULT_USER_SCOPE = sum([x.value for x in VkUserPermissions])
+DEFAULT_USER_SCOPE = sum(VkUserPermissions)
 
 
 class VkApi(object):
     """
     :param login: Логин ВКонтакте (лучше использовать номер телефона для
-                    автоматического обхода проверки безопасности)
+        автоматического обхода проверки безопасности)
+    :type login: str
+
     :param password: Пароль ВКонтакте (если пароль не передан, то будет
-                        попытка использовать сохраненные данные)
+        попытка использовать сохраненные данные)
+    :param login: str
 
     :param token: access_token
     :type token: str
 
     :param auth_handler: Функция для обработки двухфакторной аутентификации,
-                            должна возвращать строку с кодом и
-                            булево значение, означающее, стоит ли запомнить
-                            это устройство, для прохождения аутентификации.
+        должна возвращать строку с кодом и
+        булево значение, означающее, стоит ли запомнить
+        это устройство, для прохождения аутентификации.
     :param captcha_handler: Функция для обработки капчи, см. :func:`captcha_handler`
     :param config: Класс для сохранения настроек
-    :param config_filename: Расположение config файла
+    :type config: :class:`jconfig.base.BaseConfig`
+    :param config_filename: Расположение config файла для :class:`jconfig.config.Config`
 
     :param api_version: Версия API
     :type api_version: str
 
-    :param app_id: Standalone-приложение
+    :param app_id: app_id Standalone-приложения
     :type app_id: int
 
-    :param scope: Запрашиваемые права (можно передать строкой или числом)
+    :param scope: Запрашиваемые права, можно передать строкой или числом.
+        См. :class:`VkUserPermissions`
     :type scope: int, str
 
-    :param client_secret: Защищенный ключ приложения для серверной
-                            авторизации (https://vk.com/dev/auth_server)
+    :param client_secret: Защищенный ключ приложения для Client Credentials Flow
+        авторизации приложения (https://vk.com/dev/client_cred_flow).
+        Внимание: Этот способ авторизации устарел, рекомендуется использовать
+        сервисный ключ из настроек приложения.
+
+
+    `login` и `password` необходимы для автоматического получения токена при помощи
+    Implicit Flow авторизации пользователя и возможности работы с веб-версией сайта
+    (включая :class:`vk_api.audio.VkAudio`)
     """
 
     RPS_DELAY = 0.34  # ~3 requests per second
@@ -81,6 +93,8 @@ class VkApi(object):
                  config=jconfig.Config, config_filename='vk_config.v2.json',
                  api_version='5.73', app_id=6222115, scope=DEFAULT_USER_SCOPE,
                  client_secret=None):
+        # TODO: убрать config_filename, в качестве config брать объект, а не класс
+        # TODO: убрать auth_handler и captcha_handler - это должно происходить через наследование
 
         self.login = login
         self.password = password
@@ -114,7 +128,7 @@ class VkApi(object):
         self.logger = logging.getLogger('vk_api')
 
     @property
-    def sid(self):
+    def _sid(self):
         return (
             self.http.cookies.get('remixsid') or
             self.http.cookies.get('remixsid6')
@@ -124,23 +138,23 @@ class VkApi(object):
         """ Аутентификация
 
         :param reauth: Позволяет переавторизиваться, игнорируя сохраненные
-                       куки и токен
+            куки и токен
 
         :param token_only: Включает оптимальную стратегию аутентификации, если
-                            необходим только access_token
+            необходим только access_token
 
-                            Например если сохраненные куки не валидны,
-                            но токен валиден, то аутентификация пройдет успешно
+            Например если сохраненные куки не валидны,
+            но токен валиден, то аутентификация пройдет успешно
 
-                            При token_only=False, сначала проверяется
-                            валидность куки. Если кука не будет валидна, то
-                            будет произведена попытка аутетификации с паролем.
-                            Тогда если пароль не верен или пароль не передан,
-                            то аутентификация закончится с ошибкой.
+            При token_only=False, сначала проверяется
+            валидность куки. Если кука не будет валидна, то
+            будет произведена попытка аутетификации с паролем.
+            Тогда если пароль не верен или пароль не передан,
+            то аутентификация закончится с ошибкой.
 
-                            Если вы не делаете запросы к веб версии сайта
-                            используя куки, то лучше использовать
-                            token_only=True
+            Если вы не делаете запросы к веб версии сайта
+            используя куки, то лучше использовать
+            token_only=True
         """
 
         if not self.login:
@@ -178,7 +192,7 @@ class VkApi(object):
         if not self.check_sid():
             self.logger.info(
                 'remixsid from config is not valid: {}'.format(
-                    self.sid
+                    self._sid
                 )
             )
 
@@ -285,7 +299,7 @@ class VkApi(object):
 
             self.twofactor(response)
 
-        if self.sid:
+        if self._sid:
             self.logger.info('Got remixsid')
 
             self.storage.cookies = cookies_to_list(self.http.cookies)
@@ -302,7 +316,8 @@ class VkApi(object):
 
     def twofactor(self, auth_response):
         """ Двухфакторная аутентификация
-            :param auth_response: страница с приглашением к аутентификации
+
+        :param auth_response: страница с приглашением к аутентификации
         """
         code, remember_device = self.error_handlers[TWOFACTOR_CODE]()
 
@@ -343,7 +358,8 @@ class VkApi(object):
             return response
 
         phone_prefix = clear_string(search_re(RE_PHONE_PREFIX, response.text))
-        phone_postfix = clear_string(search_re(RE_PHONE_POSTFIX, response.text))
+        phone_postfix = clear_string(
+            search_re(RE_PHONE_POSTFIX, response.text))
 
         code = None
         if self.login and phone_prefix and phone_postfix:
@@ -376,7 +392,7 @@ class VkApi(object):
 
         self.logger.info('Checking remixsid...')
 
-        if not self.sid:
+        if not self._sid:
             self.logger.info('No remixsid')
             return
 
@@ -391,7 +407,7 @@ class VkApi(object):
     def api_login(self):
         """ Получение токена через Desktop приложение """
 
-        if not self.sid:
+        if not self._sid:
             raise AuthError('API auth error (no remixsid)')
 
         for cookie_name in ['p', 'l']:
@@ -406,7 +422,7 @@ class VkApi(object):
                 'response_type': 'token'
             }
         )
-        
+
         if 'act=blocked' in response.url:
             raise AccountBlocked('Account is blocked')
 
@@ -494,7 +510,7 @@ class VkApi(object):
 
     def http_handler(self, error):
         """ Обработчик ошибок соединения
-        
+
         :param error: исключение
         """
 
@@ -519,7 +535,7 @@ class VkApi(object):
 
     def get_api(self):
         """ Возвращает VkApiMethod(self)
-        
+
             Позволяет обращаться к методам API как к обычным классам.
             Например vk.wall.get(...)
         """
