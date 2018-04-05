@@ -94,7 +94,6 @@ class VkApi(object):
                  api_version='5.73', app_id=6222115, scope=DEFAULT_USER_SCOPE,
                  client_secret=None):
         # TODO: убрать config_filename, в качестве config брать объект, а не класс
-        # TODO: убрать auth_handler и captcha_handler - это должно происходить через наследование
 
         self.login = login
         self.password = password
