@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-@author: python273
-@contact: https://vk.com/python273
-@license Apache License, Version 2.0, see LICENSE file
+:authors: python273
+:contact: https://vk.com/python273
+:license: Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2018
+:copyright: (c) 2018 python273
 """
 
 from .utils import sjson_dumps
@@ -12,18 +12,18 @@ from .vk_api import VkApi, VkApiMethod
 
 
 class VkFunction(object):
+    """ 
+    Обертка над методом execute.
+
+    :param code: код функции (VKScript)
+    :param args: список аргументов (будут конвертированы в JSON)
+    :param clean_args: список raw аргументов (будут вставлены как строки)
+    :param return_raw: аргумент raw функции VkApi.method
+    """
 
     __slots__ = ('code', '_minified_code', 'args', 'clean_args', 'return_raw')
 
     def __init__(self, code, args=None, clean_args=None, return_raw=False):
-        """ Обертка над методом execute
-
-        :param code: код функции (VKScript)
-        :param args: список аргументов (будут конвертированы в JSON)
-        :param clean_args: список raw аргументов (будут вставлены как строки)
-        :param return_raw: аргумент raw функции VkApi.method
-        """
-
         self.code = code
         self._minified_code = minify(code)
 
@@ -44,6 +44,11 @@ class VkFunction(object):
         return self._minified_code % compiled_args
 
     def __call__(self, vk, *args, **kwargs):
+        r"""
+        :param vk: VkApi или VkApiMethod
+        :param \*args:
+        :param \**kwargs:
+        """
 
         if not isinstance(vk, (VkApi, VkApiMethod)):
             raise TypeError(

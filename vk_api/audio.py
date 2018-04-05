@@ -26,7 +26,7 @@ class VkAudio(object):
     """
     Модуль для получения аудиозаписей без использования официального API.
 
-    :type vk: vk_api.VkApi
+    :param vk: Объект :class:`VkApi`
     """
 
     __slots__ = ('_vk', 'user_id')

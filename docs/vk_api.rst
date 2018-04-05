@@ -40,45 +40,36 @@
 .. autoclass:: VkPeerFlag
     :members:
 
-vk\_api.execute module
-----------------------
+Модуль для работы с методом execute
+-----------------------------------
 
-.. automodule:: vk_api.execute
+.. module:: vk_api.execute
+.. autoclass:: VkFunction
     :members:
-    :undoc-members:
-    :show-inheritance:
+    :special-members: __call__
 
-vk\_api.requests\_pool module
------------------------------
+Модуль для объединения запросов в один запрос execute
+-----------------------------------------------------
 
-.. automodule:: vk_api.requests_pool
+.. module:: vk_api.requests_pool
+.. autoclass:: VkRequestsPool
     :members:
-    :undoc-members:
-    :show-inheritance:
-
-vk\_api.tools module
---------------------
-
-.. automodule:: vk_api.tools
+.. autoclass:: RequestResult
     :members:
-    :undoc-members:
-    :show-inheritance:
 
-vk\_api.upload module
----------------------
+Модуль для выкачивания множества результатов
+--------------------------------------------
 
-.. automodule:: vk_api.upload
+.. module:: vk_api.tools
+.. autoclass:: VkTools
     :members:
-    :undoc-members:
-    :show-inheritance:
 
-vk\_api.utils module
---------------------
+Модуль для загрузки медиаконтента в VK
+--------------------------------------
 
-.. automodule:: vk_api.utils
+.. module:: vk_api.upload
+.. autoclass:: VkUpload
     :members:
-    :undoc-members:
-    :show-inheritance:
 
 
 Исключения, бросаемые библиотекой

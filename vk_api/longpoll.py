@@ -17,7 +17,11 @@ CHAT_START_ID = int(2E9)  # id с которого начинаются бесе
 
 
 class VkLongpollMode(IntEnum):
-    """Перечисление дополнительных опций ответа"""
+    """
+    Дополнительные опции ответа
+
+    `Подробнее в документации VK API <https://vk.com/dev/using_longpoll?f=1.+Подключение>`_
+    """
     GET_ATTACHMENTS = 2
     """Получать вложения"""
     GET_EXTENDED = 2**3
@@ -36,7 +40,8 @@ DEFAULT_MODE = sum(VkLongpollMode)
 class VkEventType(IntEnum):
     """
     Перечисление событий, получаемых от longpoll-сервера.
-    Подробнее в документации VK API: https://vk.com/dev/using_longpoll?f=3.+Структура+событий
+
+    `Подробнее в документации VK API <https://vk.com/dev/using_longpoll?f=3.+Структура+событий>`__
     """
     MESSAGE_FLAGS_REPLACE = 1
     """Замена флагов сообщения (FLAGS:=$flags)"""
@@ -244,11 +249,7 @@ class VkLongPoll(object):
     """
     Класс для работы с longpoll-сервером
 
-    Подробнее в документации VK API:
-
-    https://vk.com/dev/using_longpoll
-
-    https://vk.com/dev/using_longpoll_2
+    `Подробнее в документации VK API <https://vk.com/dev/using_longpoll>`__.
 
     :param vk: объект :class:`VkApi`
     :param wait: время ожидания
@@ -279,7 +280,7 @@ class VkLongPoll(object):
         self.key = None
         self.server = None
         self.ts = None
-        self.pts = mode & VkLongpollMode.GET_PTS.value
+        self.pts = mode & VkLongpollMode.GET_PTS
 
         self.session = requests.Session()
 
@@ -365,7 +366,7 @@ class VkLongPoll(object):
     def listen(self):
         """
         Слушать сервер
-        
+
         :yields: :class:`Event`
         """
 
@@ -381,7 +382,13 @@ class VkLongPoll(object):
 
 
 class Event(object):
-    """TODO Описать отдельно распаршенные поля (datetime и прочие enum-ы)"""
+    """
+    Событие, полученное от longpoll-сервера. 
+
+    Имеет поля в соответствии с `документацией <https://vk.com/dev/using_longpoll?f=3.%20Структура%20событий>`_.
+
+    События с полем `timestamp` также дополнительно имеют поле `datetime`
+    """
 
     __slots__ = frozenset((
         'raw', 'type', 'platform', 'offline_type',
@@ -461,17 +468,17 @@ class Event(object):
 
     def _parse_message_flags(self):
         self.message_flags = set(
-            x for x in VkMessageFlag if self.flags & x.value
+            x for x in VkMessageFlag if self.flags & x
         )
 
     def _parse_peer_flags(self):
         self.peer_flags = set(
-            x for x in VkPeerFlag if self.flags & x.value
+            x for x in VkPeerFlag if self.flags & x
         )
 
     def _parse_message(self):
 
-        if self.flags & VkMessageFlag.OUTBOX.value:
+        if self.flags & VkMessageFlag.OUTBOX:
             self.from_me = True
         else:
             self.to_me = True
