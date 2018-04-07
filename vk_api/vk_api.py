@@ -51,7 +51,7 @@ class VkApi(object):
 
     :param password: Пароль ВКонтакте (если пароль не передан, то будет
         попытка использовать сохраненные данные)
-    :param login: str
+    :param password: str
 
     :param token: access_token
     :type token: str
@@ -545,7 +545,7 @@ class VkApi(object):
                raw=False):
         """ Вызов метода API
 
-        :param method: имя метода
+        :param method: название метода
         :type method: str
 
         :param values: параметры
