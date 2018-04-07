@@ -1,20 +1,20 @@
 Пакет jconfig
-===============
+=============
 
-Базовый объект конфигурации
+BaseConfig
 ---------------------------
 
 .. autoclass:: jconfig.base.BaseConfig
     :members:
 
-Объект конфигурации в файле
+Config (хранение в json файле)
 ---------------------------
 
 .. autoclass:: jconfig.jconfig.Config
     :members:
     :show-inheritance:
 
-Объект конфигурации в памяти
+MemoryConfig (хранение в памяти)
 ----------------------------
 
 .. autoclass:: jconfig.memory.MemoryConfig
