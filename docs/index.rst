@@ -7,9 +7,17 @@ vk_api – Python модуль для написания скриптов для
 `Установка через PIP
 <https://pythonworld.ru/osnovy/pip.html>`_:
 
-.. code-block:: bash
+.. code-block:: shell-session
 
-   $ pip install vk_api
+   $ pip install --user vk_api
+
+или
+
+.. code-block:: shell-session
+
+   # pip install vk_api
+
+Примеры по использованию библиотеки доступны на `GitHub <https://github.com/python273/vk_api/tree/master/examples>`_.
 
 .. toctree::
    :maxdepth: 4

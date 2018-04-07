@@ -96,6 +96,7 @@ html_theme_options = {
     'github_user': 'python273',
     'github_repo': 'vk_api',
     'github_banner': True,
+    'github_type': 'star',
     'show_related': False
 }
 
