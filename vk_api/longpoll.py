@@ -269,8 +269,7 @@ class VkLongPoll(object):
         VkEventType.MESSAGE_EDIT
     ]
 
-    def __init__(self, vk, wait=25, mode=DEFAULT_MODE, preload_messages=True):
-
+    def __init__(self, vk, wait=25, mode=DEFAULT_MODE, preload_messages=False):
         self.vk = vk
         self.wait = wait
         self.mode = mode
@@ -329,7 +328,12 @@ class VkLongPoll(object):
             if self.pts:
                 self.pts = response['pts']
 
-            return [Event(raw_event) for raw_event in response['updates']]
+            events = [Event(raw_event) for raw_event in response['updates']]
+
+            if self.preload_messages:
+                self.preload_message_events_data(events)
+
+            return events
 
         elif response['failed'] == 1:
             self.ts = response['ts']
@@ -371,13 +375,7 @@ class VkLongPoll(object):
         """
 
         while True:
-            events = self.check()
-
-            # Мне кажется, это должно быть в check
-            if self.preload_messages:
-                self.preload_message_events_data(events)
-
-            for event in events:
+            for event in self.check():
                 yield event
 
 

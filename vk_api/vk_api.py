@@ -93,7 +93,6 @@ class VkApi(object):
                  config=jconfig.Config, config_filename='vk_config.v2.json',
                  api_version='5.73', app_id=6222115, scope=DEFAULT_USER_SCOPE,
                  client_secret=None):
-        # TODO: убрать config_filename, в качестве config брать объект, а не класс
 
         self.login = login
         self.password = password
