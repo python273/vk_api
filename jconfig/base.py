@@ -1,14 +1,22 @@
 # -*- coding: utf-8 -*-
 """
-@author: python273
-@contact: https://vk.com/python273
-@license Apache License, Version 2.0, see LICENSE file
+:authors: python273
+:contact: https://vk.com/python273
+:license: Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2018
+:copyright: (c) 2018 python273
 """
 
 
 class BaseConfig(object):
+    r"""
+    Абстрактный базовый класс конфигурации
+
+    У наследуемых классов должен быть определен `__slots__`
+
+    :param section: имя подкатегории в конфиге
+    :param \**kwargs: будут переданы в :func:`load`
+    """
 
     __slots__ = ('section_name', '_settings', '_section')
 
@@ -38,7 +46,9 @@ class BaseConfig(object):
         self._section.clear()
 
     def load(self, **kwargs):
+        """Абстрактный метод, должен возвращать dict с конфигом"""
         raise NotImplementedError
 
     def save(self):
+        """Абстрактный метод, должен сохранять конфиг"""
         raise NotImplementedError

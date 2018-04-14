@@ -9,88 +9,183 @@ Copyright (C) 2018
 
 from collections import defaultdict
 from datetime import datetime
-from enum import Enum
+from enum import Enum, IntEnum
 
 import requests
 
 CHAT_START_ID = int(2E9)  # id с которого начинаются беседы
 
 
-class VkLongpollMode(Enum):
+class VkLongpollMode(IntEnum):
+    """
+    Дополнительные опции ответа
+
+    `Подробнее в документации VK API <https://vk.com/dev/using_longpoll?f=1.+Подключение>`_
+    """
     GET_ATTACHMENTS = 2
+    """Получать вложения"""
     GET_EXTENDED = 2**3
+    """Возвращать расширенный набор событий"""
     GET_PTS = 2**5
+    """возвращать pts для метода `messages.getLongPollHistory`"""
     GET_EXTRA_ONLINE = 2**6
+    """В событии с кодом 8 (друг стал онлайн) возвращать дополнительные данные в поле `extra`"""
     GET_RANDOM_ID = 2**7
+    """Возвращать поле `random_id`"""
 
 
-DEFAULT_MODE = sum([x.value for x in VkLongpollMode])
+DEFAULT_MODE = sum(VkLongpollMode)
 
 
-class VkEventType(Enum):
+class VkEventType(IntEnum):
+    """
+    Перечисление событий, получаемых от longpoll-сервера.
+
+    `Подробнее в документации VK API <https://vk.com/dev/using_longpoll?f=3.+Структура+событий>`__
+    """
     MESSAGE_FLAGS_REPLACE = 1
+    """Замена флагов сообщения (FLAGS:=$flags)"""
     MESSAGE_FLAGS_SET = 2
+    """Установка флагов сообщения (FLAGS|=$mask)"""
     MESSAGE_FLAGS_RESET = 3
+    """Сброс флагов сообщения (FLAGS&=~$mask)"""
     MESSAGE_NEW = 4
+    """Добавление нового сообщения."""
     MESSAGE_EDIT = 5
+    """Редактирование сообщения."""
 
     READ_ALL_INCOMING_MESSAGES = 6
+    """Прочтение всех входящих сообщений в $peer_id, пришедших до сообщения с $local_id."""
     READ_ALL_OUTGOING_MESSAGES = 7
+    """Прочтение всех исходящих сообщений в $peer_id, пришедших до сообщения с $local_id."""
 
     USER_ONLINE = 8
+    """
+    Друг $user_id стал онлайн. $extra не равен 0, если в mode был передан флаг 64.
+    В младшем байте (остаток от деления на 256) числа extra лежит идентификатор
+    платформы (см. :class:`VkPlatform`). $timestamp — время последнего действия
+    пользователя $user_id на сайте. """
     USER_OFFLINE = 9
+    """
+    Друг $user_id стал оффлайн ($flags равен 0, если пользователь покинул сайт и 1,
+    если оффлайн по таймауту) . $timestamp — время последнего действия пользователя
+    $user_id на сайте.
+    """
 
     PEER_FLAGS_RESET = 10
+    """
+    Сброс флагов диалога $peer_id.
+    Соответствует операции (PEER_FLAGS &= ~$flags).
+    Только для диалогов сообществ.
+    """
     PEER_FLAGS_REPLACE = 11
+    """
+    Замена флагов диалога $peer_id.
+    Соответствует операции (PEER_FLAGS:= $flags).
+    Только для диалогов сообществ.
+    """
     PEER_FLAGS_SET = 12
+    """
+    Установка флагов диалога $peer_id.
+    Соответствует операции (PEER_FLAGS|= $flags).
+    Только для диалогов сообществ.
+    """
 
     PEER_DELETE_ALL = 13
+    """Удаление всех сообщений в диалоге $peer_id с идентификаторами вплоть до $local_id."""
     PEER_RESTORE_ALL = 14
+    """Восстановление недавно удаленных сообщений в диалоге $peer_id с идентификаторами вплоть до $local_id."""
 
     CHAT_EDIT = 51
+    """
+    Один из параметров (состав, тема) беседы $chat_id были изменены.
+    $self — 1 или 0 (вызваны ли изменения самим пользователем).
+    """
 
     USER_TYPING = 61
+    """
+    Пользователь $user_id набирает текст в диалоге.
+    Событие приходит раз в ~5 секунд при наборе текста. $flags = 1.
+    """
     USER_TYPING_IN_CHAT = 62
+    """Пользователь $user_id набирает текст в беседе $chat_id."""
 
     USER_CALL = 70
+    """Пользователь $user_id совершил звонок с идентификатором $call_id."""
 
     MESSAGES_COUNTER_UPDATE = 80
+    """Счетчик в левом меню стал равен $count."""
     NOTIFICATION_SETTINGS_UPDATE = 114
+    """Изменились настройки оповещений.
+    $peer_id — идентификатор чата/собеседника,
+    $sound — 1/0, включены/выключены звуковые оповещения,
+    $disabled_until — выключение оповещений на необходимый срок.
+    """
 
 
-class VkPlatform(Enum):
+class VkPlatform(IntEnum):
+    """Идентификаторы платформ"""
     MOBILE = 1
+    """Мобильная версия сайта или неопознанное мобильное приложение"""
     IPHONE = 2
+    """Официальное приложение для iPhone"""
     IPAD = 3
+    """Официальное приложение для iPad"""
     ANDROID = 4
+    """Официальное приложение для Android"""
     WPHONE = 5
+    """Официальное приложение для Windows Phone"""
     WINDOWS = 6
+    """Официальное приложение для Windows 8"""
     WEB = 7
+    """Полная версия сайта или неопознанное приложение"""
 
 
-class VkOfflineType(Enum):
+class VkOfflineType(IntEnum):
+    """Выход из сети в событии :attr:`VkEventType.USER_OFFLINE`"""
     EXIT = 0
+    """Пользователь покинул сайт"""
     AWAY = 1
+    """Оффлайн по таймауту"""
 
 
-class VkMessageFlag(Enum):
+class VkMessageFlag(IntEnum):
+    """Флаги сообщений"""
     UNREAD = 1
+    """Cообщение не прочитано."""
     OUTBOX = 2
+    """Исходящее сообщение."""
     REPLIED = 2**2
+    """На сообщение был создан ответ."""
     IMPORTANT = 2**3
+    """Помеченное сообщение."""
     CHAT = 2**4
+    """Сообщение отправлено через чат."""
     FRIENDS = 2**5
+    """
+    Cообщение отправлено другом.
+    Не применяется для сообщений из групповых бесед.
+    """
     SPAM = 2**6
+    """Cообщение помечено как "Спам"."""
     DELETED = 2**7
+    """Cообщение удалено (в корзине)."""
     FIXED = 2**8
+    """Cообщение проверено пользователем на спам."""
     MEDIA = 2**9
+    """Cообщение содержит медиаконтент"""
     HIDDEN = 2**16
+    """Приветственное сообщение от сообщества."""
     DELETED_ALL = 2**17
+    """Cообщение удалено для всех получателей."""
 
 
-class VkPeerFlag(Enum):
+class VkPeerFlag(IntEnum):
+    """Флаги диалогов"""
     IMPORTANT = 1
+    """Важный диалог"""
     UNANSWERED = 2
+    """Неотвеченный диалог"""
 
 
 MESSAGE_EXTRA_FIELDS = [
@@ -151,6 +246,17 @@ PARSE_MESSAGE_FLAGS_EVENTS = [
 
 
 class VkLongPoll(object):
+    """
+    Класс для работы с longpoll-сервером
+
+    `Подробнее в документации VK API <https://vk.com/dev/using_longpoll>`__.
+
+    :param vk: объект :class:`VkApi`
+    :param wait: время ожидания
+    :param mode: дополнительные опции ответа
+    :param preload_messages: предзагрузка данных сообщений для
+        получения ссылок на прикрепленные файлы
+    """
 
     __slots__ = (
         'vk', 'wait', 'mode', 'preload_messages',
@@ -164,16 +270,6 @@ class VkLongPoll(object):
     ]
 
     def __init__(self, vk, wait=25, mode=DEFAULT_MODE, preload_messages=True):
-        """
-        https://vk.com/dev/using_longpoll
-        https://vk.com/dev/using_longpoll_2
-
-        :param vk: объект VkApi
-        :param wait: время ожидания
-        :param mode: дополнительные опции ответа
-        :param preload_messages: предзагрузка данных сообщений для
-                                 получения ссылок на прикрепленные файлы
-        """
 
         self.vk = vk
         self.wait = wait
@@ -184,7 +280,7 @@ class VkLongPoll(object):
         self.key = None
         self.server = None
         self.ts = None
-        self.pts = mode & VkLongpollMode.GET_PTS.value
+        self.pts = mode & VkLongpollMode.GET_PTS
 
         self.session = requests.Session()
 
@@ -208,6 +304,11 @@ class VkLongPoll(object):
                 self.pts = response['pts']
 
     def check(self):
+        """
+        Получить события от сервера один раз
+
+        :returns: `list` of :class:`Event`
+        """
         values = {
             'act': 'a_check',
             'key': self.key,
@@ -263,10 +364,16 @@ class VkLongPoll(object):
                 event.message_data = message
 
     def listen(self):
+        """
+        Слушать сервер
+
+        :yields: :class:`Event`
+        """
 
         while True:
             events = self.check()
 
+            # Мне кажется, это должно быть в check
             if self.preload_messages:
                 self.preload_message_events_data(events)
 
@@ -275,6 +382,13 @@ class VkLongPoll(object):
 
 
 class Event(object):
+    """
+    Событие, полученное от longpoll-сервера. 
+
+    Имеет поля в соответствии с `документацией <https://vk.com/dev/using_longpoll?f=3.%20Структура%20событий>`_.
+
+    События с полем `timestamp` также дополнительно имеют поле `datetime`
+    """
 
     __slots__ = frozenset((
         'raw', 'type', 'platform', 'offline_type',
@@ -354,17 +468,17 @@ class Event(object):
 
     def _parse_message_flags(self):
         self.message_flags = set(
-            x for x in VkMessageFlag if self.flags & x.value
+            x for x in VkMessageFlag if self.flags & x
         )
 
     def _parse_peer_flags(self):
         self.peer_flags = set(
-            x for x in VkPeerFlag if self.flags & x.value
+            x for x in VkPeerFlag if self.flags & x
         )
 
     def _parse_message(self):
 
-        if self.flags & VkMessageFlag.OUTBOX.value:
+        if self.flags & VkMessageFlag.OUTBOX:
             self.from_me = True
         else:
             self.to_me = True
