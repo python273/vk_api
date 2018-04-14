@@ -2,8 +2,8 @@ vk_api [![PyPI](https://img.shields.io/pypi/v/vk_api.svg)](https://pypi.python.o
 ======
 **vk_api** – Python модуль для написания скриптов для социальной сети Вконтакте (vk.com) (API wrapper)
 
+* [Документация](https://vk-api.readthedocs.io/en/latest/)
 * [Примеры использования](./examples) (python3)
-* [Вики vk_api](https://github.com/python273/vk_api/wiki)
 * [Документация по методам API](https://vk.com/dev/methods)
 
 Установка
