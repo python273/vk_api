@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-@author: python273
-@contact: https://vk.com/python273
-@license Apache License, Version 2.0, see LICENSE file
+:authors: python273
+:contact: https://vk.com/python273
+:license: Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2018
+:copyright: (c) 2018 python273
 """
 
 import sys
@@ -25,6 +25,7 @@ PoolRequest = namedtuple('PoolRequest', ['method', 'values', 'result'])
 
 
 class RequestResult(object):
+    """ Результат запроса из пула"""
 
     __slots__ = ('_result', 'ready', '_error')
 
@@ -35,6 +36,7 @@ class RequestResult(object):
 
     @property
     def error(self):
+        """Ошибка, либо `False`, если запрос прошёл успешно."""
         return self._error
 
     @error.setter
@@ -44,6 +46,7 @@ class RequestResult(object):
 
     @property
     def result(self):
+        """Результат запроса, если он прошёл успешно."""        
         if not self.ready:
             raise RuntimeError('Result is not available in `with` context')
 
@@ -59,12 +62,19 @@ class RequestResult(object):
 
     @property
     def ok(self):
+        """`True`, если результат запроса не содержит ошибок, иначе `False`"""
         return self.ready and not self._error
 
 
 class VkRequestsPool(object):
-    """ Позволяет сделать несколько обращений к API за один запрос
-        за счет метода execute
+    """ 
+    Позволяет сделать несколько обращений к API за один запрос
+    за счет метода execute.
+
+    Служит как менеджер контекста: запросы к API добавляются в 
+    открытый пул, и выполняются при его закрытии.
+
+    :param vk: Объект :class:`VkApi`
     """
 
     __slots__ = ('vk', 'pool', 'one_param', 'execute_errors')
@@ -88,7 +98,9 @@ class VkRequestsPool(object):
         return self.execute_errors
 
     def method(self, method, values=None):
-        """ Добавляет запрос в пулл
+        """ 
+        Добавляет запрос в пул. Невозможно использовать вместе с :func:`method_one_param`.
+        Возвращаемое значение будет содержать результат после закрытия пула.
 
         :param method: метод
         :type method: str
@@ -111,7 +123,10 @@ class VkRequestsPool(object):
         return result
 
     def method_one_param(self, method, key, values, default_values=None):
-        """ Использовать, если изменяется значение только одного параметра
+        """ 
+        Использовать, если изменяется значение только одного параметра.
+        Невозможно использовать вместе с :func:`method`.
+        Возвращаемое значение будет содержать результат после закрытия пула.
 
         :param method: метод
         :type method: str
@@ -196,7 +211,7 @@ class VkRequestsPool(object):
 
 
 def check_one_method(pool):
-    """ Возвращает True, если все запросы в пулле к одному методу """
+    """ Возвращает True, если все запросы в пуле к одному методу """
 
     if not pool:
         return False

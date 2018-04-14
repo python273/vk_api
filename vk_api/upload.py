@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-@author: python273
-@contact: https://vk.com/python273
-@license Apache License, Version 2.0, see LICENSE file
+:authors: python273
+:contact: https://vk.com/python273
+:license: Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2018
+:copyright: (c) 2018 python273
 """
 
 
@@ -320,8 +320,8 @@ class VkUpload(object):
 
     def document_wall(self, doc, title=None, tags=None, group_id=None):
         """ Загрузка документа в папку Отправленные,
-            для последующей отправки документа на стену
-            или личным сообщением.
+        для последующей отправки документа на стену
+        или личным сообщением.
 
         :param doc: путь к документу или file-like объект
         :param title: название документа

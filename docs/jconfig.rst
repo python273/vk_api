@@ -1,38 +1,22 @@
-jconfig package
-===============
+Пакет jconfig
+=============
 
-Submodules
-----------
+BaseConfig
+---------------------------
 
-jconfig.base module
--------------------
-
-.. automodule:: jconfig.base
+.. autoclass:: jconfig.base.BaseConfig
     :members:
-    :undoc-members:
+
+Config (хранение в json файле)
+------------------------------
+
+.. autoclass:: jconfig.jconfig.Config
+    :members:
     :show-inheritance:
 
-jconfig.jconfig module
-----------------------
+MemoryConfig (хранение в памяти)
+--------------------------------
 
-.. automodule:: jconfig.jconfig
+.. autoclass:: jconfig.memory.MemoryConfig
     :members:
-    :undoc-members:
-    :show-inheritance:
-
-jconfig.memory module
----------------------
-
-.. automodule:: jconfig.memory
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: jconfig
-    :members:
-    :undoc-members:
     :show-inheritance:

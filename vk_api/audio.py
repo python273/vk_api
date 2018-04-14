@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+"""
+:authors: python273
+:contact: https://vk.com/python273
+:license: Apache License, Version 2.0, see LICENSE file
+
+:copyright: (c) 2018 python273
+"""
+
 import re
 
 from bs4 import BeautifulSoup
@@ -15,14 +23,16 @@ ALBUMS_PER_USER_PAGE = 100
 
 
 class VkAudio(object):
+    """
+    Модуль для получения аудиозаписей без использования официального API.
+
+    :param vk: Объект :class:`VkApi`
+    """
 
     __slots__ = ('_vk', 'user_id')
 
     def __init__(self, vk):
-        """
 
-        :type vk: vk_api.VkApi
-        """
         self.user_id = vk.method('users.get')[0]['id']
         self._vk = vk
 

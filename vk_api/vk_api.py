@@ -1,10 +1,10 @@
 ﻿# -*- coding: utf-8 -*-
 """
-@author: python273
-@contact: https://vk.com/python273
-@license Apache License, Version 2.0, see LICENSE file
+:authors: python273
+:contact: https://vk.com/python273
+:license: Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2018
+:copyright: (c) 2018 python273
 """
 
 import logging
@@ -40,10 +40,51 @@ RE_PHONE_PREFIX = re.compile(r'label ta_r">\+(.*?)<')
 RE_PHONE_POSTFIX = re.compile(r'phone_postfix">.*?(\d+).*?<')
 
 
-DEFAULT_USER_SCOPE = sum([x.value for x in VkUserPermissions])
+DEFAULT_USER_SCOPE = sum(VkUserPermissions)
 
 
 class VkApi(object):
+    """
+    :param login: Логин ВКонтакте (лучше использовать номер телефона для
+        автоматического обхода проверки безопасности)
+    :type login: str
+
+    :param password: Пароль ВКонтакте (если пароль не передан, то будет
+        попытка использовать сохраненные данные)
+    :param password: str
+
+    :param token: access_token
+    :type token: str
+
+    :param auth_handler: Функция для обработки двухфакторной аутентификации,
+        должна возвращать строку с кодом и
+        булево значение, означающее, стоит ли запомнить
+        это устройство, для прохождения аутентификации.
+    :param captcha_handler: Функция для обработки капчи, см. :func:`captcha_handler`
+    :param config: Класс для сохранения настроек
+    :type config: :class:`jconfig.base.BaseConfig`
+    :param config_filename: Расположение config файла для :class:`jconfig.config.Config`
+
+    :param api_version: Версия API
+    :type api_version: str
+
+    :param app_id: app_id Standalone-приложения
+    :type app_id: int
+
+    :param scope: Запрашиваемые права, можно передать строкой или числом.
+        См. :class:`VkUserPermissions`
+    :type scope: int, str
+
+    :param client_secret: Защищенный ключ приложения для Client Credentials Flow
+        авторизации приложения (https://vk.com/dev/client_cred_flow).
+        Внимание: Этот способ авторизации устарел, рекомендуется использовать
+        сервисный ключ из настроек приложения.
+
+
+    `login` и `password` необходимы для автоматического получения токена при помощи
+    Implicit Flow авторизации пользователя и возможности работы с веб-версией сайта
+    (включая :class:`vk_api.audio.VkAudio`)
+    """
 
     RPS_DELAY = 0.34  # ~3 requests per second
 
@@ -52,35 +93,7 @@ class VkApi(object):
                  config=jconfig.Config, config_filename='vk_config.v2.json',
                  api_version='5.73', app_id=6222115, scope=DEFAULT_USER_SCOPE,
                  client_secret=None):
-        """
-        :param login: Логин ВКонтакте (лучше использовать номер телефона для
-                       автоматического обхода проверки безопасности)
-        :param password: Пароль ВКонтакте (если пароль не передан, то будет
-                          попытка использовать сохраненные данные)
-
-        :param token: access_token
-        :type token: str
-
-        :param auth_handler: Функция для обработки двухфакторной аутентификации,
-                              должна возвращать строку с кодом и
-                              булевое значение, означающее, стоит ли запомнить
-                              это устройство, для прохождения аутентификации.
-        :param captcha_handler: Функция для обработки капчи
-        :param config: Класс для сохранения настроек
-        :param config_filename: Расположение config файла
-
-        :param api_version: Версия API
-        :type api_version: str
-
-        :param app_id: Standalone-приложение
-        :type app_id: int
-
-        :param scope: Запрашиваемые права (можно передать строкой или числом)
-        :type scope: int, str
-
-        :param client_secret: Защищенный ключ приложения для серверной
-                               авторизации (https://vk.com/dev/auth_server)
-        """
+        # TODO: убрать config_filename, в качестве config брать объект, а не класс
 
         self.login = login
         self.password = password
@@ -114,7 +127,7 @@ class VkApi(object):
         self.logger = logging.getLogger('vk_api')
 
     @property
-    def sid(self):
+    def _sid(self):
         return (
             self.http.cookies.get('remixsid') or
             self.http.cookies.get('remixsid6')
@@ -124,23 +137,23 @@ class VkApi(object):
         """ Аутентификация
 
         :param reauth: Позволяет переавторизиваться, игнорируя сохраненные
-                       куки и токен
+            куки и токен
 
         :param token_only: Включает оптимальную стратегию аутентификации, если
-                            необходим только access_token
+            необходим только access_token
 
-                            Например если сохраненные куки не валидны,
-                            но токен валиден, то аутентификация пройдет успешно
+            Например если сохраненные куки не валидны,
+            но токен валиден, то аутентификация пройдет успешно
 
-                            При token_only=False, сначала проверяется
-                            валидность куки. Если кука не будет валидна, то
-                            будет произведена попытка аутетификации с паролем.
-                            Тогда если пароль не верен или пароль не передан,
-                            то аутентификация закончится с ошибкой.
+            При token_only=False, сначала проверяется
+            валидность куки. Если кука не будет валидна, то
+            будет произведена попытка аутетификации с паролем.
+            Тогда если пароль не верен или пароль не передан,
+            то аутентификация закончится с ошибкой.
 
-                            Если вы не делаете запросы к веб версии сайта
-                            используя куки, то лучше использовать
-                            token_only=True
+            Если вы не делаете запросы к веб версии сайта
+            используя куки, то лучше использовать
+            token_only=True
         """
 
         if not self.login:
@@ -171,20 +184,20 @@ class VkApi(object):
 
             self.storage.clear_section()
 
-            self.vk_login()
-            self.api_login()
+            self._vk_login()
+            self._api_login()
             return
 
         if not self.check_sid():
             self.logger.info(
                 'remixsid from config is not valid: {}'.format(
-                    self.sid
+                    self._sid
                 )
             )
 
-            self.vk_login()
+            self._vk_login()
         else:
-            self.security_check()
+            self._pass_security_check()
 
         if not self._check_token():
             self.logger.info(
@@ -193,7 +206,7 @@ class VkApi(object):
                 )
             )
 
-            self.api_login()
+            self._api_login()
         else:
             self.logger.info('access_token from config is valid')
 
@@ -207,14 +220,14 @@ class VkApi(object):
             self.logger.info('Auth (API) forced')
 
         if self.check_sid():
-            self.security_check()
-            self.api_login()
+            self._pass_security_check()
+            self._api_login()
 
         elif self.password:
-            self.vk_login()
-            self.api_login()
+            self._vk_login()
+            self._api_login()
 
-    def vk_login(self, captcha_sid=None, captcha_key=None):
+    def _vk_login(self, captcha_sid=None, captcha_key=None):
         """ Авторизация ВКонтакте с получением cookies remixsid
 
         :param captcha_sid: id капчи
@@ -263,7 +276,7 @@ class VkApi(object):
             self.logger.info('Captcha code is required')
 
             captcha_sid = search_re(RE_CAPTCHAID, response.text)
-            captcha = Captcha(self, captcha_sid, self.vk_login)
+            captcha = Captcha(self, captcha_sid, self._vk_login)
 
             return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
 
@@ -271,7 +284,7 @@ class VkApi(object):
             self.logger.info('Captcha code is required (recaptcha)')
 
             captcha_sid = str(random.random())[2:16]
-            captcha = Captcha(self, captcha_sid, self.vk_login)
+            captcha = Captcha(self, captcha_sid, self._vk_login)
 
             return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
 
@@ -283,9 +296,9 @@ class VkApi(object):
 
             response = self.http.get('https://vk.com/login?act=authcheck')
 
-            self.twofactor(response)
+            self._pass_twofactor(response)
 
-        if self.sid:
+        if self._sid:
             self.logger.info('Got remixsid')
 
             self.storage.cookies = cookies_to_list(self.http.cookies)
@@ -295,14 +308,15 @@ class VkApi(object):
                 'Unknown error. Please send bugreport: https://vk.com/python273'
             )
 
-        response = self.security_check(response)
+        response = self._pass_security_check(response)
 
         if 'act=blocked' in response.url:
             raise AccountBlocked('Account is blocked')
 
-    def twofactor(self, auth_response):
+    def _pass_twofactor(self, auth_response):
         """ Двухфакторная аутентификация
-            :param auth_response: страница с приглашением к аутентификации
+
+        :param auth_response: страница с приглашением к аутентификации
         """
         code, remember_device = self.error_handlers[TWOFACTOR_CODE]()
 
@@ -323,11 +337,11 @@ class VkApi(object):
             return self.http.get('https://vk.com/' + response_parsed[5])
 
         elif response_parsed[4] == '8':  # Incorrect code
-            return self.twofactor(auth_response)
+            return self._pass_twofactor(auth_response)
 
         raise TwoFactorError('Two factor authentication failed')
 
-    def security_check(self, response=None):
+    def _pass_security_check(self, response=None):
         """ Функция для обхода проверки безопасности (запрос номера телефона)
 
         :param response: ответ предыдущего запроса, если есть
@@ -343,7 +357,8 @@ class VkApi(object):
             return response
 
         phone_prefix = clear_string(search_re(RE_PHONE_PREFIX, response.text))
-        phone_postfix = clear_string(search_re(RE_PHONE_POSTFIX, response.text))
+        phone_postfix = clear_string(
+            search_re(RE_PHONE_POSTFIX, response.text))
 
         code = None
         if self.login and phone_prefix and phone_postfix:
@@ -376,7 +391,7 @@ class VkApi(object):
 
         self.logger.info('Checking remixsid...')
 
-        if not self.sid:
+        if not self._sid:
             self.logger.info('No remixsid')
             return
 
@@ -388,10 +403,10 @@ class VkApi(object):
 
         self.logger.info('remixsid is not valid')
 
-    def api_login(self):
+    def _api_login(self):
         """ Получение токена через Desktop приложение """
 
-        if not self.sid:
+        if not self._sid:
             raise AuthError('API auth error (no remixsid)')
 
         for cookie_name in ['p', 'l']:
@@ -406,7 +421,7 @@ class VkApi(object):
                 'response_type': 'token'
             }
         )
-        
+
         if 'act=blocked' in response.url:
             raise AccountBlocked('Account is blocked')
 
@@ -494,7 +509,7 @@ class VkApi(object):
 
     def http_handler(self, error):
         """ Обработчик ошибок соединения
-        
+
         :param error: исключение
         """
 
@@ -519,7 +534,7 @@ class VkApi(object):
 
     def get_api(self):
         """ Возвращает VkApiMethod(self)
-        
+
             Позволяет обращаться к методам API как к обычным классам.
             Например vk.wall.get(...)
         """
@@ -530,7 +545,7 @@ class VkApi(object):
                raw=False):
         """ Вызов метода API
 
-        :param method: имя метода
+        :param method: название метода
         :type method: str
 
         :param values: параметры

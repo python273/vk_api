@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-@author: python273
-@contact: https://vk.com/python273
-@license Apache License, Version 2.0, see LICENSE file
+:authors: python273
+:contact: https://vk.com/python273
+:license: Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2018
+:copyright: (c) 2018 python273
 """
 
 import sys
@@ -17,21 +17,22 @@ if sys.version_info.major == 2:
 
 
 class VkTools(object):
-    """ Содержит некоторые воспомогательные функции, которые могут понадобиться
-        при использовании API
+    """ 
+    Содержит некоторые воспомогательные функции, которые могут понадобиться
+    при использовании API
+
+    :param vk: Объект :class:`VkApi`
     """
 
     __slots__ = ('vk',)
 
     def __init__(self, vk):
-        """
-        :param vk: объект VkApi
-        """
         self.vk = vk
 
     def get_all_iter(self, method, max_count, values=None, key='items',
                      limit=None, stop_fn=None, negative_offset=False):
-        """ Получить все элементы.
+        """ 
+        Получить все элементы.
         Работает в методах, где в ответе есть count и items или users.
         За один запрос получает max_count * 25 элементов
 
@@ -97,13 +98,14 @@ class VkTools(object):
 
     def get_all(self, method, max_count, values=None, key='items', limit=None,
                 stop_fn=None, negative_offset=False):
-        """ Использовать только если нужно загрузить все объекты в память.
+        """ 
+        Использовать только если нужно загрузить все объекты в память.
 
-            Eсли вы можете обрабатывать объекты по частям, то лучше
-            использовать get_all_iter
+        Eсли вы можете обрабатывать объекты по частям, то лучше
+        использовать get_all_iter
 
-            Например если вы записываете объекты в БД, то нет смысла загружать
-            все данные в память
+        Например если вы записываете объекты в БД, то нет смысла загружать
+        все данные в память
         """
 
         items = list(
@@ -116,7 +118,8 @@ class VkTools(object):
 
     def get_all_slow_iter(self, method, max_count, values=None, key='items',
                           limit=None, stop_fn=None, negative_offset=False):
-        """ Получить все элементы (без использования execute)
+        """ 
+        Получить все элементы (без использования execute)
         Работает в методах, где в ответе есть count и items или users
 
         :param method: имя метода
@@ -187,13 +190,14 @@ class VkTools(object):
 
     def get_all_slow(self, method, max_count, values=None, key='items',
                      limit=None, stop_fn=None, negative_offset=False):
-        """ Использовать только если нужно загрузить все объекты в память.
+        """ 
+        Использовать только если нужно загрузить все объекты в память.
 
-            Eсли вы можете обрабатывать объекты по частям, то лучше
-            использовать get_all_slow_iter
+        Eсли вы можете обрабатывать объекты по частям, то лучше
+        использовать get_all_slow_iter
 
-            Например если вы записываете объекты в БД, то нет смысла загружать
-            все данные в память
+        Например если вы записываете объекты в БД, то нет смысла загружать
+        все данные в память
         """
 
         items = list(

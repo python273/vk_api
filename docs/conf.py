@@ -68,7 +68,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = 'en'
+language = 'ru'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -85,6 +85,7 @@ pygments_style = 'colorful'
 # a list of builtin themes.
 #
 html_theme = 'alabaster'
+# html_theme = "sphinx_rtd_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -95,6 +96,7 @@ html_theme_options = {
     'github_user': 'python273',
     'github_repo': 'vk_api',
     'github_banner': True,
+    'github_type': 'star',
     'show_related': False
 }
 
@@ -111,10 +113,19 @@ html_static_path = ['_static']
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
 # 'searchbox.html']``.
 #
+# html_sidebars = {
+#     '**': [
+#         'sidebarlogo.html', 'localtoc.html', 'relations.html',
+#         'sourcelink.html', 'searchbox.html'
+#     ]
+# }
 html_sidebars = {
     '**': [
-        'sidebarlogo.html', 'localtoc.html', 'relations.html',
-        'sourcelink.html', 'searchbox.html'
+        'about.html',
+        'navigation.html',
+        'relations.html',
+        'searchbox.html',
+        'donate.html',
     ]
 }
 
@@ -177,6 +188,11 @@ texinfo_documents = [
 
 
 # -- Extension configuration -------------------------------------------------
+
+# -- Options for autodoc extension -------------------------------------------
+
+autodoc_inherit_docstrings = False
+autodoc_member_order = 'bysource'
 
 # -- Options for todo extension ----------------------------------------------
 
