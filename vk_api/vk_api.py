@@ -184,8 +184,8 @@ class VkApi(object):
 
             self.storage.clear_section()
 
-            self.vk_login()
-            self.api_login()
+            self._vk_login()
+            self._api_login()
             return
 
         if not self.check_sid():
@@ -195,9 +195,9 @@ class VkApi(object):
                 )
             )
 
-            self.vk_login()
+            self._vk_login()
         else:
-            self.security_check()
+            self._pass_security_check()
 
         if not self._check_token():
             self.logger.info(
@@ -206,7 +206,7 @@ class VkApi(object):
                 )
             )
 
-            self.api_login()
+            self._api_login()
         else:
             self.logger.info('access_token from config is valid')
 
@@ -220,14 +220,14 @@ class VkApi(object):
             self.logger.info('Auth (API) forced')
 
         if self.check_sid():
-            self.security_check()
-            self.api_login()
+            self._pass_security_check()
+            self._api_login()
 
         elif self.password:
-            self.vk_login()
-            self.api_login()
+            self._vk_login()
+            self._api_login()
 
-    def vk_login(self, captcha_sid=None, captcha_key=None):
+    def _vk_login(self, captcha_sid=None, captcha_key=None):
         """ Авторизация ВКонтакте с получением cookies remixsid
 
         :param captcha_sid: id капчи
@@ -276,7 +276,7 @@ class VkApi(object):
             self.logger.info('Captcha code is required')
 
             captcha_sid = search_re(RE_CAPTCHAID, response.text)
-            captcha = Captcha(self, captcha_sid, self.vk_login)
+            captcha = Captcha(self, captcha_sid, self._vk_login)
 
             return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
 
@@ -284,7 +284,7 @@ class VkApi(object):
             self.logger.info('Captcha code is required (recaptcha)')
 
             captcha_sid = str(random.random())[2:16]
-            captcha = Captcha(self, captcha_sid, self.vk_login)
+            captcha = Captcha(self, captcha_sid, self._vk_login)
 
             return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
 
@@ -296,7 +296,7 @@ class VkApi(object):
 
             response = self.http.get('https://vk.com/login?act=authcheck')
 
-            self.twofactor(response)
+            self._pass_twofactor(response)
 
         if self._sid:
             self.logger.info('Got remixsid')
@@ -308,12 +308,12 @@ class VkApi(object):
                 'Unknown error. Please send bugreport: https://vk.com/python273'
             )
 
-        response = self.security_check(response)
+        response = self._pass_security_check(response)
 
         if 'act=blocked' in response.url:
             raise AccountBlocked('Account is blocked')
 
-    def twofactor(self, auth_response):
+    def _pass_twofactor(self, auth_response):
         """ Двухфакторная аутентификация
 
         :param auth_response: страница с приглашением к аутентификации
@@ -337,11 +337,11 @@ class VkApi(object):
             return self.http.get('https://vk.com/' + response_parsed[5])
 
         elif response_parsed[4] == '8':  # Incorrect code
-            return self.twofactor(auth_response)
+            return self._pass_twofactor(auth_response)
 
         raise TwoFactorError('Two factor authentication failed')
 
-    def security_check(self, response=None):
+    def _pass_security_check(self, response=None):
         """ Функция для обхода проверки безопасности (запрос номера телефона)
 
         :param response: ответ предыдущего запроса, если есть
@@ -403,7 +403,7 @@ class VkApi(object):
 
         self.logger.info('remixsid is not valid')
 
-    def api_login(self):
+    def _api_login(self):
         """ Получение токена через Desktop приложение """
 
         if not self._sid:
