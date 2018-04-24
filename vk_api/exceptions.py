@@ -161,5 +161,5 @@ class VkToolsException(VkApiError):
     pass
 
 
-class VkGraffitiException(VkApiError):
+class VkGraffitiError(VkApiError):
     pass
