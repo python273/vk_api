@@ -159,3 +159,7 @@ class VkAudioUrlDecodeError(VkAudioException):
 
 class VkToolsException(VkApiError):
     pass
+
+
+class VkGraffitiException(VkApiError):
+    pass

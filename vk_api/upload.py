@@ -7,6 +7,7 @@
 :copyright: (c) 2018 python273
 """
 
+from .exceptions import VkGraffitiException
 
 STORY_ALLOWED_LINK_TEXTS = {
     'to_store', 'vote', 'more', 'book', 'order',
@@ -288,7 +289,7 @@ class VkUpload(object):
     def graffiti(self, image, group_id=None):
         """ Загрузка граффити
 
-        :param image: путь к изображению или file-like объект
+        :param image: путь к изображению только в формате png или file-like объект
         :param group_id: идентификатор сообщества
                          (если используется токен сообщества)
         """
@@ -316,6 +317,8 @@ class VkUpload(object):
         if audio_message:
             values['type'] = 'audio_message'
         elif graffiti:
+            if not doc.endswith('.png'):
+                raise VkGraffitiException('Images must be in png format')
             values['type'] = 'graffiti'
 
         if to_wall:
