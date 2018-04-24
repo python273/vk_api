@@ -17,7 +17,7 @@ if sys.version_info.major == 2:
 
 
 class VkTools(object):
-    """ 
+    """
     Содержит некоторые воспомогательные функции, которые могут понадобиться
     при использовании API
 
@@ -31,7 +31,7 @@ class VkTools(object):
 
     def get_all_iter(self, method, max_count, values=None, key='items',
                      limit=None, stop_fn=None, negative_offset=False):
-        """ 
+        """
         Получить все элементы.
         Работает в методах, где в ответе есть count и items или users.
         За один запрос получает max_count * 25 элементов
@@ -98,7 +98,7 @@ class VkTools(object):
 
     def get_all(self, method, max_count, values=None, key='items', limit=None,
                 stop_fn=None, negative_offset=False):
-        """ 
+        """
         Использовать только если нужно загрузить все объекты в память.
 
         Eсли вы можете обрабатывать объекты по частям, то лучше
@@ -118,7 +118,7 @@ class VkTools(object):
 
     def get_all_slow_iter(self, method, max_count, values=None, key='items',
                           limit=None, stop_fn=None, negative_offset=False):
-        """ 
+        """
         Получить все элементы (без использования execute)
         Работает в методах, где в ответе есть count и items или users
 
@@ -190,7 +190,7 @@ class VkTools(object):
 
     def get_all_slow(self, method, max_count, values=None, key='items',
                      limit=None, stop_fn=None, negative_offset=False):
-        """ 
+        """
         Использовать только если нужно загрузить все объекты в память.
 
         Eсли вы можете обрабатывать объекты по частям, то лучше
@@ -223,7 +223,7 @@ vk_get_all_items = VkFunction(
         calls = calls + 1;
 
         params.offset = offset * %(offset_mul)s;
-        var response = API.%(method)s(params), 
+        var response = API.%(method)s(params),
             new_count = response.count,
             count_diff = (count == null ? 0 : new_count - count);
 
