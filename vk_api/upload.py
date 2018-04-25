@@ -7,8 +7,6 @@
 :copyright: (c) 2018 python273
 """
 
-from .exceptions import VkGraffitiError
-
 STORY_ALLOWED_LINK_TEXTS = {
     'to_store', 'vote', 'more', 'book', 'order',
     'enroll', 'fill', 'signup', 'buy', 'ticket',
@@ -317,8 +315,12 @@ class VkUpload(object):
         if audio_message:
             values['type'] = 'audio_message'
         elif graffiti:
-            if not doc.endswith('.png'):
-                raise VkGraffitiError('Images must be in png format')
+            if type(doc) == str:
+                if not doc.endswith('.png'):
+                    raise ValueError('Images must be in png format')
+            else:
+                if not doc.name.endswith('.png'):
+                    raise ValueError('Images must be in png format')
             values['type'] = 'graffiti'
 
         if to_wall:
