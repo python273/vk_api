@@ -287,8 +287,7 @@ class VkUpload(object):
     def graffiti(self, image, group_id=None):
         """ Загрузка граффити
 
-        :param image: путь к изображению или file-like объект.
-                        Файл только в формате png
+        :param image: путь к png изображению или file-like объект.
         :param group_id: идентификатор сообщества
                         (если используется токен сообщества)
         """
