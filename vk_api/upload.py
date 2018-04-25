@@ -287,9 +287,10 @@ class VkUpload(object):
     def graffiti(self, image, group_id=None):
         """ Загрузка граффити
 
-        :param image: путь к изображению только в формате png или file-like объект
+        :param image: путь к изображению или file-like объект.
+                        Файл только в формате png
         :param group_id: идентификатор сообщества
-                         (если используется токен сообщества)
+                        (если используется токен сообщества)
         """
 
         return self.document(
@@ -315,12 +316,6 @@ class VkUpload(object):
         if audio_message:
             values['type'] = 'audio_message'
         elif graffiti:
-            if isinstance(doc, str):
-                if not doc.endswith('.png'):
-                    raise ValueError('Images must be in png format')
-            else:
-                if not doc.name.endswith('.png'):
-                    raise ValueError('Images must be in png format')
             values['type'] = 'graffiti'
 
         if to_wall:
