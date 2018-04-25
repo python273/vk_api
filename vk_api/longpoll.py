@@ -381,7 +381,7 @@ class VkLongPoll(object):
 
 class Event(object):
     """
-    Событие, полученное от longpoll-сервера. 
+    Событие, полученное от longpoll-сервера.
 
     Имеет поля в соответствии с `документацией <https://vk.com/dev/using_longpoll?f=3.%20Структура%20событий>`_.
 

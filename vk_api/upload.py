@@ -7,7 +7,6 @@
 :copyright: (c) 2018 python273
 """
 
-
 STORY_ALLOWED_LINK_TEXTS = {
     'to_store', 'vote', 'more', 'book', 'order',
     'enroll', 'fill', 'signup', 'buy', 'ticket',
@@ -285,8 +284,23 @@ class VkUpload(object):
             to_wall=group_id is not None
         )
 
+    def graffiti(self, image, group_id=None):
+        """ Загрузка граффити
+
+        :param image: путь к png изображению или file-like объект.
+        :param group_id: идентификатор сообщества
+                        (если используется токен сообщества)
+        """
+
+        return self.document(
+            image,
+            graffiti=True,
+            group_id=group_id,
+            to_wall=group_id is not None
+        )
+
     def document(self, doc, title=None, tags=None, group_id=None,
-                 to_wall=False, audio_message=False):
+                 to_wall=False, audio_message=False, graffiti=False):
         """ Загрузка документа
 
         :param doc: путь к документу или file-like объект
@@ -300,6 +314,8 @@ class VkUpload(object):
 
         if audio_message:
             values['type'] = 'audio_message'
+        elif graffiti:
+            values['type'] = 'graffiti'
 
         if to_wall:
             method = 'docs.getWallUploadServer'

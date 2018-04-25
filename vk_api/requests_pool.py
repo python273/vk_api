@@ -46,7 +46,7 @@ class RequestResult(object):
 
     @property
     def result(self):
-        """Результат запроса, если он прошёл успешно."""        
+        """Результат запроса, если он прошёл успешно."""
         if not self.ready:
             raise RuntimeError('Result is not available in `with` context')
 
@@ -67,11 +67,11 @@ class RequestResult(object):
 
 
 class VkRequestsPool(object):
-    """ 
+    """
     Позволяет сделать несколько обращений к API за один запрос
     за счет метода execute.
 
-    Служит как менеджер контекста: запросы к API добавляются в 
+    Служит как менеджер контекста: запросы к API добавляются в
     открытый пул, и выполняются при его закрытии.
 
     :param vk: Объект :class:`VkApi`
@@ -98,7 +98,7 @@ class VkRequestsPool(object):
         return self.execute_errors
 
     def method(self, method, values=None):
-        """ 
+        """
         Добавляет запрос в пул. Невозможно использовать вместе с :func:`method_one_param`.
         Возвращаемое значение будет содержать результат после закрытия пула.
 
@@ -123,7 +123,7 @@ class VkRequestsPool(object):
         return result
 
     def method_one_param(self, method, key, values, default_values=None):
-        """ 
+        """
         Использовать, если изменяется значение только одного параметра.
         Невозможно использовать вместе с :func:`method`.
         Возвращаемое значение будет содержать результат после закрытия пула.
