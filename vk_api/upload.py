@@ -315,7 +315,7 @@ class VkUpload(object):
         if audio_message:
             values['type'] = 'audio_message'
         elif graffiti:
-            if type(doc) == str:
+            if isinstance(doc, str):
                 if not doc.endswith('.png'):
                     raise ValueError('Images must be in png format')
             else:
