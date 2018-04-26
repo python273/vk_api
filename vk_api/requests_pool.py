@@ -9,6 +9,7 @@
 
 import sys
 from collections import namedtuple
+from collections import OrderedDict
 
 from .utils import sjson_dumps
 from .execute import VkFunction
@@ -186,7 +187,7 @@ class VkRequestsPool(object):
                     cur_pool[x].result.error = True
 
     def execute_one_param(self):
-        result = {}
+        result = OrderedDict()
 
         method = self.one_param['method']
         default = self.one_param['default']
