@@ -1,0 +1,7 @@
+VK_LOGIN = '****'
+VK_PASSWORD = '****'
+DATABASE = 'vk_history'
+USER = 'vk_user'
+HOST = '127.0.0.1'
+PASSWORD_DB = '****'
+PORT = 5432
