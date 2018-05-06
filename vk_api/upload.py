@@ -269,56 +269,26 @@ class VkUpload(object):
                 files=f or None
             ).json()
 
-    def audio_message(self, audio, group_id=None):
-        """ Загрузка аудио-сообщения
-
-        :param audio: путь к аудиофайлу или file-like объект
-        :param group_id: идентификатор сообщества
-                         (если используется токен сообщества)
-        """
-
-        return self.document(
-            audio,
-            audio_message=True,
-            group_id=group_id,
-            to_wall=group_id is not None
-        )
-
-    def graffiti(self, image, group_id=None):
-        """ Загрузка граффити
-
-        :param image: путь к png изображению или file-like объект.
-        :param group_id: идентификатор сообщества
-                        (если используется токен сообщества)
-        """
-
-        return self.document(
-            image,
-            graffiti=True,
-            group_id=group_id,
-            to_wall=group_id is not None
-        )
-
     def document(self, doc, title=None, tags=None, group_id=None,
-                 to_wall=False, audio_message=False, graffiti=False):
+                 to_wall=False, message_peer_id=None, doc_type=None):
         """ Загрузка документа
 
         :param doc: путь к документу или file-like объект
         :param title: название документа
         :param tags: метки для поиска
         :param group_id: идентификатор сообщества (если загрузка идет в группу)
-        :param to_wall: загрузить на стену
         """
 
-        values = {'group_id': group_id}
-
-        if audio_message:
-            values['type'] = 'audio_message'
-        elif graffiti:
-            values['type'] = 'graffiti'
+        values = {
+            'group_id': group_id,
+            'peer_id': message_peer_id,
+            'type': doc_type
+        }
 
         if to_wall:
             method = 'docs.getWallUploadServer'
+        elif message_peer_id:
+            method = 'docs.getMessagesUploadServer'
         else:
             method = 'docs.getUploadServer'
 
@@ -345,7 +315,43 @@ class VkUpload(object):
         :param group_id: идентификатор сообщества (если загрузка идет в группу)
         """
 
-        return self.document(doc, title, tags, group_id, True)
+        return self.document(doc, title, tags, group_id, to_wall=True)
+
+    def document_message(self, doc, title=None, tags=None, peer_id=None):
+        """ Загрузка документа для отправки личным сообщением.
+
+        :param doc: путь к документу или file-like объект
+        :param title: название документа
+        :param tags: метки для поиска
+        :param peer_id: peer_id беседы
+        """
+
+        return self.document(doc, title, tags, message_peer_id=peer_id)
+
+    def audio_message(self, audio, peer_id=None, group_id=None):
+        """ Загрузка аудио-сообщения.
+
+        :param audio: путь к аудиофайлу или file-like объект
+        :param peer_id: идентификатор диалога
+        :param group_id: для токена группы, можно передавать ID группы,
+        вместо peer_id
+        """
+
+        return self.document(
+            audio,
+            doc_type='audio_message',
+            message_peer_id=peer_id,
+            group_id=group_id,
+            to_wall=group_id is not None
+        )
+
+    def graffiti(self, image):
+        """ Загрузка граффити
+
+        :param image: путь к png изображению или file-like объект.
+        """
+
+        return self.document(image, doc_type='graffiti')
 
     def photo_cover(self, photo, group_id,
                     crop_x=None, crop_y=None,
