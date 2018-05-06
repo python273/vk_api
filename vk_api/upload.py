@@ -345,13 +345,22 @@ class VkUpload(object):
             to_wall=group_id is not None
         )
 
-    def graffiti(self, image):
+    def graffiti(self, image, peer_id=None, group_id=None):
         """ Загрузка граффити
 
         :param image: путь к png изображению или file-like объект.
+        :param peer_id: идентификатор диалога
+        :param group_id: для токена группы, можно передавать ID группы,
+        вместо peer_id
         """
 
-        return self.document(image, doc_type='graffiti')
+        return self.document(
+            image,
+            doc_type='graffiti',
+            message_peer_id=peer_id,
+            group_id=group_id,
+            to_wall=group_id is not None
+        )
 
     def photo_cover(self, photo, group_id,
                     crop_x=None, crop_y=None,
