@@ -497,4 +497,4 @@ class FilesOpener(object):
         for f in self.opened_files:
             f.close()
 
-        self.opened_files.clear()
+        self.opened_files = []
