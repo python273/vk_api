@@ -51,7 +51,7 @@ class VkApi(object):
 
     :param password: Пароль ВКонтакте (если пароль не передан, то будет
         попытка использовать сохраненные данные)
-    :param password: str
+    :type password: str
 
     :param token: access_token
     :type token: str
