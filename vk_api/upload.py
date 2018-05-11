@@ -345,7 +345,7 @@ class VkUpload(object):
             to_wall=group_id is not None
         )
 
-    def graffiti(self, image, group_id=None):
+    def graffiti(self, image, peer_id=None, group_id=None):
         """ Загрузка граффити
 
         :param image: путь к png изображению или file-like объект.
@@ -357,6 +357,7 @@ class VkUpload(object):
         return self.document(
             image,
             doc_type='graffiti',
+            message_peer_id=peer_id,
             group_id=group_id,
             to_wall=group_id is not None
         )
