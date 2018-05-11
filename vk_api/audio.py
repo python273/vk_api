@@ -187,7 +187,7 @@ class VkAudio(object):
 
 
 def scrap_data(html, user_id):
-    """ Парсинг списка аудиозаписей из html странцы """
+    """ Парсинг списка аудиозаписей из html страницы """
 
     soup = BeautifulSoup(html, 'html.parser')
     tracks = []
@@ -221,7 +221,7 @@ def scrap_data(html, user_id):
 
 
 def scrap_albums(html):
-    """ Парсинг списка альбомов из html странцы """
+    """ Парсинг списка альбомов из html страницы """
 
     soup = BeautifulSoup(html, 'html.parser')
     albums = []

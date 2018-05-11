@@ -193,7 +193,7 @@ class VkUpload(object):
               no_comments=None, repeat=None):
         """ Загрузка видео
 
-        :param video_file: путь до файла или file-like объект.
+        :param video_file: путь к видеофайлу или file-like объект.
         :type video_file: object, str
 
         :param link: url для встраивания видео с внешнего сайта,
@@ -222,7 +222,7 @@ class VkUpload(object):
         :type group_id: int
 
         :param album_id: идентификатор альбома, в который будет загружен
-            видео файл.
+            видеофайл.
         :type album_id: int
 
         :param privacy_view: настройки приватности просмотра видеозаписи в

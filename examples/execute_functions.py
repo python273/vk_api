@@ -18,7 +18,7 @@ vk_get_wall_post_ids = VkFunction(args=('values',), code='''
 
 vk_get_filtered = VkFunction(
     args=('method', 'values', 'key'),
-    clean_args=('method', 'key'),  # аргументы будут сконвертрованы через str
+    clean_args=('method', 'key'),  # аргументы будут сконвертированы через str
                                    # остальные через json.dumps
     code='''
     return API.%(method)s(%(values)s)["items"]@.%(key)s;
