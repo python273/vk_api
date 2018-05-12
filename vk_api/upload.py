@@ -193,7 +193,7 @@ class VkUpload(object):
               no_comments=None, repeat=None):
         """ Загрузка видео
 
-        :param video_file: путь до файла или file-like объект.
+        :param video_file: путь к видеофайлу или file-like объект.
         :type video_file: object, str
 
         :param link: url для встраивания видео с внешнего сайта,
@@ -222,7 +222,7 @@ class VkUpload(object):
         :type group_id: int
 
         :param album_id: идентификатор альбома, в который будет загружен
-            видео файл.
+            видеофайл.
         :type album_id: int
 
         :param privacy_view: настройки приватности просмотра видеозаписи в
@@ -345,13 +345,22 @@ class VkUpload(object):
             to_wall=group_id is not None
         )
 
-    def graffiti(self, image):
+    def graffiti(self, image, peer_id=None, group_id=None):
         """ Загрузка граффити
 
         :param image: путь к png изображению или file-like объект.
+        :param peer_id: идентификатор диалога (только для авторизации пользователя)
+        :param group_id: для токена группы, нужно передавать ID группы,
+        вместо peer_id
         """
 
-        return self.document(image, doc_type='graffiti')
+        return self.document(
+            image,
+            doc_type='graffiti',
+            message_peer_id=peer_id,
+            group_id=group_id,
+            to_wall=group_id is not None
+        )
 
     def photo_cover(self, photo, group_id,
                     crop_x=None, crop_y=None,
