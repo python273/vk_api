@@ -114,7 +114,7 @@ def enable_debug_mode(vk_session, print_content=False):
     from . import __version__
 
     pypi_version = requests.get(
-        'https://pypi.python.org/pypi/vk_api/json'
+        'https://pypi.org/pypi/vk_api/json'
     ).json()['info']['version']
 
     if __version__ != pypi_version:
