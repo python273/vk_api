@@ -334,7 +334,7 @@ class VkUpload(object):
         :param audio: путь к аудиофайлу или file-like объект
         :param peer_id: идентификатор диалога
         :param group_id: для токена группы, можно передавать ID группы,
-        вместо peer_id
+            вместо peer_id
         """
 
         return self.document(
@@ -351,7 +351,7 @@ class VkUpload(object):
         :param image: путь к png изображению или file-like объект.
         :param peer_id: идентификатор диалога (только для авторизации пользователя)
         :param group_id: для токена группы, нужно передавать ID группы,
-        вместо peer_id
+            вместо peer_id
         """
 
         return self.document(
