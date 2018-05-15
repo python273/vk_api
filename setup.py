@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from distutils.core import setup
+from setuptools import setup
 
 """
 @author: python273
@@ -11,14 +11,30 @@ Copyright (C) 2018
 """
 
 
+version = '10.1'
+
+with open('README.md') as f:
+    long_description = f.read()
+
 setup(
     name='vk_api',
-    version='10.1',
+    version=version,
+
     author='python273',
     author_email='whoami@python273.pw',
+
+    description=(
+        u'Python модуль для написания скриптов для социальной сети '
+        u'Вконтакте (vk.com) (API wrapper)'
+    ),
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+
     url='https://github.com/python273/vk_api',
-    description='Module for writing scripts for vk.com (vkontakte)',
-    download_url='https://github.com/python273/vk_api/archive/master.zip',
+    download_url='https://github.com/python273/vk_api/archive/v{}.zip'.format(
+        version
+    ),
+
     license='Apache License, Version 2.0, see LICENSE file',
 
     packages=['vk_api', 'jconfig'],
