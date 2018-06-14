@@ -87,18 +87,21 @@ class VkApi(object):
     """
 
     RPS_DELAY = 0.34  # ~3 requests per second
+    RPS_DELAY_GROUP = 0.06  # ~17 запросов в секунду из максимальных 20 (для групп)
 
     def __init__(self, login=None, password=None, token=None,
                  auth_handler=None, captcha_handler=None,
                  config=jconfig.Config, config_filename='vk_config.v2.json',
                  api_version='5.74', app_id=6222115, scope=DEFAULT_USER_SCOPE,
-                 client_secret=None):
+                 client_secret=None, is_group=False):
 
         self.login = login
         self.password = password
 
         self.token = {'access_token': token}
-
+		
+        self.is_group = is_group
+        
         self.api_version = api_version
         self.app_id = app_id
         self.scope = scope
@@ -135,7 +138,7 @@ class VkApi(object):
     def auth(self, reauth=False, token_only=False):
         """ Аутентификация
 
-        :param reauth: Позволяет переавторизоваться, игнорируя сохраненные
+        :param reauth: Позволяет переавторизиваться, игнорируя сохраненные
             куки и токен
 
         :param token_only: Включает оптимальную стратегию аутентификации, если
@@ -516,7 +519,7 @@ class VkApi(object):
 
     def too_many_rps_handler(self, error):
         """ Обработчик ошибки "Слишком много запросов в секунду".
-            Ждет пол секунды и пробует отправить запрос заново
+            Ждет пол секунды и пробудет отправить запрос заново
 
         :param error: исключение
         """
@@ -562,7 +565,7 @@ class VkApi(object):
                     execute_errors)
         :type raw: bool
         """
-
+        
         values = values.copy() if values else {}
 
         if 'v' not in values:
@@ -576,8 +579,11 @@ class VkApi(object):
             values['captcha_key'] = captcha_key
 
         with self.lock:
-            # Ограничение 3 запроса в секунду
-            delay = self.RPS_DELAY - (time.time() - self.last_request)
+            # Ограничение на кол-во запросов в секунду
+            if self.is_group:
+                delay = self.RPS_DELAY_GROUP - (time.time() - self.last_request)
+            else:
+                delay = self.RPS_DELAY - (time.time() - self.last_request)
 
             if delay > 0:
                 time.sleep(delay)
@@ -621,7 +627,7 @@ class VkApi(object):
             raise error
 
         return response if raw else response['response']
-
+    
 
 class VkApiMethod(object):
     """ Дает возможность обращаться к методам API через:

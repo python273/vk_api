@@ -25,7 +25,7 @@ def main():
     # Авторизация группы:
     # при передаче token вызывать vk_session.auth не нужно
     """
-    vk_session = vk_api.VkApi(token='токен с доступом к сообщениям и фото')
+    vk_session = vk_api.VkApi(token='токен с доступом к сообщениям и фото', is_group=True)
     """
 
     vk = vk_session.get_api()
