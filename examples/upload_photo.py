@@ -9,7 +9,7 @@ def main():
     vk_session = vk_api.VkApi(login, password)
 
     try:
-        vk_session.auth()
+        vk_session.auth(token_only=True)
     except vk_api.AuthError as error_msg:
         print(error_msg)
         return
@@ -30,6 +30,7 @@ def main():
     )
 
     print(photo, '\nLink: ', vk_photo_url)
+
 
 if __name__ == '__main__':
     main()

@@ -30,7 +30,7 @@ def main():
     vk_session = vk_api.VkApi(login, password)
 
     try:
-        vk_session.auth()
+        vk_session.auth(token_only=True)
     except vk_api.AuthError as error_msg:
         print(error_msg)
         return
@@ -44,6 +44,7 @@ def main():
 
     print(vk_get_filtered(vk, 'wall.get', {'domain': 'durov'}, 'text'))
     print(vk_get_filtered(vk, 'groups.get', {'extended': True}, 'name'))
+
 
 if __name__ == '__main__':
     main()

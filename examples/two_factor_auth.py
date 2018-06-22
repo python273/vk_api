@@ -20,7 +20,8 @@ def main():
     login, password = 'python@vk.com', 'mypassword'
     vk_session = vk_api.VkApi(
         login, password,
-        auth_handler=auth_handler  # функция для обработки двухфакторной аутентификации
+        # функция для обработки двухфакторной аутентификации
+        auth_handler=auth_handler
     )
 
     try:
@@ -30,6 +31,7 @@ def main():
         return
 
     # ...
+
 
 if __name__ == '__main__':
     main()

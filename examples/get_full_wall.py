@@ -9,7 +9,7 @@ def main():
     vk_session = vk_api.VkApi(login, password)
 
     try:
-        vk_session.auth()
+        vk_session.auth(token_only=True)
     except vk_api.AuthError as error_msg:
         print(error_msg)
         return
@@ -40,6 +40,7 @@ def main():
 
     if wall['count'] > 1:
         print('Last post:', wall['items'][-1])
+
 
 if __name__ == '__main__':
     main()

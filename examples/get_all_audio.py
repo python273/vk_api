@@ -21,18 +21,8 @@ def main():
 
     artists = collections.Counter()
 
-    offset = 0
-
-    while True:
-        audios = vkaudio.get(owner_id=-99463083, offset=offset)
-
-        if not audios:
-            break
-
-        for audio in audios:
-            artists[audio['artist']] += 1
-
-        offset += len(audios)
+    for track in vkaudio.get_iter(-99463083):
+        artists[track['artist']] += 1
 
     # Составляем рейтинг первых 15
     print('\nTop 15:')
@@ -48,6 +38,7 @@ def main():
 
     for n, track in enumerate(tracks, 1):
         print('{}. {} {}'.format(n, track['title'], track['url']))
+
 
 if __name__ == '__main__':
     main()

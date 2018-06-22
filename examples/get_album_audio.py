@@ -18,17 +18,7 @@ def main():
 
     vkaudio = VkAudio(vk_session)
 
-    albums = []
-    offset = 0
-
-    while True:
-        temp_albums = vkaudio.get_albums(owner_id='194957739', offset=offset)
-
-        if not temp_albums:
-            break
-
-        albums += temp_albums
-        offset += len(temp_albums)
+    albums = vkaudio.get_albums(194957739)
 
     print('\nLast 5:')
     for album in albums[:5]:
