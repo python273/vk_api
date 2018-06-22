@@ -10,15 +10,12 @@
 import sys
 from collections import namedtuple
 
-from .utils import sjson_dumps
+from .exceptions import VkRequestsPoolException
 from .execute import VkFunction
+from .utils import sjson_dumps
 
 if sys.version_info.major == 2:
     range = xrange
-
-
-class VkRequestsPoolException(Exception):
-    pass
 
 
 PoolRequest = namedtuple('PoolRequest', ['method', 'values', 'result'])
@@ -51,7 +48,13 @@ class RequestResult(object):
             raise RuntimeError('Result is not available in `with` context')
 
         if self._error:
-            raise VkRequestsPoolException('Got error while executing request')
+            raise VkRequestsPoolException(
+                self._error,
+                'Got error while executing request: [{}] {}'.format(
+                    self.error['error_code'],
+                    self.error['error_msg']
+                )
+            )
 
         return self._result
 
@@ -74,28 +77,20 @@ class VkRequestsPool(object):
     Служит как менеджер контекста: запросы к API добавляются в
     открытый пул, и выполняются при его закрытии.
 
-    :param vk: Объект :class:`VkApi`
+    :param vk_session: Объект :class:`VkApi`
     """
 
-    __slots__ = ('vk', 'pool', 'one_param', 'execute_errors')
+    __slots__ = ('vk_session', 'pool')
 
-    def __init__(self, vk):
-        self.vk = vk
+    def __init__(self, vk_session):
+        self.vk_session = vk_session
         self.pool = []
-        self.one_param = {}
-        self.execute_errors = []
 
     def __enter__(self):
         return self
 
     def __exit__(self, *args, **kwargs):
-        if self.one_param:
-            self.execute_one_param()
-        else:
-            self.execute()
-
-    def get_execute_errors(self):
-        return self.execute_errors
+        self.execute()
 
     def method(self, method, values=None):
         """
@@ -111,9 +106,6 @@ class VkRequestsPool(object):
         :rtype: RequestResult
         """
 
-        if self.one_param:
-            raise RuntimeError('One param mode does not work with self.method')
-
         if values is None:
             values = {}
 
@@ -121,44 +113,6 @@ class VkRequestsPool(object):
         self.pool.append(PoolRequest(method, values, result))
 
         return result
-
-    def method_one_param(self, method, key, values, default_values=None):
-        """
-        Использовать, если изменяется значение только одного параметра.
-        Невозможно использовать вместе с :func:`method`.
-        Возвращаемое значение будет содержать результат после закрытия пула.
-
-        :param method: метод
-        :type method: str
-
-        :param default_values: одинаковые значения для запросов
-        :type default_values: dict
-
-        :param key: ключ изменяющегося параметра
-        :type key: str
-
-        :param values: список значений изменяющегося параметра (max: 25)
-        :type values: list
-
-        :rtype: RequestResult
-        """
-
-        if not self.one_param and self.pool:
-            raise RuntimeError('One param mode does not work with self.method')
-
-        if default_values is None:
-            default_values = {}
-
-        self.one_param = {
-            'method': method,
-            'default': default_values,
-            'key': key,
-            'return': RequestResult()
-        }
-
-        self.pool = values
-
-        return self.one_param['return']
 
     def execute(self):
         for i in range(0, len(self.pool), 25):
@@ -169,45 +123,24 @@ class VkRequestsPool(object):
             if one_method:
                 value_list = [i.values for i in cur_pool]
 
-                response_raw = vk_one_method(self.vk, one_method, value_list)
+                response_raw = vk_one_method(
+                    self.vk_session, one_method, value_list
+                )
             else:
-                response_raw = vk_many_methods(self.vk, cur_pool)
+                response_raw = vk_many_methods(self.vk_session, cur_pool)
 
             response = response_raw['response']
-            response_errors = response_raw.get('execute_errors')
+            response_errors = response_raw.get('execute_errors', [])
 
-            if response_errors:
-                self.execute_errors += response_errors[:-1]
+            response_errors_iter = iter(response_errors)
 
-            for x, response in enumerate(response):
-                if response is not False:
-                    cur_pool[x].result.result = response
+            for x, current_response in enumerate(response):
+                current_result = cur_pool[x].result
+
+                if current_response is not False:
+                    current_result.result = current_response
                 else:
-                    cur_pool[x].result.error = True
-
-    def execute_one_param(self):
-        result = {}
-
-        method = self.one_param['method']
-        default = self.one_param['default']
-        key = self.one_param['key']
-
-        for i in range(0, len(self.pool), 25):
-            cur_pool = self.pool[i:i + 25]
-
-            response_raw = vk_one_param(self.vk, method, cur_pool, default, key)
-
-            response = response_raw['response']
-            response_errors = response_raw.get('execute_errors')
-
-            if response_errors:
-                self.execute_errors += response_errors[:-1]
-
-            for x, r in enumerate(response):
-                if r is not False:
-                    result[cur_pool[x]] = r
-
-        self.one_param['return'].result = result
+                    current_result.error = next(response_errors_iter)
 
 
 def check_one_method(pool):
@@ -242,6 +175,65 @@ vk_one_method = VkFunction(
 ''')
 
 
+def vk_many_methods(vk_session, pool):
+    requests = ','.join(
+        'API.{}({})'.format(i.method, sjson_dumps(i.values))
+        for i in pool
+    )
+
+    code = 'return [{}];'.format(requests)
+
+    return vk_session.method('execute', {'code': code}, raw=True)
+
+
+def vk_request_one_param_pool(vk_session, method, key, values,
+                              default_values=None):
+    """
+    Использовать, если изменяется значение только одного параметра.
+    Невозможно использовать вместе с :func:`method`.
+    Возвращаемое значение будет содержать результат после закрытия пула.
+
+    :param vk_session: метод
+    :type vk_session: vk_api.VkAPi
+
+    :param method: метод
+    :type method: str
+
+    :param default_values: одинаковые значения для запросов
+    :type default_values: dict
+
+    :param key: ключ изменяющегося параметра
+    :type key: str
+
+    :param values: список значений изменяющегося параметра (max: 25)
+    :type values: list
+
+    :rtype: (dict, dict)
+    """
+
+    result = {}
+    errors = {}
+
+    for i in range(0, len(values), 25):
+        current_values = values[i:i + 25]
+
+        response_raw = vk_one_param(
+            vk_session, method, current_values, default_values, key
+        )
+
+        response = response_raw['response']
+        response_errors = response_raw.get('execute_errors', [])
+        response_errors_iter = iter(response_errors)
+
+        for x, r in enumerate(response):
+            if r is not False:
+                result[current_values[x]] = r
+            else:
+                errors[current_values[x]] = next(response_errors_iter)
+
+    return result, errors
+
+
 vk_one_param = VkFunction(
     args=('method', 'values', 'default_values', 'key'),
     clean_args=('method', 'key'),
@@ -262,14 +254,3 @@ vk_one_param = VkFunction(
 
     return result;
 ''')
-
-
-def vk_many_methods(vk_session, pool):
-    requests = ','.join(
-        'API.{}({})'.format(i.method, sjson_dumps(i.values))
-        for i in pool
-    )
-
-    code = 'return [{}];'.format(requests)
-
-    return vk_session.method('execute', {'code': code}, raw=True)

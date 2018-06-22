@@ -13,7 +13,7 @@ def main():
     vk_session = vk_api.VkApi(login, password)
 
     try:
-        vk_session.auth()
+        vk_session.auth(token_only=True)
     except vk_api.AuthError as error_msg:
         print(error_msg)
         return
@@ -35,6 +35,17 @@ def main():
     # False - поэтому нельзя обратиться к результату
     print(request_with_error.ok)
 
+    # Получить ошибку
+    print(request_with_error.error)
+
+    try:
+        """ Если запрос был завершен с ошибкой, то при обращении к результату
+        будет выбрасываться исключение
+        """
+        _ = request_with_error.result
+    except vk_api.VkRequestsPoolException as e:
+        print('Error:', e)
+
     """ Пример получения друзей у нескольких пользователей за один запрос
     """
 
@@ -52,25 +63,28 @@ def main():
 
     print(friends)
 
-    """ Следующий пример - оптимизированная версия предыдущего
+    """ Следующий пример - более простая версия предыдущего
 
         В friends будет записан тот же самый результат, что и в прошлом примере.
-        method_one_param можно использовать, когда запрос идет к одному методу,
-        и когда изменяется только один параметр. В данном случае это 'user_id'
+        vk_request_one_param_pool можно использовать, когда запрос идет к
+        одному методу и когда изменяется только один параметр. В данном случае
+        это 'user_id'.
 
-        Плюс не нужно вызывать .result для каждого ключа
+        Кроме того не нужно получать .result для каждого ключа.
     """
-    with vk_api.VkRequestsPool(vk_session) as pool:
-        friends = pool.method_one_param(
-            'friends.get',  # Метод
-            key='user_id',  # Изменяющийся параметр
-            values=[1, 183433824],
+    friends, errors = vk_api.vk_request_one_param_pool(
+        vk_session,
+        'friends.get',  # Метод
+        key='user_id',  # Изменяющийся параметр
+        values=[1, 3, 183433824],
 
-            # Параметры, которые будут в каждом запросе
-            default_values={'fields': 'photo'}
-        )
+        # Параметры, которые будут в каждом запросе
+        default_values={'fields': 'photo'}
+    )
 
-    print(friends.result)
+    print(friends)
+    print(errors)
+
 
 if __name__ == '__main__':
     main()

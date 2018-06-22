@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from .enums import *
 from .exceptions import *
-from .requests_pool import VkRequestsPool
+from .requests_pool import VkRequestsPool, vk_request_one_param_pool
 from .tools import VkTools
 from .upload import VkUpload
 from .vk_api import VkApi

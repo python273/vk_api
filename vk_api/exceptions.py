@@ -159,3 +159,9 @@ class VkAudioUrlDecodeError(VkAudioException):
 
 class VkToolsException(VkApiError):
     pass
+
+
+class VkRequestsPoolException(Exception):
+    def __init__(self, error, *args, **kwargs):
+        self.error = error
+        super(VkRequestsPoolException, self).__init__(*args, **kwargs)
