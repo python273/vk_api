@@ -8,7 +8,6 @@
 """
 
 import sys
-import json
 
 from .exceptions import ApiError, VkToolsException
 from .execute import VkFunction
@@ -207,34 +206,6 @@ class VkTools(object):
             )
         )
         return {'count': len(items), key: items}
-
-
-class VkKeyboard(object):
-    def __init__(self, one_time=False):
-        self.keyboard = {}
-        self.keyboard['one_time'] = one_time
-        self.keyboard['buttons'] = []
-        self.line = None
-
-    def get_keyboard(self):
-        return json.dumps(self.keyboard)
-
-    def add_button(self, payload, label=None, color='Default', type='text'):
-        button = {}
-        button['action'] = {}
-        button['action']['type'] = type
-        button['action']['payload'] = payload
-        button['action']['label'] = label
-        button['color'] = color
-        self.keyboard['buttons'][self.line - 1].append(button)
-
-    def add_line(self):
-        if not self.line:
-            self.line = 1
-        else:
-            self.line += 1
-
-        self.keyboard['buttons'].append([])
 
 
 vk_get_all_items = VkFunction(
