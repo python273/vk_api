@@ -25,7 +25,7 @@ class VkKeyboard(object):
         empty_keyboard['buttons'] = []
         return json.dumps(empty_keyboard, ensure_ascii=False)
 
-    def add_button(self, label, color='default', type='text', payload=None):
+    def add_button(self, label, color='default', payload=None):
         """
         :param label: Надпись на кнопке и текст, отправляющийся при её нажатии.
 
@@ -38,7 +38,7 @@ class VkKeyboard(object):
         """
         button = {}
         button['action'] = {}
-        button['action']['type'] = type
+        button['action']['type'] = 'text'
         button['action']['payload'] = payload
         button['action']['label'] = label
         button['color'] = color
