@@ -6,7 +6,6 @@ def main():
 
     keyboard = vk_api.VkKeyboard(one_time=True)
 
-    keyboard.add_line()  # Создание первой строки
     keyboard.add_button('Белая кнопка', color='default')
     keyboard.add_button('Зелёная кнопка', color='positive')
 
