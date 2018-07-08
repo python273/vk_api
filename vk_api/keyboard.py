@@ -1,4 +1,14 @@
-import json
+from enum import Enum
+from .utils import sjson_dumps
+
+
+class KeyboardColors(Enum):
+    """ Допустимые цвета кнопок.
+    """
+    primary = 1   # синяя
+    default = 2   # белая
+    negative = 3  # красная
+    positive = 4  # зелёная
 
 
 class VkKeyboard(object):
@@ -15,7 +25,7 @@ class VkKeyboard(object):
     def get_keyboard(self):
         """ Возвращает json клавиатуры
         """
-        return json.dumps(self.keyboard, ensure_ascii=False)
+        return sjson_dumps(self.keyboard)
 
     def get_empty_keyboard(self):
         """ Возвращает json пустой клавиатуры.
@@ -23,14 +33,14 @@ class VkKeyboard(object):
         """
         empty_keyboard = self.keyboard
         empty_keyboard['buttons'] = []
-        return json.dumps(empty_keyboard, ensure_ascii=False)
+        return sjson_dumps(empty_keyboard)
 
     def add_button(self, label, color='default', payload=None):
         """
         :param label: Надпись на кнопке и текст, отправляющийся при её нажатии.
 
         :param color: цвет кнопки.
-            Бывает default(белая), primary(синяя), positive(зелёная) и negative(красная).
+            См. :class:`KeyboardColors`
 
         :param payload: Параметр для callback api
 
