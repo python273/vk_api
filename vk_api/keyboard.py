@@ -34,7 +34,9 @@ class VkKeyboard(object):
         """ Возвращает json пустой клавиатуры.
             Если отправить пустую клавиатуру, текущая у пользователя исчезнет.
         """
-        return sjson_dumps(cls().get_keyboard())
+        keyboard = cls()
+        keyboard.keyboard['buttons'] = []
+        return keyboard.get_keyboard()
 
     def add_button(self, label, color='default', payload=None):
         """
