@@ -6,3 +6,5 @@ VkKeyboard
 .. module:: vk_api.keyboard
 .. autoclass:: VkKeyboard
     :members:
+.. autoclass:: KeyboardColor
+    :members:
