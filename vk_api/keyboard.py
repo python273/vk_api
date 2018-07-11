@@ -7,10 +7,10 @@ from .utils import sjson_dumps
 
 class KeyboardColor(Enum):
     """ Возможные цвета кнопок """
-    PRIMARY = 'primary' # синяя
-    DEFAULT = 'default' # белая
-    NEGATIVE = 'negative' # красная
-    POSITIVE = 'positive' # зелёная
+    PRIMARY = 'primary'  # синяя
+    DEFAULT = 'default'  # белая
+    NEGATIVE = 'negative'  # красная
+    POSITIVE = 'positive'  # зелёная
 
 
 class VkKeyboard(object):
@@ -28,7 +28,7 @@ class VkKeyboard(object):
 
         self.keyboard = {
             'one_time': self.one_time,
-            'lines': self.lines
+            'buttons': self.lines
         }
 
     def get_keyboard(self):
@@ -41,7 +41,7 @@ class VkKeyboard(object):
             Если отправить пустую клавиатуру, текущая у пользователя исчезнет.
         """
         keyboard = cls()
-        keyboard.keyboard['lines'] = []
+        keyboard.keyboard['buttons'] = []
         return keyboard.get_keyboard()
 
     def add_button(self, label, color=KeyboardColor.DEFAULT, payload=None):
@@ -67,7 +67,7 @@ class VkKeyboard(object):
         if isinstance(color, KeyboardColor):
             color_value = color_value.value
 
-        if not isinstance(payload, six.string_types):
+        if isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
 
         current_line.append({
