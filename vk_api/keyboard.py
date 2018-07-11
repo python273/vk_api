@@ -67,7 +67,7 @@ class VkKeyboard(object):
         if isinstance(color, KeyboardColor):
             color_value = color_value.value
 
-        if isinstance(payload, six.string_types):
+        if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
 
         current_line.append({
