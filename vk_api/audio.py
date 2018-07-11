@@ -177,7 +177,7 @@ class VkAudio(object):
         response = self._vk.http.get(
             'https://m.vk.com/audio',
             params={
-                'act': 'search',
+                '_ajax': '1',
                 'q': q,
                 'offset': offset
             }
