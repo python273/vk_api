@@ -37,7 +37,7 @@ class VkLongpollMode(IntEnum):
 DEFAULT_MODE = sum(VkLongpollMode)
 
 
-class VkEventType(IntEnum):
+class VkUserEventType(IntEnum):
     """
     Перечисление событий, получаемых от longpoll-сервера.
 
@@ -192,60 +192,67 @@ MESSAGE_EXTRA_FIELDS = [
     'peer_id', 'timestamp', 'subject', 'text', 'attachments', 'random_id'
 ]
 
-EVENT_ATTRS_MAPPING = {
-    VkEventType.MESSAGE_FLAGS_REPLACE: ['message_id', 'flags'] + MESSAGE_EXTRA_FIELDS,
-    VkEventType.MESSAGE_FLAGS_SET: ['message_id', 'mask'] + MESSAGE_EXTRA_FIELDS,
-    VkEventType.MESSAGE_FLAGS_RESET: ['message_id', 'mask'] + MESSAGE_EXTRA_FIELDS,
-    VkEventType.MESSAGE_NEW: ['message_id', 'flags'] + MESSAGE_EXTRA_FIELDS,
-    VkEventType.MESSAGE_EDIT: ['message_id', 'mask'] + MESSAGE_EXTRA_FIELDS,
+USER_EVENT_ATTRS_MAPPING = {
+    VkUserEventType.MESSAGE_FLAGS_REPLACE: ['message_id', 'flags'] + MESSAGE_EXTRA_FIELDS,
+    VkUserEventType.MESSAGE_FLAGS_SET: ['message_id', 'mask'] + MESSAGE_EXTRA_FIELDS,
+    VkUserEventType.MESSAGE_FLAGS_RESET: ['message_id', 'mask'] + MESSAGE_EXTRA_FIELDS,
+    VkUserEventType.MESSAGE_NEW: ['message_id', 'flags'] + MESSAGE_EXTRA_FIELDS,
+    VkUserEventType.MESSAGE_EDIT: ['message_id', 'mask'] + MESSAGE_EXTRA_FIELDS,
 
-    VkEventType.READ_ALL_INCOMING_MESSAGES: ['peer_id', 'local_id'],
-    VkEventType.READ_ALL_OUTGOING_MESSAGES: ['peer_id', 'local_id'],
+    VkUserEventType.READ_ALL_INCOMING_MESSAGES: ['peer_id', 'local_id'],
+    VkUserEventType.READ_ALL_OUTGOING_MESSAGES: ['peer_id', 'local_id'],
 
-    VkEventType.USER_ONLINE: ['user_id', 'extra', 'timestamp'],
-    VkEventType.USER_OFFLINE: ['user_id', 'extra', 'timestamp'],
+    VkUserEventType.USER_ONLINE: ['user_id', 'extra', 'timestamp'],
+    VkUserEventType.USER_OFFLINE: ['user_id', 'extra', 'timestamp'],
 
-    VkEventType.PEER_FLAGS_RESET: ['peer_id', 'mask'],
-    VkEventType.PEER_FLAGS_REPLACE: ['peer_id', 'flags'],
-    VkEventType.PEER_FLAGS_SET: ['peer_id', 'mask'],
+    VkUserEventType.PEER_FLAGS_RESET: ['peer_id', 'mask'],
+    VkUserEventType.PEER_FLAGS_REPLACE: ['peer_id', 'flags'],
+    VkUserEventType.PEER_FLAGS_SET: ['peer_id', 'mask'],
 
-    VkEventType.PEER_DELETE_ALL: ['peer_id', 'local_id'],
-    VkEventType.PEER_RESTORE_ALL: ['peer_id', 'local_id'],
+    VkUserEventType.PEER_DELETE_ALL: ['peer_id', 'local_id'],
+    VkUserEventType.PEER_RESTORE_ALL: ['peer_id', 'local_id'],
 
-    VkEventType.CHAT_EDIT: ['chat_id', 'self'],
+    VkUserEventType.CHAT_EDIT: ['chat_id', 'self'],
 
-    VkEventType.USER_TYPING: ['user_id', 'flags'],
-    VkEventType.USER_TYPING_IN_CHAT: ['user_id', 'chat_id'],
+    VkUserEventType.USER_TYPING: ['user_id', 'flags'],
+    VkUserEventType.USER_TYPING_IN_CHAT: ['user_id', 'chat_id'],
 
-    VkEventType.USER_CALL: ['user_id', 'call_id'],
+    VkUserEventType.USER_CALL: ['user_id', 'call_id'],
 
-    VkEventType.MESSAGES_COUNTER_UPDATE: ['count'],
-    VkEventType.NOTIFICATION_SETTINGS_UPDATE: [
+    VkUserEventType.MESSAGES_COUNTER_UPDATE: ['count'],
+    VkUserEventType.NOTIFICATION_SETTINGS_UPDATE: [
         'peer_id', 'sound', 'disabled_until']
 }
 
-
-def get_all_event_attrs():
+def get_all_user_event_attrs():
     keys = set()
 
-    for l in EVENT_ATTRS_MAPPING.values():
+    for l in USER_EVENT_ATTRS_MAPPING.values():
         keys.update(l)
 
     return tuple(keys)
 
-
-ALL_EVENT_ATTRS = get_all_event_attrs()
+ALL_USER_EVENT_ATTRS = get_all_user_event_attrs()
 
 PARSE_PEER_ID_EVENTS = [
-    k for k, v in EVENT_ATTRS_MAPPING.items() if 'peer_id' in v
+    k for k, v in USER_EVENT_ATTRS_MAPPING.items() if 'peer_id' in v
 ]
 PARSE_MESSAGE_FLAGS_EVENTS = [
-    VkEventType.MESSAGE_FLAGS_REPLACE,
-    VkEventType.MESSAGE_NEW
+    VkUserEventType.MESSAGE_FLAGS_REPLACE,
+    VkUserEventType.MESSAGE_NEW
 ]
 
+MESSAGE_EVENT_TYPES = [
+    'message_new',
+    'message_reply',
+    'message_edit'
+]
 
-class VkLongPoll(object):
+BOTS_EVENT_ATTRS_MAPPING = {
+    'message_new'
+}
+
+class VkUserLongPoll(object):
     """
     Класс для работы с longpoll-сервером
 
@@ -265,8 +272,8 @@ class VkLongPoll(object):
     )
 
     PRELOAD_MESSAGE_EVENTS = [
-        VkEventType.MESSAGE_NEW,
-        VkEventType.MESSAGE_EDIT
+        VkUserEventType.MESSAGE_NEW,
+        VkUserEventType.MESSAGE_EDIT
     ]
 
     def __init__(self, vk, wait=25, mode=DEFAULT_MODE, preload_messages=False):
@@ -328,7 +335,7 @@ class VkLongPoll(object):
             if self.pts:
                 self.pts = response['pts']
 
-            events = [Event(raw_event) for raw_event in response['updates']]
+            events = [UserEvent(raw_event) for raw_event in response['updates']]
 
             if self.preload_messages:
                 self.preload_message_events_data(events)
@@ -379,7 +386,7 @@ class VkLongPoll(object):
                 yield event
 
 
-class Event(object):
+class UserEvent(object):
     """
     Событие, полученное от longpoll-сервера.
 
@@ -395,7 +402,7 @@ class Event(object):
         'message_flags', 'peer_flags',
         'from_user', 'from_chat', 'from_group', 'from_me', 'to_me',
         'message_data'
-    )).union(ALL_EVENT_ATTRS)
+    ))
 
     def __init__(self, raw):
 
@@ -415,8 +422,8 @@ class Event(object):
         self.message_data = None
 
         try:
-            self.type = VkEventType(raw[0])
-            self._list_to_attr(raw[1:], EVENT_ATTRS_MAPPING[self.type])
+            self.type = raw['type']
+            self.object = raw['object']
         except ValueError:
             pass
 
@@ -426,16 +433,16 @@ class Event(object):
         if self.type in PARSE_MESSAGE_FLAGS_EVENTS:
             self._parse_message_flags()
 
-        if self.type is VkEventType.PEER_FLAGS_REPLACE:
+        if self.type is VkUserEventType.PEER_FLAGS_REPLACE:
             self._parse_peer_flags()
 
-        if self.type is VkEventType.MESSAGE_NEW:
+        if self.type is VkUserEventType.MESSAGE_NEW:
             self._parse_message()
 
-        if self.type is VkEventType.MESSAGE_EDIT:
+        if self.type is VkUserEventType.MESSAGE_EDIT:
             self.text = self.text.replace('<br>', '\n')
 
-        if self.type in [VkEventType.USER_ONLINE, VkEventType.USER_OFFLINE]:
+        if self.type in [VkUserEventType.USER_ONLINE, VkUserEventType.USER_OFFLINE]:
             self.user_id = abs(self.user_id)
             self._parse_online_status()
 
@@ -485,11 +492,138 @@ class Event(object):
 
     def _parse_online_status(self):
         try:
-            if self.type is VkEventType.USER_ONLINE:
+            if self.type is VkUserEventType.USER_ONLINE:
                 self.platform = VkPlatform(self.extra & 0xFF)
 
-            elif self.type is VkEventType.USER_OFFLINE:
+            elif self.type is VkUserEventType.USER_OFFLINE:
                 self.offline_type = VkOfflineType(self.flags)
 
         except ValueError:
             pass
+
+
+class VkBotsLongPoll(VkUserLongPoll):
+    __slots__ = (
+        'vk', 'wait', 'preload_messages',
+        'url', 'session',
+        'key', 'server', 'ts'
+    )
+
+    def __init__(self, vk, group_id, wait=25, preload_messages=False):
+        self.vk = vk
+        self.group_id = group_id
+        self.wait = wait
+        self.preload_messages = preload_messages
+
+        self.url = None
+        self.key = None
+        self.server = None
+        self.ts = None
+
+        self.session = requests.Session()
+
+        self.update_longpoll_server()
+
+    def update_longpoll_server(self, update_ts=True):
+        values = {
+            'group_id': self.group_id
+        }
+        response = self.vk.method('groups.getLongPollServer', values)
+
+        self.key = response['key']
+        self.server = response['server']
+
+        self.url = 'https://' + self.server
+
+        if update_ts:
+            self.ts = response['ts']
+
+    def check(self):
+        """
+        Получить события от сервера один раз
+
+        :returns: `list` of :class:`Event`
+        """
+        values = {
+            'act': 'a_check',
+            'key': self.key,
+            'ts': self.ts,
+            'wait': self.wait,
+        }
+
+        response = self.session.get(
+            self.url,
+            params=values,
+            timeout=self.wait + 10
+        ).json()
+
+        if 'failed' not in response:
+            self.ts = response['ts']
+
+            events = [BotEvent(raw_event) for raw_event in response['updates']]
+
+            if self.preload_messages:
+                self.preload_message_events_data(events)
+
+            return events
+
+        elif response['failed'] == 1:
+            self.ts = response['ts']
+
+        elif response['failed'] == 2:
+            self.update_longpoll_server(update_ts=False)
+
+        elif response['failed'] == 3:
+            self.update_longpoll_server()
+
+        return []
+
+
+class BotEvent(object):
+    __slots__ = frozenset((
+        'raw', 'type', 'object',
+        'id', 'date', 'peer_id',
+        'from_id', 'text'
+    ))
+
+    def __init__(self, raw):
+
+        # Reset attrs to None
+        for i in self.__slots__:
+            self.__setattr__(i, None)
+
+        self.raw = raw
+
+        self.from_user = False
+        self.from_chat = False
+        self.from_group = False
+        self.from_me = False
+        self.to_me = False
+
+        self.attachments = {}
+        self.message_data = None
+
+        try:
+            self.type = raw['type']
+            self.object = raw['object']
+        except ValueError:
+            pass
+
+        if self.type in MESSAGE_EVENT_TYPES:
+            self._parse_message()
+
+    def _parse_message(self):
+        for k, w in self.object.items():
+            self.__setattr__(k, w)
+
+        if self.type == 'message_new':
+            self.to_me = True
+        else:
+            self.from_me = True
+
+        if self.peer_id < 0:
+            self.from_group = True
+        elif self.peer_id < CHAT_START_ID:
+            self.from_user = True
+        else:
+            self.from_chat = True

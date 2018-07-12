@@ -91,7 +91,7 @@ class VkApi(object):
     def __init__(self, login=None, password=None, token=None,
                  auth_handler=None, captcha_handler=None,
                  config=jconfig.Config, config_filename='vk_config.v2.json',
-                 api_version='5.74', app_id=6222115, scope=DEFAULT_USER_SCOPE,
+                 api_version='5.80', app_id=6222115, scope=DEFAULT_USER_SCOPE,
                  client_secret=None):
 
         self.login = login
@@ -124,6 +124,22 @@ class VkApi(object):
         self.lock = threading.Lock()
 
         self.logger = logging.getLogger('vk_api')
+
+        self.is_user = False
+        self.is_group = False
+        self.id = None
+
+        if token:
+            self._get_id()
+
+    def _get_id(self):
+        for user in self.method('users.get'):
+            self.is_user = True
+            self.id = user['id']
+
+        for group in self.method('groups.getById'):
+            self.is_group = True
+            self.id = -group['id']
 
     @property
     def _sid(self):
@@ -175,6 +191,8 @@ class VkApi(object):
             self._auth_token(reauth=reauth)
         else:
             self._auth_cookies(reauth=reauth)
+
+        self._get_id()
 
     def _auth_cookies(self, reauth=False):
 

@@ -4,7 +4,7 @@ import requests
 
 import vk_api
 from vk_api import VkUpload
-from vk_api.longpoll import VkLongPoll, VkEventType
+from vk_api.longpoll import VkUserLongPoll, VkUserEventType
 
 
 def main():
@@ -31,10 +31,10 @@ def main():
     vk = vk_session.get_api()
 
     upload = VkUpload(vk_session)  # Для загрузки изображений
-    longpoll = VkLongPoll(vk_session)
+    longpoll = VkUserLongPoll(vk_session)
 
     for event in longpoll.listen():
-        if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
+        if event.type == VkUserEventType.MESSAGE_NEW and event.to_me and event.text:
             print('id{}: "{}"'.format(event.user_id, event.text), end=' ')
 
             response = session.get(
