@@ -496,6 +496,8 @@ class VkApi(object):
         else:
             self.token = response
 
+        self._get_id()
+
     def _check_token(self):
         """ Проверка access_token юзера на валидность """
 
