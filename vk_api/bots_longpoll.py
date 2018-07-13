@@ -10,7 +10,7 @@ MESSAGE_EVENT_TYPES = [
 
 class VkBotsLongPoll(object):
     __slots__ = (
-        'vk', 'wait', 'preload_messages',
+        'vk', 'wait', 'group_id',
         'url', 'session',
         'key', 'server', 'ts'
     )
@@ -38,7 +38,7 @@ class VkBotsLongPoll(object):
         self.key = response['key']
         self.server = response['server']
 
-        self.url = 'https://' + self.server
+        self.url = self.server
 
         if update_ts:
             self.ts = response['ts']
@@ -82,8 +82,13 @@ class VkBotsLongPoll(object):
 class BotEvent(object):
     __slots__ = frozenset((
         'raw', 'type', 'object',
-        'id', 'date', 'peer_id',
-        'from_id', 'text'
+        'chat_id', 'date', 'peer_id',
+        'from_id', 'text', 'from_user',
+        'from_chat', 'from_group', 'from_me',
+        'to_me', 'attachments', 'fwd_messages',
+        'important', 'random_id', 'geo',
+        'action', 'out', 'conversation_message_id',
+        'is_hidden', 'id', 'update_time'
     ))
 
     def __init__(self, raw):
@@ -99,8 +104,7 @@ class BotEvent(object):
         self.from_me = False
         self.to_me = False
 
-        self.attachments = {}
-        self.message_data = None
+        self.attachments = []
 
         try:
             self.type = raw['type']
@@ -117,7 +121,7 @@ class BotEvent(object):
 
         if self.type == 'message_new':
             self.to_me = True
-        else:
+        elif self.type == 'message_reply':
             self.from_me = True
 
         if self.peer_id < 0:
@@ -126,3 +130,4 @@ class BotEvent(object):
             self.from_user = True
         else:
             self.from_chat = True
+            self.chat_id = self.peer_id - CHAT_START_ID

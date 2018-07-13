@@ -317,7 +317,7 @@ class VkUpload(object):
 
         return self.document(doc, title, tags, group_id, to_wall=True)
 
-    def document_message(self, doc, title=None, tags=None, peer_id=None):
+    def document_message(self, doc, title=None, tags=None, peer_id=None, **kwargs):
         """ Загрузка документа для отправки личным сообщением.
 
         :param doc: путь к документу или file-like объект
@@ -326,7 +326,7 @@ class VkUpload(object):
         :param peer_id: peer_id беседы
         """
 
-        return self.document(doc, title, tags, message_peer_id=peer_id)
+        return self.document(doc, title, tags, message_peer_id=peer_id, **kwargs)
 
     def audio_message(self, audio, peer_id=None, group_id=None):
         """ Загрузка аудио-сообщения.
@@ -337,7 +337,7 @@ class VkUpload(object):
             вместо peer_id
         """
 
-        return self.document(
+        return self.document_message(
             audio,
             doc_type='audio_message',
             message_peer_id=peer_id,
@@ -355,6 +355,15 @@ class VkUpload(object):
         """
 
         return self.document(
+            image,
+            doc_type='graffiti',
+            message_peer_id=peer_id,
+            group_id=group_id,
+            to_wall=group_id is not None
+        )
+
+    def graffiti_message(self, image, peer_id=None, group_id=None):
+        return self.document_message(
             image,
             doc_type='graffiti',
             message_peer_id=peer_id,
