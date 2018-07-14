@@ -244,10 +244,6 @@ PARSE_MESSAGE_FLAGS_EVENTS = [
     VkEventType.MESSAGE_NEW
 ]
 
-BOTS_EVENT_ATTRS_MAPPING = {
-    'message_new'
-}
-
 
 class VkLongPoll(object):
     """

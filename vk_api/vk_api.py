@@ -125,22 +125,6 @@ class VkApi(object):
 
         self.logger = logging.getLogger('vk_api')
 
-        self.is_user = False
-        self.is_group = False
-        self.id = None
-
-        if token:
-            self._get_id()
-
-    def _get_id(self):
-        for user in self.method('users.get'):
-            self.is_user = True
-            self.id = user['id']
-
-        for group in self.method('groups.getById'):
-            self.is_group = True
-            self.id = -group['id']
-
     @property
     def _sid(self):
         return (
@@ -191,8 +175,6 @@ class VkApi(object):
             self._auth_token(reauth=reauth)
         else:
             self._auth_cookies(reauth=reauth)
-
-        self._get_id()
 
     def _auth_cookies(self, reauth=False):
 
@@ -495,8 +477,6 @@ class VkApi(object):
             raise AuthError(response['error_description'])
         else:
             self.token = response
-
-        self._get_id()
 
     def _check_token(self):
         """ Проверка access_token юзера на валидность """
