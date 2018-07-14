@@ -37,7 +37,7 @@ class VkLongpollMode(IntEnum):
 DEFAULT_MODE = sum(VkLongpollMode)
 
 
-class VkUserEventType(IntEnum):
+class VkEventType(IntEnum):
     """
     Перечисление событий, получаемых от longpoll-сервера.
 
@@ -192,56 +192,56 @@ MESSAGE_EXTRA_FIELDS = [
     'peer_id', 'timestamp', 'subject', 'text', 'attachments', 'random_id'
 ]
 
-USER_EVENT_ATTRS_MAPPING = {
-    VkUserEventType.MESSAGE_FLAGS_REPLACE: ['message_id', 'flags'] + MESSAGE_EXTRA_FIELDS,
-    VkUserEventType.MESSAGE_FLAGS_SET: ['message_id', 'mask'] + MESSAGE_EXTRA_FIELDS,
-    VkUserEventType.MESSAGE_FLAGS_RESET: ['message_id', 'mask'] + MESSAGE_EXTRA_FIELDS,
-    VkUserEventType.MESSAGE_NEW: ['message_id', 'flags'] + MESSAGE_EXTRA_FIELDS,
-    VkUserEventType.MESSAGE_EDIT: ['message_id', 'mask'] + MESSAGE_EXTRA_FIELDS,
+EVENT_ATTRS_MAPPING = {
+    VkEventType.MESSAGE_FLAGS_REPLACE: ['message_id', 'flags'] + MESSAGE_EXTRA_FIELDS,
+    VkEventType.MESSAGE_FLAGS_SET: ['message_id', 'mask'] + MESSAGE_EXTRA_FIELDS,
+    VkEventType.MESSAGE_FLAGS_RESET: ['message_id', 'mask'] + MESSAGE_EXTRA_FIELDS,
+    VkEventType.MESSAGE_NEW: ['message_id', 'flags'] + MESSAGE_EXTRA_FIELDS,
+    VkEventType.MESSAGE_EDIT: ['message_id', 'mask'] + MESSAGE_EXTRA_FIELDS,
 
-    VkUserEventType.READ_ALL_INCOMING_MESSAGES: ['peer_id', 'local_id'],
-    VkUserEventType.READ_ALL_OUTGOING_MESSAGES: ['peer_id', 'local_id'],
+    VkEventType.READ_ALL_INCOMING_MESSAGES: ['peer_id', 'local_id'],
+    VkEventType.READ_ALL_OUTGOING_MESSAGES: ['peer_id', 'local_id'],
 
-    VkUserEventType.USER_ONLINE: ['user_id', 'extra', 'timestamp'],
-    VkUserEventType.USER_OFFLINE: ['user_id', 'extra', 'timestamp'],
+    VkEventType.USER_ONLINE: ['user_id', 'extra', 'timestamp'],
+    VkEventType.USER_OFFLINE: ['user_id', 'extra', 'timestamp'],
 
-    VkUserEventType.PEER_FLAGS_RESET: ['peer_id', 'mask'],
-    VkUserEventType.PEER_FLAGS_REPLACE: ['peer_id', 'flags'],
-    VkUserEventType.PEER_FLAGS_SET: ['peer_id', 'mask'],
+    VkEventType.PEER_FLAGS_RESET: ['peer_id', 'mask'],
+    VkEventType.PEER_FLAGS_REPLACE: ['peer_id', 'flags'],
+    VkEventType.PEER_FLAGS_SET: ['peer_id', 'mask'],
 
-    VkUserEventType.PEER_DELETE_ALL: ['peer_id', 'local_id'],
-    VkUserEventType.PEER_RESTORE_ALL: ['peer_id', 'local_id'],
+    VkEventType.PEER_DELETE_ALL: ['peer_id', 'local_id'],
+    VkEventType.PEER_RESTORE_ALL: ['peer_id', 'local_id'],
 
-    VkUserEventType.CHAT_EDIT: ['chat_id', 'self'],
+    VkEventType.CHAT_EDIT: ['chat_id', 'self'],
 
-    VkUserEventType.USER_TYPING: ['user_id', 'flags'],
-    VkUserEventType.USER_TYPING_IN_CHAT: ['user_id', 'chat_id'],
+    VkEventType.USER_TYPING: ['user_id', 'flags'],
+    VkEventType.USER_TYPING_IN_CHAT: ['user_id', 'chat_id'],
 
-    VkUserEventType.USER_CALL: ['user_id', 'call_id'],
+    VkEventType.USER_CALL: ['user_id', 'call_id'],
 
-    VkUserEventType.MESSAGES_COUNTER_UPDATE: ['count'],
-    VkUserEventType.NOTIFICATION_SETTINGS_UPDATE: [
+    VkEventType.MESSAGES_COUNTER_UPDATE: ['count'],
+    VkEventType.NOTIFICATION_SETTINGS_UPDATE: [
         'peer_id', 'sound', 'disabled_until']
 }
 
 
-def get_all_user_event_attrs():
+def get_all_event_attrs():
     keys = set()
 
-    for l in USER_EVENT_ATTRS_MAPPING.values():
+    for l in EVENT_ATTRS_MAPPING.values():
         keys.update(l)
 
     return tuple(keys)
 
 
-ALL_USER_EVENT_ATTRS = get_all_user_event_attrs()
+ALL_EVENT_ATTRS = get_all_event_attrs()
 
 PARSE_PEER_ID_EVENTS = [
-    k for k, v in USER_EVENT_ATTRS_MAPPING.items() if 'peer_id' in v
+    k for k, v in EVENT_ATTRS_MAPPING.items() if 'peer_id' in v
 ]
 PARSE_MESSAGE_FLAGS_EVENTS = [
-    VkUserEventType.MESSAGE_FLAGS_REPLACE,
-    VkUserEventType.MESSAGE_NEW
+    VkEventType.MESSAGE_FLAGS_REPLACE,
+    VkEventType.MESSAGE_NEW
 ]
 
 BOTS_EVENT_ATTRS_MAPPING = {
@@ -249,7 +249,7 @@ BOTS_EVENT_ATTRS_MAPPING = {
 }
 
 
-class VkUserLongPoll(object):
+class VkLongPoll(object):
     """
     Класс для работы с longpoll-сервером
 
@@ -269,8 +269,8 @@ class VkUserLongPoll(object):
     )
 
     PRELOAD_MESSAGE_EVENTS = [
-        VkUserEventType.MESSAGE_NEW,
-        VkUserEventType.MESSAGE_EDIT
+        VkEventType.MESSAGE_NEW,
+        VkEventType.MESSAGE_EDIT
     ]
 
     def __init__(self, vk, wait=25, mode=DEFAULT_MODE, preload_messages=False):
@@ -332,7 +332,7 @@ class VkUserLongPoll(object):
             if self.pts:
                 self.pts = response['pts']
 
-            events = [UserEvent(raw_event) for raw_event in response['updates']]
+            events = [Event(raw_event) for raw_event in response['updates']]
 
             if self.preload_messages:
                 self.preload_message_events_data(events)
@@ -383,7 +383,7 @@ class VkUserLongPoll(object):
                 yield event
 
 
-class UserEvent(object):
+class Event(object):
     """
     Событие, полученное от longpoll-сервера.
 
@@ -430,16 +430,16 @@ class UserEvent(object):
         if self.type in PARSE_MESSAGE_FLAGS_EVENTS:
             self._parse_message_flags()
 
-        if self.type is VkUserEventType.PEER_FLAGS_REPLACE:
+        if self.type is VkEventType.PEER_FLAGS_REPLACE:
             self._parse_peer_flags()
 
-        if self.type is VkUserEventType.MESSAGE_NEW:
+        if self.type is VkEventType.MESSAGE_NEW:
             self._parse_message()
 
-        if self.type is VkUserEventType.MESSAGE_EDIT:
+        if self.type is VkEventType.MESSAGE_EDIT:
             self.text = self.text.replace('<br>', '\n')
 
-        if self.type in [VkUserEventType.USER_ONLINE, VkUserEventType.USER_OFFLINE]:
+        if self.type in [VkEventType.USER_ONLINE, VkEventType.USER_OFFLINE]:
             self.user_id = abs(self.user_id)
             self._parse_online_status()
 
@@ -489,10 +489,10 @@ class UserEvent(object):
 
     def _parse_online_status(self):
         try:
-            if self.type is VkUserEventType.USER_ONLINE:
+            if self.type is VkEventType.USER_ONLINE:
                 self.platform = VkPlatform(self.extra & 0xFF)
 
-            elif self.type is VkUserEventType.USER_OFFLINE:
+            elif self.type is VkEventType.USER_OFFLINE:
                 self.offline_type = VkOfflineType(self.flags)
 
         except ValueError:

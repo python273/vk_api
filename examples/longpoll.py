@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import vk_api
-from vk_api.longpoll import VkUserLongPoll, VkUserEventType
+from vk_api.longpoll import VkLongPoll, VkEventType
 
 
 def main():
@@ -19,11 +19,11 @@ def main():
         print(error_msg)
         return
 
-    longpoll = VkUserLongPoll(vk_session)
+    longpoll = VkLongPoll(vk_session)
 
     for event in longpoll.listen():
 
-        if event.type == VkUserEventType.MESSAGE_NEW:
+        if event.type == VkEventType.MESSAGE_NEW:
             print('Новое сообщение:')
 
             if event.from_me:
@@ -41,7 +41,7 @@ def main():
             print('Текст: ', event.text)
             print()
 
-        elif event.type == VkUserEventType.USER_TYPING:
+        elif event.type == VkEventType.USER_TYPING:
             print('Печатает ', end='')
 
             if event.from_user:
@@ -49,13 +49,13 @@ def main():
             elif event.from_group:
                 print('администратор группы', event.group_id)
 
-        elif event.type == VkUserEventType.USER_TYPING_IN_CHAT:
+        elif event.type == VkEventType.USER_TYPING_IN_CHAT:
             print('Печатает ', event.user_id, 'в беседе', event.chat_id)
 
-        elif event.type == VkUserEventType.USER_ONLINE:
+        elif event.type == VkEventType.USER_ONLINE:
             print('Пользователь', event.user_id, 'онлайн', event.platform)
 
-        elif event.type == VkUserEventType.USER_OFFLINE:
+        elif event.type == VkEventType.USER_OFFLINE:
             print('Пользователь', event.user_id, 'оффлайн', event.offline_type)
 
         else:
