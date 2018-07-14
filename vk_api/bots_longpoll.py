@@ -9,6 +9,16 @@ MESSAGE_EVENT_TYPES = [
 
 
 class VkBotsLongPoll(object):
+    """
+    Класс для работы с Bots Long Poll сервером
+
+    `Подробнее в документации VK API <https://vk.com/dev/bots_longpoll>`__.
+
+    :param vk: объект :class:`VkApi`
+    :param group_id: id группы
+    :param wait: время ожидания
+    """
+
     __slots__ = (
         'vk', 'wait', 'group_id',
         'url', 'session',
@@ -44,6 +54,12 @@ class VkBotsLongPoll(object):
             self.ts = response['ts']
 
     def check(self):
+        """
+        Получить события от сервера один раз
+
+        :returns: `list` of :class:`Event`
+        """
+
         values = {
             'act': 'a_check',
             'key': self.key,
@@ -74,12 +90,23 @@ class VkBotsLongPoll(object):
         return []
 
     def listen(self):
+        """
+        Слушать сервер
+
+        :yields: :class:`Event`
+        """
         while True:
             for event in self.check():
                 yield event
 
 
 class BotEvent(object):
+    """
+    Событие, полученное от Bots Long Poll сервера.
+
+    Имеет поля в соответствии с `документацией <https://vk.com/dev/groups_events>`_.
+    """
+
     __slots__ = frozenset((
         'raw', 'type', 'object',
         'chat_id', 'date', 'peer_id',

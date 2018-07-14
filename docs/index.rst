@@ -26,6 +26,7 @@ vk_api – Python модуль для написания скриптов для
    vk_api
    audio
    longpoll
+   bots_longpoll
    execute
    requests_pool
    tools
