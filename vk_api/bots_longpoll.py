@@ -88,7 +88,8 @@ class BotEvent(object):
         'to_me', 'attachments', 'fwd_messages',
         'important', 'random_id', 'geo',
         'action', 'out', 'conversation_message_id',
-        'is_hidden', 'id', 'update_time'
+        'is_hidden', 'id', 'update_time',
+        'admin_author_id'
     ))
 
     def __init__(self, raw):
