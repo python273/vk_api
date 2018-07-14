@@ -266,7 +266,7 @@ class VkLongPoll(object):
         'vk', 'wait', 'mode', 'preload_messages',
         'url', 'session',
         'key', 'server', 'ts', 'pts'
-    )
+    ).union(ALL_EVENT_ATTRS)
 
     PRELOAD_MESSAGE_EVENTS = [
         VkEventType.MESSAGE_NEW,
@@ -419,8 +419,8 @@ class Event(object):
         self.message_data = None
 
         try:
-            self.type = raw['type']
-            self.object = raw['object']
+            self.type = VkEventType(raw[0])
+            self._list_to_attr(raw[1:], EVENT_ATTRS_MAPPING[self.type])
         except ValueError:
             pass
 
