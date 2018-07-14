@@ -266,7 +266,7 @@ class VkLongPoll(object):
         'vk', 'wait', 'mode', 'preload_messages',
         'url', 'session',
         'key', 'server', 'ts', 'pts'
-    ).union(ALL_EVENT_ATTRS)
+    )
 
     PRELOAD_MESSAGE_EVENTS = [
         VkEventType.MESSAGE_NEW,
@@ -399,7 +399,7 @@ class Event(object):
         'message_flags', 'peer_flags',
         'from_user', 'from_chat', 'from_group', 'from_me', 'to_me',
         'message_data'
-    ))
+    )).union(ALL_EVENT_ATTRS)
 
     def __init__(self, raw):
 
