@@ -34,7 +34,7 @@ class VkUpload(object):
         """ Загрузка изображений в альбом пользователя
 
         :param photos: путь к изображению(ям) или file-like объект(ы)
-        :type photos: str, list
+        :type photos: str or list
 
         :param album_id: идентификатор альбома
         :param latitude: географическая широта, заданная в градусах
@@ -74,7 +74,7 @@ class VkUpload(object):
         """ Загрузка изображений в сообщения
 
         :param photos: путь к изображению(ям) или file-like объект(ы)
-        :type photos: str, list
+        :type photos: str or list
         """
 
         url = self.vk.method('photos.getMessagesUploadServer')['upload_url']
@@ -144,7 +144,7 @@ class VkUpload(object):
         """ Загрузка изображений на стену пользователя или в группу
 
         :param photos: путь к изображению(ям) или file-like объект(ы)
-        :type photos: str, list
+        :type photos: str or list
 
         :param user_id: идентификатор пользователя
         :param group_id: идентификатор сообщества (если загрузка идет в группу)
@@ -194,7 +194,7 @@ class VkUpload(object):
         """ Загрузка видео
 
         :param video_file: путь к видеофайлу или file-like объект.
-        :type video_file: object, str
+        :type video_file: object or str
 
         :param link: url для встраивания видео с внешнего сайта,
             например, с Youtube.

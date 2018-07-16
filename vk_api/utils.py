@@ -9,6 +9,8 @@ Copyright (C) 2018
 
 from __future__ import print_function
 
+import six
+
 try:
     import simplejson as json
 except ImportError:
@@ -74,7 +76,7 @@ HTTP_COOKIE_ARGS = [
 
 def cookie_to_dict(cookie):
     cookie_dict = {
-        k: v for k, v in cookie.__dict__.items() if k in HTTP_COOKIE_ARGS
+        k: v for k, v in six.iteritems(cookie.__dict__) if k in HTTP_COOKIE_ARGS
     }
 
     cookie_dict['rest'] = cookie._rest

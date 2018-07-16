@@ -7,6 +7,8 @@
 :copyright: (c) 2018 python273
 """
 
+import six
+
 from .utils import sjson_dumps
 from .vk_api import VkApi, VkApiMethod
 
@@ -35,7 +37,7 @@ class VkFunction(object):
     def compile(self, args):
         compiled_args = {}
 
-        for key, value in args.items():
+        for key, value in six.iteritems(args):
             if key in self.clean_args:
                 compiled_args[key] = str(value)
             else:
@@ -74,7 +76,7 @@ def minify(code):
 def parse_args(function_args, args, kwargs):
     parsed_args = {}
 
-    for arg_name in kwargs.keys():
+    for arg_name in six.iterkeys(kwargs):
         if arg_name in function_args:
             parsed_args[arg_name] = kwargs[arg_name]
         else:

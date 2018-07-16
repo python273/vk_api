@@ -73,7 +73,7 @@ class VkApi(object):
 
     :param scope: Запрашиваемые права, можно передать строкой или числом.
         См. :class:`VkUserPermissions`
-    :type scope: int, str
+    :type scope: int or str
 
     :param client_secret: Защищенный ключ приложения для Client Credentials Flow
         авторизации приложения (https://vk.com/dev/client_cred_flow).
@@ -230,7 +230,7 @@ class VkApi(object):
         """ Авторизация ВКонтакте с получением cookies remixsid
 
         :param captcha_sid: id капчи
-        :type captcha_key: int, str
+        :type captcha_key: int or str
 
         :param captcha_key: ответ капчи
         :type captcha_key: str
@@ -551,7 +551,7 @@ class VkApi(object):
         :type values: dict
 
         :param captcha_sid: id капчи
-        :type captcha_key: int, str
+        :type captcha_key: int or str
 
         :param captcha_key: ответ капчи
         :type captcha_key: str

@@ -7,16 +7,13 @@
 :copyright: (c) 2018 python273
 """
 
-import sys
 from collections import namedtuple
+
+from six.moves import range
 
 from .exceptions import VkRequestsPoolException
 from .execute import VkFunction
 from .utils import sjson_dumps
-
-if sys.version_info.major == 2:
-    range = xrange
-
 
 PoolRequest = namedtuple('PoolRequest', ['method', 'values', 'result'])
 
