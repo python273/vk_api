@@ -12,8 +12,7 @@ import sys
 from .exceptions import ApiError, VkToolsException
 from .execute import VkFunction
 
-if sys.version_info.major == 2:
-    range = xrange
+from six.moves import range
 
 
 class VkTools(object):

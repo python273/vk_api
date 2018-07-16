@@ -9,9 +9,11 @@ Copyright (C) 2018
 
 from collections import defaultdict
 from datetime import datetime
-from enum import Enum, IntEnum
+from enum import IntEnum
 
 import requests
+import six
+from six.moves import range
 
 CHAT_START_ID = int(2E9)  # id с которого начинаются беседы
 
@@ -228,7 +230,7 @@ EVENT_ATTRS_MAPPING = {
 def get_all_event_attrs():
     keys = set()
 
-    for l in EVENT_ATTRS_MAPPING.values():
+    for l in six.itervalues(EVENT_ATTRS_MAPPING):
         keys.update(l)
 
     return tuple(keys)
@@ -237,7 +239,7 @@ def get_all_event_attrs():
 ALL_EVENT_ATTRS = get_all_event_attrs()
 
 PARSE_PEER_ID_EVENTS = [
-    k for k, v in EVENT_ATTRS_MAPPING.items() if 'peer_id' in v
+    k for k, v in six.iteritems(EVENT_ATTRS_MAPPING) if 'peer_id' in v
 ]
 PARSE_MESSAGE_FLAGS_EVENTS = [
     VkEventType.MESSAGE_FLAGS_REPLACE,
