@@ -167,23 +167,38 @@ class VkAudio(object):
             if i['owner_id'] == owner_id
         ]
 
-    def search(self, q='', offset=0):
+    def search(self, q='', offset=0, first=True):
+        fun = self._search(q=q, offset=offset)
+
+        if first:
+            for i in fun:
+                return i
+        else:
+            return fun
+
+    def _search(self, q='', offset=0):
         """ Искать аудиозаписи
 
         :param q: запрос
         :param offset: смещение
+        :param first: для обратной совместимости
         """
+        while True:
+            response = self._vk.http.get(
+                'https://m.vk.com/audio',
+                params={
+                    '_ajax': '1',
+                    'q': q,
+                    'offset': offset
+                }
+            )
+            audio_list = scrap_data(response.text, self.user_id)
+            if not audio_list:
+                break
 
-        response = self._vk.http.get(
-            'https://m.vk.com/audio',
-            params={
-                'act': 'search',
-                'q': q,
-                'offset': offset
-            }
-        )
+            yield audio_list
 
-        return scrap_data(response.text, self.user_id)
+            offset += len(audio_list)
 
 
 def scrap_data(html, user_id):
