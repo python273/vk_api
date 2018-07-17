@@ -30,6 +30,7 @@ vk_api – Python модуль для написания скриптов для
    requests_pool
    tools
    upload
+   keyboard
    exceptions
    jconfig
 
