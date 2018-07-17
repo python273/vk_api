@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+"""
+:authors: python273, Helow19274
+:contact: https://vk.com/python273
+:license: Apache License, Version 2.0, see LICENSE file
+
+:copyright: (c) 2018 python273
+"""
+
 from enum import Enum
 
 import six
