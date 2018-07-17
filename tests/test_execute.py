@@ -7,7 +7,7 @@ from vk_api.execute import VkFunction
 
 class TestExecute(unittest.TestCase):
     def setUp(self):
-        self.vk = VkApi(login=os.environ['login'], password=os.environ['password'])
+        self.vk = VkApi(login=os.environ['LOGIN'], password=os.environ['PASSWORD'])
         self.vk.auth(token_only=True)
 
     def test_execute(self):
