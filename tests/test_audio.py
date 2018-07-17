@@ -7,8 +7,8 @@ from vk_api import VkApi, audio
 class TestAudio(unittest.TestCase):
     def setUp(self):
         self.vk_session = VkApi(
-            login=os.environ['login'],
-            password=os.environ['password']
+            login=os.environ['LOGIN'],
+            password=os.environ['PASSWORD']
         )
         self.vk_session.auth()
         self.vk_audio = audio.VkAudio(self.vk_session)
@@ -23,6 +23,7 @@ class TestAudio(unittest.TestCase):
             break
         else:
             self.assertEqual(False, True)
+
 
 if __name__ == '__main__':
     unittest.main()

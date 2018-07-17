@@ -18,6 +18,7 @@ MANIFEST
 testing/
 tests1/
 
+*.env
 vk_config.json
 vk_config.v2.json
 
