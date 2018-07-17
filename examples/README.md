@@ -1,5 +1,7 @@
 Примеры использования библиотеки vk_api
 ======
+### 'python@vk.com' замените на ваш логин,
+### а 'mypassword на пароль'
 * [Обработка капчи](./captcha_handle.py)
 * [Обработка двухфакторной аутентификации](./two_factor_auth.py)
 * [Метод execute](./execute_functions.py)
