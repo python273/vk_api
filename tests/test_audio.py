@@ -18,7 +18,7 @@ class TestAudio(unittest.TestCase):
         self.assertEqual(type(audio_list), list)
 
     def test_audio_generator(self):
-        for i in self.vk_audio.search('киш'):
+        for i in self.vk_audio.search('киш', first=False):
             self.assertEqual(type(i), list)
             break
         else:
