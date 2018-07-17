@@ -19,7 +19,7 @@ PoolRequest = namedtuple('PoolRequest', ['method', 'values', 'result'])
 
 
 class RequestResult(object):
-    """ Результат запроса из пула"""
+    """ Результат запроса из пула """
 
     __slots__ = ('_result', 'ready', '_error')
 

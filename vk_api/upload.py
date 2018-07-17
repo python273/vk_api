@@ -236,7 +236,7 @@ class VkUpload(object):
         :param no_comments: 1 — закрыть комментарии (для видео из сообществ).
         :type no_comments: bool
 
-        :param repeat: зацикливание воспроизведения видеозаписи. флаг.
+        :param repeat: зацикливание воспроизведения видеозаписи. Флаг.
         :type repeat: bool
         """
 

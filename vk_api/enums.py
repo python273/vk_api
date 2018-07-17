@@ -7,7 +7,7 @@
 Copyright (C) 2018
 """
 
-from enum import Enum, IntEnum
+from enum import IntEnum
 
 
 class VkUserPermissions(IntEnum):

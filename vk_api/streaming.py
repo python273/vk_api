@@ -8,7 +8,6 @@ Copyright (C) 2018
 """
 
 from .exceptions import VkApiError
-from enum import Enum
 import websocket
 import json
 

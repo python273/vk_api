@@ -7,12 +7,8 @@
 :copyright: (c) 2018 python273
 """
 
-import sys
-
 from .exceptions import ApiError, VkToolsException
 from .execute import VkFunction
-
-from six.moves import range
 
 
 class VkTools(object):
