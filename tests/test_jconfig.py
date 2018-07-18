@@ -1,22 +1,19 @@
-import unittest
 from jconfig.memory import MemoryConfig
 
 
-class TestJconfig(unittest.TestCase):
-    def test_config_section(self):
-        c = MemoryConfig('secret')
-        self.assertTrue('secret' in c._settings)
+def test_config_section():
+    c = MemoryConfig('secret')
 
-        c.test = 'hello!'
-        self.assertTrue(c['test'] == 'hello!')
-        self.assertTrue(c.test == 'hello!')
-        self.assertTrue(c._section == {'test': 'hello!'})
+    assert 'secret' in c._settings
 
-        c['test'] = '42'
-        self.assertTrue(c['test'] == '42')
-        self.assertTrue(c.test == '42')
-        self.assertTrue(c._section == {'test': '42'})
+    c.test = 'hello!'
 
+    assert c['test'] == 'hello!'
+    assert c.test == 'hello!'
+    assert c._section == {'test': 'hello!'}
 
-if __name__ == '__main__':
-    unittest.main()
+    c['test'] = '42'
+
+    assert c['test'] == '42'
+    assert c.test == '42'
+    assert c._section == {'test': '42'}
