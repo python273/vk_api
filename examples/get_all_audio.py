@@ -34,10 +34,14 @@ def main():
 
     print('\nSearch for', most_common_artist)
 
-    tracks = vkaudio.search(q=most_common_artist)[:10]
+    # Генератор который отдает list с песнями
+    for tracks_list in vkaudio.search(q=most_common_artist):
 
-    for n, track in enumerate(tracks, 1):
-        print('{}. {} {}'.format(n, track['title'], track['url']))
+        # Проходим по списку песен
+        for n, track in enumerate(tracks_list, 1):
+            print('{}. {} {}'.format(n, track['title'], track['url']))
+
+        break
 
 
 if __name__ == '__main__':
