@@ -33,10 +33,12 @@ class TestKeyboard(unittest.TestCase):
                                  color=KeyboardColor.DEFAULT,
                                  payload={'test': 'some_payload'})
         self.keyboard.add_line()
-        self.assertEqual(self.keyboard.get_keyboard(), sjson_dumps(KEYBOARD_TEST))
+        self.assertEqual(self.keyboard.get_keyboard(),
+                         sjson_dumps(KEYBOARD_TEST))
 
     def test_empty_keyboard(self):
-        self.assertEqual(self.keyboard.get_empty_keyboard(), sjson_dumps(EMPTY_KEYBOARD_TEST))
+        self.assertEqual(self.keyboard.get_empty_keyboard(),
+                         sjson_dumps(EMPTY_KEYBOARD_TEST))
 
 
 if __name__ == '__main__':
