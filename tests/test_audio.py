@@ -4,25 +4,20 @@ import unittest
 from vk_api import VkApi, audio
 
 
-class TestAudio(unittest.TestCase):
-    def setUp(self):
-        self.vk_session = VkApi(
-            login=os.environ['LOGIN'],
-            password=os.environ['PASSWORD']
-        )
-        self.vk_session.auth()
-        self.vk_audio = audio.VkAudio(self.vk_session)
+vk_session = VkApi(
+    login=os.environ['LOGIN'],
+    password=os.environ['PASSWORD']
+)
+vk_session.auth()
+vk_audio = audio.VkAudio(vk_session)
 
-    def test_audio(self):
-        audio_list = self.vk_audio.search('киш')
-        self.assertEqual(type(audio_list), list)
 
-    def test_audio_generator(self):
-        for i in self.vk_audio.search('киш', first=False):
-            self.assertEqual(type(i), list)
-            break
-        else:
-            self.assertEqual(False, True)
+def test_audio_generator():
+    for i in vk_audio.search('киш'):
+        assert type(i) is list
+        break
+    else:
+        assert False
 
 
 if __name__ == '__main__':

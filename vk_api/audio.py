@@ -113,7 +113,8 @@ class VkAudio(object):
 
             if not response.text:
                 raise AccessDenied(
-                    'You don\'t have permissions to browse {}\'s albums'.format(
+                    'You don\'t have permissions to browse {}\'s albums'.format
+                    (
                         owner_id
                     )
                 )
@@ -167,21 +168,12 @@ class VkAudio(object):
             if i['owner_id'] == owner_id
         ]
 
-    def search(self, q='', offset=0, first=True):
-        fun = self._search(q=q, offset=offset)
-
-        if first:
-            for i in fun:
-                return i
-        else:
-            return fun
-
-    def _search(self, q='', offset=0):
+    def search(self, q='', offset=0):
         """ Искать аудиозаписи
 
         :param q: запрос
         :param offset: смещение
-        :param first: для обратной совместимости
+        :return: generator который отдает list c аудиозаписями
         """
         while True:
             response = self._vk.http.get(
