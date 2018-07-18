@@ -1,6 +1,6 @@
 Примеры использования библиотеки vk_api
 ======
-'python@vk.com' замените на ваш логин, а 'mypassword на пароль'
+'python@vk.com' замените на ваш логин, а 'mypassword' на пароль
 
 'bot_api_token' нужно заменить на токен группы
 * [Отправка запросов к API (VkApi)](./simple_example.py)
