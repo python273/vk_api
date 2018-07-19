@@ -1,5 +1,4 @@
 import os
-import unittest
 
 from vk_api import VkApi, audio
 
@@ -18,7 +17,3 @@ def test_audio_generator():
         break
     else:
         assert False
-
-
-if __name__ == '__main__':
-    unittest.main()
