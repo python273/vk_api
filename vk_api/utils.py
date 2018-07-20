@@ -100,8 +100,8 @@ def set_cookies_from_list(cookie_jar, l):
 
 def enable_debug_mode(vk_session, print_content=False):
     """ Включает режим отладки:
-    - Вывод сообщений лога
-    - Вывод http запросов
+        - Вывод сообщений лога
+        - Вывод http запросов
 
     :param vk_session: объект VkApi
     :param print_content: печатать ответ http запросов

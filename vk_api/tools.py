@@ -12,9 +12,8 @@ from .execute import VkFunction
 
 
 class VkTools(object):
-    """
-    Содержит некоторые вспомогательные функции, которые могут понадобиться
-    при использовании API
+    """ Содержит некоторые вспомогательные функции, которые могут понадобиться
+        при использовании API
 
     :param vk: Объект :class:`VkApi`
     """
@@ -26,10 +25,9 @@ class VkTools(object):
 
     def get_all_iter(self, method, max_count, values=None, key='items',
                      limit=None, stop_fn=None, negative_offset=False):
-        """
-        Получить все элементы.
-        Работает в методах, где в ответе есть count и items или users.
-        За один запрос получает max_count * 25 элементов
+        """ Получить все элементы.
+            Работает в методах, где в ответе есть count и items или users.
+            За один запрос получает max_count * 25 элементов
 
         :param method: имя метода
         :type method: str
@@ -113,9 +111,8 @@ class VkTools(object):
 
     def get_all_slow_iter(self, method, max_count, values=None, key='items',
                           limit=None, stop_fn=None, negative_offset=False):
-        """
-        Получить все элементы (без использования execute)
-        Работает в методах, где в ответе есть count и items или users
+        """ Получить все элементы (без использования execute)
+            Работает в методах, где в ответе есть count и items или users
 
         :param method: имя метода
         :type method: str
