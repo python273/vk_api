@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-@author: python273
-@contact: https://vk.com/python273
-@license Apache License, Version 2.0, see LICENSE file
+:authors: python273
+:contact: https://vk.com/python273
+:license: Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2018
+:copyright: (c) 2018 python273
 """
 
 from __future__ import print_function
