@@ -190,7 +190,7 @@ def vk_request_one_param_pool(vk_session, method, key, values,
     Невозможно использовать вместе с :func:`method`.
     Возвращаемое значение будет содержать результат после закрытия пула.
 
-    :param vk_session: метод
+    :param vk_session: объект VkApi
     :type vk_session: vk_api.VkAPi
 
     :param method: метод
@@ -210,6 +210,9 @@ def vk_request_one_param_pool(vk_session, method, key, values,
 
     result = {}
     errors = {}
+
+    if default_values is None:
+        default_values = {}
 
     for i in range(0, len(values), 25):
         current_values = values[i:i + 25]
