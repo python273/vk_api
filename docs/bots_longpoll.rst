@@ -3,7 +3,7 @@
 
 Модуль для работы с Bots Long Poll
 
-.. module:: vk_api.bots_longpoll
+.. module:: vk_api.bot_longpoll
 .. autoclass:: VkBotLongPoll
     :members:
 .. autoclass:: BotEvent

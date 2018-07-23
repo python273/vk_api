@@ -12,12 +12,12 @@ import websocket
 import json
 
 
-URL_TEMPLATE = "{schema}://{server}/{method}?key={key}"
-
 
 class VkStreaming(object):
 
     __slots__ = ('vk', 'url', 'key', 'server')
+
+    URL_TEMPLATE = '{schema}://{server}/{method}?key={key}'
 
     def __init__(self, vk):
         """
@@ -38,60 +38,60 @@ class VkStreaming(object):
         self.server = response['endpoint']
 
     def get_rules(self):
-        response = self.vk.http.get(URL_TEMPLATE.format(
-            schema="https",
+        response = self.vk.http.get(self.URL_TEMPLATE.format(
+            schema='https',
             server=self.server,
-            method="rules",
+            method='rules',
             key=self.key)
         ).json()
 
-        if response["code"] == 200:
+        if response['code'] == 200:
             return response['rules'] or []
-        elif response["code"] == 400:
+        elif response['code'] == 400:
             raise VkStreamingError(response['error'])
 
     def add_rule(self, value, tag):
-        response = self.vk.http.post(URL_TEMPLATE.format(
-            schema="https",
+        response = self.vk.http.post(self.URL_TEMPLATE.format(
+            schema='https',
             server=self.server,
-            method="rules",
+            method='rules',
             key=self.key),
-            json={"rule": {"value": value, "tag": tag}}
+            json={'rule': {'value': value, 'tag': tag}}
         ).json()
 
-        if response["code"] == 200:
+        if response['code'] == 200:
             return True
-        elif response["code"] == 400:
+        elif response['code'] == 400:
             raise VkStreamingError(response['error'])
 
     def delete_rule(self, tag):
-        response = self.vk.http.delete(URL_TEMPLATE.format(
-            schema="https",
+        response = self.vk.http.delete(self.URL_TEMPLATE.format(
+            schema='https',
             server=self.server,
-            method="rules",
+            method='rules',
             key=self.key),
-            json={"tag": tag}
+            json={'tag': tag}
         ).json()
 
-        if response["code"] == 200:
+        if response['code'] == 200:
             return True
-        elif response["code"] == 400:
+        elif response['code'] == 400:
             raise VkStreamingError(response['error'])
 
     def listen(self):
-        ws = websocket.create_connection(URL_TEMPLATE.format(
-            schema="wss",
+        ws = websocket.create_connection(self.URL_TEMPLATE.format(
+            schema='wss',
             server=self.server,
-            method="stream",
-            key=self.key)
-        )
+            method='stream',
+            key=self.key
+        ))
 
         while True:
-            response = ws.recv()
-            response = json.loads(response)
-            if response["code"] == 100:
-                yield response["event"]
-            elif response["code"] == 300:
+            response = json.loads(ws.recv())
+
+            if response['code'] == 100:
+                yield response['event']
+            elif response['code'] == 300:
                 raise VkStreamingServiceMessage(response['service_message'])
 
 
@@ -113,5 +113,4 @@ class VkStreamingServiceMessage(VkApiError):
         self.message = error['message']
 
     def __str__(self):
-        return '[{}] {}'.format(self.service_code,
-                                self.message)
+        return '[{}] {}'.format(self.service_code, self.message)

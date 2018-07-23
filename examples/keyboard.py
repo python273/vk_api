@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import vk_api
-from vk_api.keyboard import KeyboardColor
+from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
 
 def main():
@@ -9,16 +9,16 @@ def main():
     vk_session = vk_api.VkApi(token='bot_api_token')
     vk = vk_session.get_api()
 
-    keyboard = vk_api.VkKeyboard(one_time=True)
+    keyboard = VkKeyboard(one_time=True)
 
-    keyboard.add_button('Белая кнопка', color=KeyboardColor.DEFAULT)
-    keyboard.add_button('Зелёная кнопка', color=KeyboardColor.POSITIVE)
+    keyboard.add_button('Белая кнопка', color=VkKeyboardColor.DEFAULT)
+    keyboard.add_button('Зелёная кнопка', color=VkKeyboardColor.POSITIVE)
 
     keyboard.add_line()  # Переход на вторую строку
-    keyboard.add_button('Красная кнопка', color=KeyboardColor.NEGATIVE)
+    keyboard.add_button('Красная кнопка', color=VkKeyboardColor.NEGATIVE)
 
     keyboard.add_line()
-    keyboard.add_button('Синяя кнопка', color=KeyboardColor.PRIMARY)
+    keyboard.add_button('Синяя кнопка', color=VkKeyboardColor.PRIMARY)
 
     vk.messages.send(
         peer_id=123456,

@@ -14,12 +14,20 @@ import six
 from .utils import sjson_dumps
 
 
-class KeyboardColor(Enum):
+class VkKeyboardColor(Enum):
     """ Возможные цвета кнопок """
-    PRIMARY = 'primary'  # синяя
-    DEFAULT = 'default'  # белая
-    NEGATIVE = 'negative'  # красная
-    POSITIVE = 'positive'  # зелёная
+
+    PRIMARY = 'primary'
+    """ Синяя """
+
+    DEFAULT = 'default'
+    """ Белая"""
+
+    NEGATIVE = 'negative'
+    """ Красная """
+
+    POSITIVE = 'positive'
+    """ Зелёная """
 
 
 class VkKeyboard(object):
@@ -54,14 +62,14 @@ class VkKeyboard(object):
         keyboard.keyboard['buttons'] = []
         return keyboard.get_keyboard()
 
-    def add_button(self, label, color=KeyboardColor.DEFAULT, payload=None):
+    def add_button(self, label, color=VkKeyboardColor.DEFAULT, payload=None):
         """ Добавить кнопку. Максимальное количество кнопок на строке - 4
 
         :param label: Надпись на кнопке и текст, отправляющийся при её нажатии.
         :type label: str
 
         :param color: цвет кнопки.
-        :type color: KeyboardColor or str
+        :type color: VkKeyboardColor or str
 
         :param payload: Параметр для callback api
         :type payload: str or list or dict
@@ -74,7 +82,7 @@ class VkKeyboard(object):
 
         color_value = color
 
-        if isinstance(color, KeyboardColor):
+        if isinstance(color, VkKeyboardColor):
             color_value = color_value.value
 
         if payload is not None and not isinstance(payload, six.string_types):
