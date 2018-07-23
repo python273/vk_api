@@ -9,13 +9,11 @@
 
 
 class BaseConfig(object):
-    r"""
-    Абстрактный базовый класс конфигурации
-
+    """ Абстрактный базовый класс конфигурации.
     У наследуемых классов должен быть определен `__slots__`
 
     :param section: имя подкатегории в конфиге
-    :param \**kwargs: будут переданы в :func:`load`
+    :param \\**kwargs: будут переданы в :func:`load`
     """
 
     __slots__ = ('section_name', '_settings', '_section')

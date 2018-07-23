@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-@author: python273
-@contact: https://vk.com/python273
-@license Apache License, Version 2.0
+:authors: python273
+:contact: https://vk.com/python273
+:license: Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2018
+:copyright: (c) 2018 python273
 """
 
 from collections import defaultdict
@@ -70,7 +70,7 @@ class VkEventType(IntEnum):
     USER_OFFLINE = 9
     """
     Друг $user_id стал оффлайн ($flags равен 0, если пользователь покинул сайт и 1,
-    если оффлайн по таймауту) . $timestamp — время последнего действия пользователя
+    если оффлайн по таймауту). $timestamp — время последнего действия пользователя
     $user_id на сайте.
     """
 

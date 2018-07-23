@@ -23,11 +23,6 @@ from .utils import (
     cookies_to_list, set_cookies_from_list
 )
 
-TOO_MANY_RPS_CODE = 6
-NEED_VALIDATION_CODE = 17
-HTTP_ERROR_CODE = -1
-TWOFACTOR_CODE = -2
-
 RE_LOGIN_HASH = re.compile(r'name="lg_h" value="([a-z0-9]+)"')
 RE_CAPTCHAID = re.compile(r"onLoginCaptcha\('(\d+)'")
 RE_NUMBER_HASH = re.compile(r"al_page: '3', hash: '([a-z0-9]+)'")
@@ -516,7 +511,7 @@ class VkApi(object):
 
     def too_many_rps_handler(self, error):
         """ Обработчик ошибки "Слишком много запросов в секунду".
-            Ждет пол секунды и пробует отправить запрос заново
+            Ждет полсекунды и пробует отправить запрос заново
 
         :param error: исключение
         """

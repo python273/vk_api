@@ -14,8 +14,7 @@ from .base import BaseConfig
 
 
 class Config(BaseConfig):
-    """
-    Класс конфигурации в файле
+    """ Класс конфигурации в файле
 
     :param filename: имя файла
     """
