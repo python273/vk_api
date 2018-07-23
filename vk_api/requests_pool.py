@@ -19,7 +19,7 @@ PoolRequest = namedtuple('PoolRequest', ['method', 'values', 'result'])
 
 
 class RequestResult(object):
-    """ Результат запроса из пула"""
+    """ Результат запроса из пула """
 
     __slots__ = ('_result', 'ready', '_error')
 
@@ -90,9 +90,8 @@ class VkRequestsPool(object):
         self.execute()
 
     def method(self, method, values=None):
-        """
-        Добавляет запрос в пул. Невозможно использовать вместе с :func:`method_one_param`.
-        Возвращаемое значение будет содержать результат после закрытия пула.
+        """ Добавляет запрос в пул. Невозможно использовать вместе с :func:`method_one_param`.
+            Возвращаемое значение будет содержать результат после закрытия пула.
 
         :param method: метод
         :type method: str
@@ -185,12 +184,11 @@ def vk_many_methods(vk_session, pool):
 
 def vk_request_one_param_pool(vk_session, method, key, values,
                               default_values=None):
-    """
-    Использовать, если изменяется значение только одного параметра.
-    Невозможно использовать вместе с :func:`method`.
-    Возвращаемое значение будет содержать результат после закрытия пула.
+    """ Использовать, если изменяется значение только одного параметра.
+        Невозможно использовать вместе с :func:`method`.
+        Возвращаемое значение будет содержать результат после закрытия пула.
 
-    :param vk_session: метод
+    :param vk_session: объект VkApi
     :type vk_session: vk_api.VkAPi
 
     :param method: метод
@@ -210,6 +208,9 @@ def vk_request_one_param_pool(vk_session, method, key, values,
 
     result = {}
     errors = {}
+
+    if default_values is None:
+        default_values = {}
 
     for i in range(0, len(values), 25):
         current_values = values[i:i + 25]

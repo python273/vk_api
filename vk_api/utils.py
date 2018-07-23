@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-@author: python273
-@contact: https://vk.com/python273
-@license Apache License, Version 2.0, see LICENSE file
+:authors: python273
+:contact: https://vk.com/python273
+:license: Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2018
+:copyright: (c) 2018 python273
 """
 
 from __future__ import print_function
@@ -100,8 +100,8 @@ def set_cookies_from_list(cookie_jar, l):
 
 def enable_debug_mode(vk_session, print_content=False):
     """ Включает режим отладки:
-    - Вывод сообщений лога
-    - Вывод http запросов
+        - Вывод сообщений лога
+        - Вывод http запросов
 
     :param vk_session: объект VkApi
     :param print_content: печатать ответ http запросов

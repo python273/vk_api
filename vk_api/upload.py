@@ -16,16 +16,14 @@ STORY_ALLOWED_LINK_TEXTS = {
 
 
 class VkUpload(object):
-    """ Загрузка файлов через API (https://vk.com/dev/upload_files) """
+    """ Загрузка файлов через API (https://vk.com/dev/upload_files)
+
+    :param vk: объект :class:`VkApi`
+    """
 
     __slots__ = ('vk',)
 
     def __init__(self, vk):
-        """
-
-        :param vk: объект VkApi
-        """
-
         self.vk = vk
 
     def photo(self, photos, album_id,
@@ -236,7 +234,7 @@ class VkUpload(object):
         :param no_comments: 1 — закрыть комментарии (для видео из сообществ).
         :type no_comments: bool
 
-        :param repeat: зацикливание воспроизведения видеозаписи. флаг.
+        :param repeat: зацикливание воспроизведения видеозаписи. Флаг.
         :type repeat: bool
         """
 

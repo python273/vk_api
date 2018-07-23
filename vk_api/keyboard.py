@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+"""
+:authors: python273, Helow19274
+:contact: https://vk.com/python273
+:license: Apache License, Version 2.0, see LICENSE file
+
+:copyright: (c) 2018 python273
+"""
+
 from enum import Enum
 
 import six
@@ -37,8 +46,9 @@ class VkKeyboard(object):
 
     @classmethod
     def get_empty_keyboard(cls):
-        """ Получить json пустой клавиатуры.
-            Если отправить пустую клавиатуру, текущая у пользователя исчезнет.
+        """
+        Получить json пустой клавиатуры.
+        Если отправить пустую клавиатуру, текущая у пользователя исчезнет.
         """
         keyboard = cls()
         keyboard.keyboard['buttons'] = []
@@ -48,7 +58,7 @@ class VkKeyboard(object):
         """ Добавить кнопку. Максимальное количество кнопок на строке - 4
 
         :param label: Надпись на кнопке и текст, отправляющийся при её нажатии.
-        :type: str
+        :type label: str
 
         :param color: цвет кнопки.
         :type color: KeyboardColor or str

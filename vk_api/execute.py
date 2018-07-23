@@ -14,8 +14,7 @@ from .vk_api import VkApi, VkApiMethod
 
 
 class VkFunction(object):
-    """
-    Обертка над методом execute.
+    """ Обертка над методом execute.
 
     :param code: код функции (VKScript)
     :param args: список аргументов (будут конвертированы в JSON)

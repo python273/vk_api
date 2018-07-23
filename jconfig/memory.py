@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-@author: python273
-@contact: https://vk.com/python273
-@license Apache License, Version 2.0, see LICENSE file
+:authors: python273
+:contact: https://vk.com/python273
+:license: Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2018
+:copyright: (c) 2018 python273
 """
 
 from .base import BaseConfig
 
 
 class MemoryConfig(BaseConfig):
-    """
-    Класс конфигурации в памяти
+    """ Класс конфигурации в памяти
 
     :param settings: существующий dict с конфигом
     """

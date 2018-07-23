@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-@author: python273, hdk5
-@contact: https://vk.com/python273
-@license Apache License, Version 2.0
+:authors: python273, hdk5
+:contact: https://vk.com/python273
+:license: Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2018
+:copyright: (c) 2018 python273
 """
 
 from .exceptions import VkApiError
-from enum import Enum
 import websocket
 import json
 

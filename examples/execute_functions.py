@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-""" Пример использования VkFunctions - обертки над методом execute
+""" Пример использования VkFunction - обертки над методом execute
 
     Описание VKScript (языка execute): https://vk.com/dev/execute
 """

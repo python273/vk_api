@@ -8,11 +8,11 @@ from .upload import VkUpload
 from .vk_api import VkApi
 
 """
-@author: python273
-@contact: https://vk.com/python273
-@license Apache License, Version 2.0, see LICENSE file
+:authors: python273
+:contact: https://vk.com/python273
+:license: Apache License, Version 2.0, see LICENSE file
 
-Copyright (C) 2018
+:copyright: (c) 2018 python273
 """
 
 __author__ = 'python273'

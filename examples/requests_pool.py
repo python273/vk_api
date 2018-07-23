@@ -42,7 +42,7 @@ def main():
         """ Если запрос был завершен с ошибкой, то при обращении к результату
         будет выбрасываться исключение
         """
-        _ = request_with_error.result
+        request_with_error.result
     except vk_api.VkRequestsPoolException as e:
         print('Error:', e)
 
