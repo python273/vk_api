@@ -1,5 +1,4 @@
-from vk_api import VkKeyboard
-from vk_api.keyboard import KeyboardColor
+from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from vk_api.utils import sjson_dumps
 
 KEYBOARD_TEST = {
@@ -26,9 +25,11 @@ keyboard = VkKeyboard()
 
 
 def test_keyboard():
-    keyboard.add_button('Test-1',
-                        color=KeyboardColor.DEFAULT,
-                        payload={'test': 'some_payload'})
+    keyboard.add_button(
+        'Test-1',
+        color=VkKeyboardColor.DEFAULT,
+        payload={'test': 'some_payload'}
+    )
     keyboard.add_line()
     assert keyboard.get_keyboard() == sjson_dumps(KEYBOARD_TEST)
 
