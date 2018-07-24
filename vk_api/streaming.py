@@ -102,8 +102,7 @@ class VkStreamingError(VkApiError):
         self.message = error['message']
 
     def __str__(self):
-        return '[{}] {}'.format(self.error_code,
-                                self.message)
+        return '[{}] {}'.format(self.error_code, self.message)
 
 
 class VkStreamingServiceMessage(VkApiError):

@@ -6,5 +6,8 @@
 .. module:: vk_api.bot_longpoll
 .. autoclass:: VkBotLongPoll
     :members:
-.. autoclass:: BotEvent
+.. autoclass:: VkBotEvent
+    :members:
+.. autoclass:: VkBotMessageEvent
+    :show-inheritance:
     :members:

@@ -17,17 +17,17 @@ from .utils import sjson_dumps
 class VkKeyboardColor(Enum):
     """ Возможные цвета кнопок """
 
+    #: Синяя
     PRIMARY = 'primary'
-    """ Синяя """
 
+    #: Белая
     DEFAULT = 'default'
-    """ Белая"""
 
+    #: Красная
     NEGATIVE = 'negative'
-    """ Красная """
 
+    #: Зелёная
     POSITIVE = 'positive'
-    """ Зелёная """
 
 
 class VkKeyboard(object):
@@ -54,8 +54,7 @@ class VkKeyboard(object):
 
     @classmethod
     def get_empty_keyboard(cls):
-        """
-        Получить json пустой клавиатуры.
+        """ Получить json пустой клавиатуры.
         Если отправить пустую клавиатуру, текущая у пользователя исчезнет.
         """
         keyboard = cls()
@@ -99,7 +98,7 @@ class VkKeyboard(object):
 
     def add_line(self):
         """ Создаёт новую строчку, на которой можно размещать кнопки.
-            Максимальное количество строк - 10
+        Максимальное количество строк - 10.
         """
 
         if len(self.lines) >= 10:

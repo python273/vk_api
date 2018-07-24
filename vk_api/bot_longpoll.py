@@ -1,5 +1,6 @@
-import requests
 from enum import Enum
+
+import requests
 
 CHAT_START_ID = int(2E9)
 
@@ -80,7 +81,19 @@ class VkBotEventType(Enum):
 class VkBotEvent(object):
     """ Событие Bots Long Poll
 
-    Имеет поля в соответствии с `документацией <https://vk.com/dev/groups_events>`_.
+    :ivar raw: событие, в каком виде было получено от сервера
+
+    :ivar type: тип события
+    :vartype type: VkBotEventType or str
+
+    :ivar t: сокращение для type
+    :vartype t: VkBotEventType or str
+
+    :ivar object: объект события, в каком виде был получен от сервера
+    :ivar obj: сокращение для object
+
+    :ivar group_id: ID группы бота
+    :vartype group_id: int
     """
 
     __slots__ = (
@@ -106,10 +119,24 @@ class VkBotEvent(object):
         self.group_id = raw['group_id']
 
     def __repr__(self):
-        return f'<{type(self)}({self.raw})>'
+        return '<{}({})>'.format(type(self), self.raw)
+
 
 class VkBotMessageEvent(VkBotEvent):
-    """ Событие с сообщением Bots Long Poll """
+    """ Событие с сообщением Bots Long Poll
+
+    :ivar from_user: сообщение от пользователя
+    :vartype from_user: bool
+
+    :ivar from_chat: сообщение из беседы
+    :vartype from_chat: bool
+
+    :ivar from_group: сообщение от группы
+    :vartype from_group: bool
+
+    :ivar chat_id: ID чата
+    :vartype chat_id: int
+    """
 
     __slots__ = ('from_user', 'from_chat', 'from_group', 'chat_id')
 
@@ -146,11 +173,14 @@ class VkBotLongPoll(object):
         'key', 'server', 'ts'
     )
 
+    #: Классы для событий по типам
     CLASS_BY_EVENT_TYPE = {
         VkBotEventType.MESSAGE_NEW.value: VkBotMessageEvent,
         VkBotEventType.MESSAGE_REPLY.value: VkBotMessageEvent,
         VkBotEventType.MESSAGE_EDIT.value: VkBotMessageEvent,
     }
+
+    #: Класс для событий
     DEFAULT_EVENT_CLASS = VkBotEvent
 
     def __init__(self, vk, group_id, wait=25):
@@ -189,8 +219,7 @@ class VkBotLongPoll(object):
             self.ts = response['ts']
 
     def check(self):
-        """
-        Получить события от сервера один раз
+        """ Получить события от сервера один раз
 
         :returns: `list` of :class:`Event`
         """
@@ -227,8 +256,7 @@ class VkBotLongPoll(object):
         return []
 
     def listen(self):
-        """
-        Слушать сервер
+        """ Слушать сервер
 
         :yields: :class:`Event`
         """
