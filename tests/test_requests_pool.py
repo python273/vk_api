@@ -14,11 +14,13 @@ def test_requests_pool(vk):
 
 
 def test_requests_pool_one_param(vk):
-    users, error = vk_request_one_param_pool(vk,
-                                             'users.get',
-                                             key='user_ids',
-                                             values=['durov', 'python273'],
-                                             default_values={'fields': 'city'})
+    users, error = vk_request_one_param_pool(
+        vk,
+        'users.get',
+        key='user_ids',
+        values=['durov', 'python273'],
+        default_values={'fields': 'city'}
+    )
 
     assert error == {}
     assert isinstance(users, dict)
