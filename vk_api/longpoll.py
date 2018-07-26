@@ -209,7 +209,7 @@ class VkMessageFlag(IntEnum):
 
 
 class VkPeerFlag(IntEnum):
-    """Флаги диалогов"""
+    """ Флаги диалогов """
 
     #: Важный диалог
     IMPORTANT = 1

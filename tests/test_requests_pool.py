@@ -1,12 +1,7 @@
-import os
-
-from vk_api import VkApi, VkRequestsPool, vk_request_one_param_pool
-
-vk = VkApi(login=os.environ['LOGIN'], password=os.environ['PASSWORD'])
-vk.auth(token_only=True)
+from vk_api import VkRequestsPool, vk_request_one_param_pool
 
 
-def test_requests_pool():
+def test_requests_pool(vk):
     with VkRequestsPool(vk) as pool:
         users = pool.method('users.get', {'user_ids': 'durov'})
         error_request = pool.method('invalid.method')
@@ -18,12 +13,14 @@ def test_requests_pool():
     assert not error_request.ok
 
 
-def test_requests_pool_one_param():
-    users, error = vk_request_one_param_pool(vk,
-                                             'users.get',
-                                             key='user_ids',
-                                             values=['durov', 'python273'],
-                                             default_values={'fields': 'city'})
+def test_requests_pool_one_param(vk):
+    users, error = vk_request_one_param_pool(
+        vk,
+        'users.get',
+        key='user_ids',
+        values=['durov', 'python273'],
+        default_values={'fields': 'city'}
+    )
 
     assert error == {}
     assert isinstance(users, dict)
