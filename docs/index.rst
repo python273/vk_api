@@ -42,6 +42,7 @@ vk_api – Python модуль для написания скриптов для
    bots_longpoll
    keyboard
    audio
+   streaming
    requests_pool
    execute
    enums
