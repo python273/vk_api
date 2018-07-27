@@ -112,10 +112,8 @@ class VkAudio(object):
 
             if not response.text:
                 raise AccessDenied(
-                    'You don\'t have permissions to browse {}\'s albums'.format
-                    (
-                        owner_id
-                    )
+                    'You don\'t have permissions '
+                    'to browse {}\'s albums'.format(owner_id)
                 )
 
             albums = scrap_albums(response.text)
@@ -167,7 +165,7 @@ class VkAudio(object):
             if i['owner_id'] == owner_id
         ]
 
-    def search(self, q='', offset=0):
+    def search_iter(self, q, offset=0):
         """ Искать аудиозаписи
 
         :param q: запрос
@@ -183,11 +181,14 @@ class VkAudio(object):
                     'offset': offset
                 }
             )
+
             audio_list = scrap_data(response.text, self.user_id)
+
             if not audio_list:
                 break
 
-            yield audio_list
+            for audio in audio_list:
+                yield audio
 
             offset += len(audio_list)
 
