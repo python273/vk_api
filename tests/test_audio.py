@@ -20,6 +20,8 @@ def test_audio_generator():
 
 
 def test_audio_seacrh_user():
-    for i in vk_audio.search_user():
-        print()
-    print()
+    for _ in vk_audio.search_user():
+        assert True
+        break
+    else:
+        assert False
