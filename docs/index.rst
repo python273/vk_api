@@ -19,19 +19,32 @@ vk_api – Python модуль для написания скриптов для
 
 Примеры по использованию библиотеки доступны на `GitHub <https://github.com/python273/vk_api/tree/master/examples>`_.
 
+.. code-block:: python
+
+   import vk_api
+
+   vk_session = vk_api.VkApi('+71234567890', 'mypassword')
+   vk_session.auth()
+
+   vk = vk_session.get_api()
+
+   print(vk.wall.post(message='Hello world!'))
+
+
 .. toctree::
    :maxdepth: 4
    :caption: Содержание:
 
    vk_api
-   audio
+   upload
+   tools
    longpoll
    bots_longpoll
-   execute
-   requests_pool
-   tools
-   upload
    keyboard
+   audio
+   requests_pool
+   execute
+   enums
    exceptions
    jconfig
 

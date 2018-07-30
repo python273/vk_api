@@ -12,17 +12,19 @@ import websocket
 import json
 
 
-
 class VkStreaming(object):
+    """ Класс для работы с Streaming API
+
+    `Подробнее в документации VK API <https://vk.com/dev/streaming_api_docs>`__.
+
+    :param vk: объект :class:`VkApi`
+    """
 
     __slots__ = ('vk', 'url', 'key', 'server')
 
     URL_TEMPLATE = '{schema}://{server}/{method}?key={key}'
 
     def __init__(self, vk):
-        """
-        :param vk: объект VkApi
-        """
         self.vk = vk
 
         self.url = None
@@ -38,6 +40,7 @@ class VkStreaming(object):
         self.server = response['endpoint']
 
     def get_rules(self):
+        """ Получить список добавленных правил """
         response = self.vk.http.get(self.URL_TEMPLATE.format(
             schema='https',
             server=self.server,
@@ -51,6 +54,14 @@ class VkStreaming(object):
             raise VkStreamingError(response['error'])
 
     def add_rule(self, value, tag):
+        """ Добавить правило
+
+        :param value: Строковое представление правила
+        :type value: str
+
+        :param tag: Тег правила
+        :type tag: str
+        """
         response = self.vk.http.post(self.URL_TEMPLATE.format(
             schema='https',
             server=self.server,
@@ -65,6 +76,11 @@ class VkStreaming(object):
             raise VkStreamingError(response['error'])
 
     def delete_rule(self, tag):
+        """ Удалить правило
+
+        :param tag: Тег правила
+        :type tag: str
+        """
         response = self.vk.http.delete(self.URL_TEMPLATE.format(
             schema='https',
             server=self.server,
@@ -79,6 +95,7 @@ class VkStreaming(object):
             raise VkStreamingError(response['error'])
 
     def listen(self):
+        """ Слушать сервер """
         ws = websocket.create_connection(self.URL_TEMPLATE.format(
             schema='wss',
             server=self.server,
@@ -102,8 +119,7 @@ class VkStreamingError(VkApiError):
         self.message = error['message']
 
     def __str__(self):
-        return '[{}] {}'.format(self.error_code,
-                                self.message)
+        return '[{}] {}'.format(self.error_code, self.message)
 
 
 class VkStreamingServiceMessage(VkApiError):

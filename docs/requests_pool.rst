@@ -8,3 +8,4 @@ VkRequestsPool
     :members:
 .. autoclass:: RequestResult
     :members:
+.. autofunction:: vk_request_one_param_pool

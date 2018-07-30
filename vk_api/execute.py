@@ -45,10 +45,10 @@ class VkFunction(object):
         return self._minified_code % compiled_args
 
     def __call__(self, vk, *args, **kwargs):
-        r"""
+        """
         :param vk: VkApi или VkApiMethod
         :param \*args:
-        :param \**kwargs:
+        :param \*\*kwargs:
         """
 
         if not isinstance(vk, (VkApi, VkApiMethod)):

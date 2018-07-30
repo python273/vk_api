@@ -19,187 +19,216 @@ CHAT_START_ID = int(2E9)  # id с которого начинаются бесе
 
 
 class VkLongpollMode(IntEnum):
-    """
-    Дополнительные опции ответа
+    """ Дополнительные опции ответа
 
-    `Подробнее в документации VK API <https://vk.com/dev/using_longpoll?f=1.+Подключение>`_
+    `Подробнее в документации VK API
+    <https://vk.com/dev/using_longpoll?f=1.+Подключение>`_
     """
+
+    #: Получать вложения
     GET_ATTACHMENTS = 2
-    """Получать вложения"""
+
+    #: Возвращать расширенный набор событий
     GET_EXTENDED = 2**3
-    """Возвращать расширенный набор событий"""
+
+    #: возвращать pts для метода `messages.getLongPollHistory`
     GET_PTS = 2**5
-    """возвращать pts для метода `messages.getLongPollHistory`"""
+
+    #: В событии с кодом 8 (друг стал онлайн) возвращать
+    #: дополнительные данные в поле `extra`
     GET_EXTRA_ONLINE = 2**6
-    """В событии с кодом 8 (друг стал онлайн) возвращать дополнительные данные в поле `extra`"""
+
+    #: Возвращать поле `random_id`
     GET_RANDOM_ID = 2**7
-    """Возвращать поле `random_id`"""
 
 
 DEFAULT_MODE = sum(VkLongpollMode)
 
 
 class VkEventType(IntEnum):
-    """
-    Перечисление событий, получаемых от longpoll-сервера.
+    """ Перечисление событий, получаемых от longpoll-сервера.
 
-    `Подробнее в документации VK API <https://vk.com/dev/using_longpoll?f=3.+Структура+событий>`__
+    `Подробнее в документации VK API
+    <https://vk.com/dev/using_longpoll?f=3.+Структура+событий>`__
     """
+
+    #: Замена флагов сообщения (FLAGS:=$flags)
     MESSAGE_FLAGS_REPLACE = 1
-    """Замена флагов сообщения (FLAGS:=$flags)"""
+
+    #: Установка флагов сообщения (FLAGS|=$mask)
     MESSAGE_FLAGS_SET = 2
-    """Установка флагов сообщения (FLAGS|=$mask)"""
+
+    #: Сброс флагов сообщения (FLAGS&=~$mask)
     MESSAGE_FLAGS_RESET = 3
-    """Сброс флагов сообщения (FLAGS&=~$mask)"""
+
+    #: Добавление нового сообщения.
     MESSAGE_NEW = 4
-    """Добавление нового сообщения."""
+
+    #: Редактирование сообщения.
     MESSAGE_EDIT = 5
-    """Редактирование сообщения."""
 
+    #: Прочтение всех входящих сообщений в $peer_id,
+    #: пришедших до сообщения с $local_id.
     READ_ALL_INCOMING_MESSAGES = 6
-    """Прочтение всех входящих сообщений в $peer_id, пришедших до сообщения с $local_id."""
+
+    #: Прочтение всех исходящих сообщений в $peer_id,
+    #: пришедших до сообщения с $local_id.
     READ_ALL_OUTGOING_MESSAGES = 7
-    """Прочтение всех исходящих сообщений в $peer_id, пришедших до сообщения с $local_id."""
 
+    #: Друг $user_id стал онлайн. $extra не равен 0, если в mode был передан флаг 64.
+    #: В младшем байте числа extra лежит идентификатор платформы
+    #: (см. :class:`VkPlatform`).
+    #: $timestamp — время последнего действия пользователя $user_id на сайте.
     USER_ONLINE = 8
-    """
-    Друг $user_id стал онлайн. $extra не равен 0, если в mode был передан флаг 64.
-    В младшем байте (остаток от деления на 256) числа extra лежит идентификатор
-    платформы (см. :class:`VkPlatform`). $timestamp — время последнего действия
-    пользователя $user_id на сайте. """
+
+    #: Друг $user_id стал оффлайн ($flags равен 0, если пользователь покинул сайт и 1,
+    #: если оффлайн по таймауту). $timestamp — время последнего действия пользователя
+    #: $user_id на сайте.
     USER_OFFLINE = 9
-    """
-    Друг $user_id стал оффлайн ($flags равен 0, если пользователь покинул сайт и 1,
-    если оффлайн по таймауту). $timestamp — время последнего действия пользователя
-    $user_id на сайте.
-    """
 
+    #: Сброс флагов диалога $peer_id.
+    #: Соответствует операции (PEER_FLAGS &= ~$flags).
+    #: Только для диалогов сообществ.
     PEER_FLAGS_RESET = 10
-    """
-    Сброс флагов диалога $peer_id.
-    Соответствует операции (PEER_FLAGS &= ~$flags).
-    Только для диалогов сообществ.
-    """
+
+    #: Замена флагов диалога $peer_id.
+    #: Соответствует операции (PEER_FLAGS:= $flags).
+    #: Только для диалогов сообществ.
     PEER_FLAGS_REPLACE = 11
-    """
-    Замена флагов диалога $peer_id.
-    Соответствует операции (PEER_FLAGS:= $flags).
-    Только для диалогов сообществ.
-    """
+
+    #: Установка флагов диалога $peer_id.
+    #: Соответствует операции (PEER_FLAGS|= $flags).
+    #: Только для диалогов сообществ.
     PEER_FLAGS_SET = 12
-    """
-    Установка флагов диалога $peer_id.
-    Соответствует операции (PEER_FLAGS|= $flags).
-    Только для диалогов сообществ.
-    """
 
+    #: Удаление всех сообщений в диалоге $peer_id с идентификаторами вплоть до $local_id.
     PEER_DELETE_ALL = 13
-    """Удаление всех сообщений в диалоге $peer_id с идентификаторами вплоть до $local_id."""
+
+    #: Восстановление недавно удаленных сообщений в диалоге $peer_id с
+    #: идентификаторами вплоть до $local_id.
     PEER_RESTORE_ALL = 14
-    """Восстановление недавно удаленных сообщений в диалоге $peer_id с идентификаторами вплоть до $local_id."""
 
+    #: Один из параметров (состав, тема) беседы $chat_id были изменены.
+    #: $self — 1 или 0 (вызваны ли изменения самим пользователем).
     CHAT_EDIT = 51
-    """
-    Один из параметров (состав, тема) беседы $chat_id были изменены.
-    $self — 1 или 0 (вызваны ли изменения самим пользователем).
-    """
 
+    #: Пользователь $user_id набирает текст в диалоге.
+    #: Событие приходит раз в ~5 секунд при наборе текста. $flags = 1.
     USER_TYPING = 61
-    """
-    Пользователь $user_id набирает текст в диалоге.
-    Событие приходит раз в ~5 секунд при наборе текста. $flags = 1.
-    """
+
+    #: Пользователь $user_id набирает текст в беседе $chat_id.
     USER_TYPING_IN_CHAT = 62
-    """Пользователь $user_id набирает текст в беседе $chat_id."""
 
+    #: Пользователь $user_id совершил звонок с идентификатором $call_id.
     USER_CALL = 70
-    """Пользователь $user_id совершил звонок с идентификатором $call_id."""
 
+    #: Счетчик в левом меню стал равен $count.
     MESSAGES_COUNTER_UPDATE = 80
-    """Счетчик в левом меню стал равен $count."""
+
+    #: Изменились настройки оповещений.
+    #: $peer_id — идентификатор чата/собеседника,
+    #: $sound — 1/0, включены/выключены звуковые оповещения,
+    #: $disabled_until — выключение оповещений на необходимый срок.
     NOTIFICATION_SETTINGS_UPDATE = 114
-    """Изменились настройки оповещений.
-    $peer_id — идентификатор чата/собеседника,
-    $sound — 1/0, включены/выключены звуковые оповещения,
-    $disabled_until — выключение оповещений на необходимый срок.
-    """
 
 
 class VkPlatform(IntEnum):
-    """Идентификаторы платформ"""
+    """ Идентификаторы платформ """
+
+    #: Мобильная версия сайта или неопознанное мобильное приложение
     MOBILE = 1
-    """Мобильная версия сайта или неопознанное мобильное приложение"""
+
+    #: Официальное приложение для iPhone
     IPHONE = 2
-    """Официальное приложение для iPhone"""
+
+    #: Официальное приложение для iPad
     IPAD = 3
-    """Официальное приложение для iPad"""
+
+    #: Официальное приложение для Android
     ANDROID = 4
-    """Официальное приложение для Android"""
+
+    #: Официальное приложение для Windows Phone
     WPHONE = 5
-    """Официальное приложение для Windows Phone"""
+
+    #: Официальное приложение для Windows 8
     WINDOWS = 6
-    """Официальное приложение для Windows 8"""
+
+    #: Полная версия сайта или неопознанное приложение
     WEB = 7
-    """Полная версия сайта или неопознанное приложение"""
 
 
 class VkOfflineType(IntEnum):
-    """Выход из сети в событии :attr:`VkEventType.USER_OFFLINE`"""
+    """ Выход из сети в событии :attr:`VkEventType.USER_OFFLINE` """
+
+    #: Пользователь покинул сайт
     EXIT = 0
-    """Пользователь покинул сайт"""
+
+    #: Оффлайн по таймауту
     AWAY = 1
-    """Оффлайн по таймауту"""
 
 
 class VkMessageFlag(IntEnum):
-    """Флаги сообщений"""
+    """ Флаги сообщений """
+
+    #: Сообщение не прочитано.
     UNREAD = 1
-    """Cообщение не прочитано."""
+
+    #: Исходящее сообщение.
     OUTBOX = 2
-    """Исходящее сообщение."""
+
+    #: На сообщение был создан ответ.
     REPLIED = 2**2
-    """На сообщение был создан ответ."""
+
+    #: Помеченное сообщение.
     IMPORTANT = 2**3
-    """Помеченное сообщение."""
+
+    #: Сообщение отправлено через чат.
     CHAT = 2**4
-    """Сообщение отправлено через чат."""
+
+    #: Сообщение отправлено другом.
+    #: Не применяется для сообщений из групповых бесед.
     FRIENDS = 2**5
-    """
-    Cообщение отправлено другом.
-    Не применяется для сообщений из групповых бесед.
-    """
+
+    #: Сообщение помечено как "Спам".
     SPAM = 2**6
-    """Cообщение помечено как "Спам"."""
+
+    #: Сообщение удалено (в корзине).
     DELETED = 2**7
-    """Cообщение удалено (в корзине)."""
+
+    #: Сообщение проверено пользователем на спам.
     FIXED = 2**8
-    """Cообщение проверено пользователем на спам."""
+
+    #: Сообщение содержит медиаконтент
     MEDIA = 2**9
-    """Cообщение содержит медиаконтент"""
+
+    #: Приветственное сообщение от сообщества.
     HIDDEN = 2**16
-    """Приветственное сообщение от сообщества."""
+
+    #: Сообщение удалено для всех получателей.
     DELETED_ALL = 2**17
-    """Cообщение удалено для всех получателей."""
 
 
 class VkPeerFlag(IntEnum):
-    """Флаги диалогов"""
+    """ Флаги диалогов """
+
+    #: Важный диалог
     IMPORTANT = 1
-    """Важный диалог"""
+
+    #: Неотвеченный диалог
     UNANSWERED = 2
-    """Неотвеченный диалог"""
 
 
 MESSAGE_EXTRA_FIELDS = [
     'peer_id', 'timestamp', 'subject', 'text', 'attachments', 'random_id'
 ]
+MSGID = 'message_id'
 
 EVENT_ATTRS_MAPPING = {
-    VkEventType.MESSAGE_FLAGS_REPLACE: ['message_id', 'flags'] + MESSAGE_EXTRA_FIELDS,
-    VkEventType.MESSAGE_FLAGS_SET: ['message_id', 'mask'] + MESSAGE_EXTRA_FIELDS,
-    VkEventType.MESSAGE_FLAGS_RESET: ['message_id', 'mask'] + MESSAGE_EXTRA_FIELDS,
-    VkEventType.MESSAGE_NEW: ['message_id', 'flags'] + MESSAGE_EXTRA_FIELDS,
-    VkEventType.MESSAGE_EDIT: ['message_id', 'mask'] + MESSAGE_EXTRA_FIELDS,
+    VkEventType.MESSAGE_FLAGS_REPLACE: [MSGID, 'flags'] + MESSAGE_EXTRA_FIELDS,
+    VkEventType.MESSAGE_FLAGS_SET: [MSGID, 'mask'] + MESSAGE_EXTRA_FIELDS,
+    VkEventType.MESSAGE_FLAGS_RESET: [MSGID, 'mask'] + MESSAGE_EXTRA_FIELDS,
+    VkEventType.MESSAGE_NEW: [MSGID, 'flags'] + MESSAGE_EXTRA_FIELDS,
+    VkEventType.MESSAGE_EDIT: [MSGID, 'mask'] + MESSAGE_EXTRA_FIELDS,
 
     VkEventType.READ_ALL_INCOMING_MESSAGES: ['peer_id', 'local_id'],
     VkEventType.READ_ALL_OUTGOING_MESSAGES: ['peer_id', 'local_id'],
@@ -223,7 +252,8 @@ EVENT_ATTRS_MAPPING = {
 
     VkEventType.MESSAGES_COUNTER_UPDATE: ['count'],
     VkEventType.NOTIFICATION_SETTINGS_UPDATE: [
-        'peer_id', 'sound', 'disabled_until']
+        'peer_id', 'sound', 'disabled_until'
+    ]
 }
 
 
@@ -247,164 +277,16 @@ PARSE_MESSAGE_FLAGS_EVENTS = [
 ]
 
 
-class VkLongPoll(object):
-    """
-    Класс для работы с longpoll-сервером
-
-    `Подробнее в документации VK API <https://vk.com/dev/using_longpoll>`__.
-
-    :param vk: объект :class:`VkApi`
-    :param wait: время ожидания
-    :param mode: дополнительные опции ответа
-    :param preload_messages: предзагрузка данных сообщений для
-        получения ссылок на прикрепленные файлы
-    """
-
-    __slots__ = (
-        'vk', 'wait', 'mode', 'preload_messages',
-        'url', 'session',
-        'key', 'server', 'ts', 'pts'
-    )
-
-    PRELOAD_MESSAGE_EVENTS = [
-        VkEventType.MESSAGE_NEW,
-        VkEventType.MESSAGE_EDIT
-    ]
-
-    def __init__(self, vk, wait=25, mode=DEFAULT_MODE, preload_messages=False):
-        self.vk = vk
-        self.wait = wait
-        self.mode = mode
-        self.preload_messages = preload_messages
-
-        self.url = None
-        self.key = None
-        self.server = None
-        self.ts = None
-        self.pts = mode & VkLongpollMode.GET_PTS
-
-        self.session = requests.Session()
-
-        self.update_longpoll_server()
-
-    def update_longpoll_server(self, update_ts=True):
-        values = {
-            'lp_version': '3',
-            'need_pts': self.pts
-        }
-        response = self.vk.method('messages.getLongPollServer', values)
-
-        self.key = response['key']
-        self.server = response['server']
-
-        self.url = 'https://' + self.server
-
-        if update_ts:
-            self.ts = response['ts']
-            if self.pts:
-                self.pts = response['pts']
-
-    def check(self):
-        """
-        Получить события от сервера один раз
-
-        :returns: `list` of :class:`Event`
-        """
-        values = {
-            'act': 'a_check',
-            'key': self.key,
-            'ts': self.ts,
-            'wait': self.wait,
-            'mode': self.mode,
-            'version': 1
-        }
-
-        response = self.session.get(
-            self.url,
-            params=values,
-            timeout=self.wait + 10
-        ).json()
-
-        if 'failed' not in response:
-            self.ts = response['ts']
-            if self.pts:
-                self.pts = response['pts']
-
-            events = [Event(raw_event) for raw_event in response['updates']]
-
-            if self.preload_messages:
-                self.preload_message_events_data(events)
-
-            return events
-
-        elif response['failed'] == 1:
-            self.ts = response['ts']
-
-        elif response['failed'] == 2:
-            self.update_longpoll_server(update_ts=False)
-
-        elif response['failed'] == 3:
-            self.update_longpoll_server()
-
-        return []
-
-    def preload_message_events_data(self, events):
-        message_ids = set()
-        event_by_message_id = defaultdict(list)
-
-        for event in events:
-            if event.type in self.PRELOAD_MESSAGE_EVENTS:
-                message_ids.add(event.message_id)
-                event_by_message_id[event.message_id].append(event)
-
-        if not message_ids:
-            return
-
-        messages_data = self.vk.method(
-            'messages.getById',
-            {'message_ids': message_ids}
-        )
-
-        for message in messages_data['items']:
-            for event in event_by_message_id[message['id']]:
-                event.message_data = message
-
-    def listen(self):
-        """
-        Слушать сервер
-
-        :yields: :class:`Event`
-        """
-
-        while True:
-            for event in self.check():
-                yield event
-
-
 class Event(object):
-    """
-    Событие, полученное от longpoll-сервера.
+    """ Событие, полученное от longpoll-сервера.
 
-    Имеет поля в соответствии с `документацией <https://vk.com/dev/using_longpoll?f=3.%20Структура%20событий>`_.
+    Имеет поля в соответствии с `документацией
+    <https://vk.com/dev/using_longpoll?f=3.%20Структура%20событий>`_.
 
     События с полем `timestamp` также дополнительно имеют поле `datetime`
     """
 
-    __slots__ = frozenset((
-        'raw', 'type', 'platform', 'offline_type',
-        'user_id', 'group_id', 'peer_id',
-        'flags', 'mask', 'datetime',
-        'message_flags', 'peer_flags',
-        'from_user', 'from_chat', 'from_group', 'from_me', 'to_me',
-        'message_data'
-    )).union(ALL_EVENT_ATTRS)
-
     def __init__(self, raw):
-
-        # Reset attrs to None
-        for i in self.__slots__:
-            self.__setattr__(i, None)
-
         self.raw = raw
 
         self.from_user = False
@@ -415,6 +297,12 @@ class Event(object):
 
         self.attachments = {}
         self.message_data = None
+
+        self.message_id = None
+        self.timestamp = None
+        self.peer_id = None
+        self.flags = None
+        self.extra = None
 
         try:
             self.type = VkEventType(raw[0])
@@ -495,3 +383,148 @@ class Event(object):
 
         except ValueError:
             pass
+
+
+class VkLongPoll(object):
+    """ Класс для работы с longpoll-сервером
+
+    `Подробнее в документации VK API <https://vk.com/dev/using_longpoll>`__.
+
+    :param vk: объект :class:`VkApi`
+    :param wait: время ожидания
+    :param mode: дополнительные опции ответа
+    :param preload_messages: предзагрузка данных сообщений для
+        получения ссылок на прикрепленные файлы
+    """
+
+    __slots__ = (
+        'vk', 'wait', 'mode', 'preload_messages',
+        'url', 'session',
+        'key', 'server', 'ts', 'pts'
+    )
+
+    #: Класс для событий
+    DEFAULT_EVENT_CLASS = Event
+
+    #: События, для которых можно загрузить данные сообщений из API
+    PRELOAD_MESSAGE_EVENTS = [
+        VkEventType.MESSAGE_NEW,
+        VkEventType.MESSAGE_EDIT
+    ]
+
+    def __init__(self, vk, wait=25, mode=DEFAULT_MODE, preload_messages=False):
+        self.vk = vk
+        self.wait = wait
+        self.mode = mode
+        self.preload_messages = preload_messages
+
+        self.url = None
+        self.key = None
+        self.server = None
+        self.ts = None
+        self.pts = mode & VkLongpollMode.GET_PTS
+
+        self.session = requests.Session()
+
+        self.update_longpoll_server()
+
+    def _parse_event(self, raw_event):
+        return self.DEFAULT_EVENT_CLASS(raw_event)
+
+    def update_longpoll_server(self, update_ts=True):
+        values = {
+            'lp_version': '3',
+            'need_pts': self.pts
+        }
+        response = self.vk.method('messages.getLongPollServer', values)
+
+        self.key = response['key']
+        self.server = response['server']
+
+        self.url = 'https://' + self.server
+
+        if update_ts:
+            self.ts = response['ts']
+            if self.pts:
+                self.pts = response['pts']
+
+    def check(self):
+        """ Получить события от сервера один раз
+
+        :returns: `list` of :class:`Event`
+        """
+        values = {
+            'act': 'a_check',
+            'key': self.key,
+            'ts': self.ts,
+            'wait': self.wait,
+            'mode': self.mode,
+            'version': 1
+        }
+
+        response = self.session.get(
+            self.url,
+            params=values,
+            timeout=self.wait + 10
+        ).json()
+
+        if 'failed' not in response:
+            self.ts = response['ts']
+            if self.pts:
+                self.pts = response['pts']
+
+            events = [
+                self._parse_event(raw_event)
+                for raw_event in response['updates']
+            ]
+
+            if self.preload_messages:
+                self.preload_message_events_data(events)
+
+            return events
+
+        elif response['failed'] == 1:
+            self.ts = response['ts']
+
+        elif response['failed'] == 2:
+            self.update_longpoll_server(update_ts=False)
+
+        elif response['failed'] == 3:
+            self.update_longpoll_server()
+
+        return []
+
+    def preload_message_events_data(self, events):
+        """ Предзагрузка данных сообщений из API
+
+        :type events: list of Event
+        """
+        message_ids = set()
+        event_by_message_id = defaultdict(list)
+
+        for event in events:
+            if event.type in self.PRELOAD_MESSAGE_EVENTS:
+                message_ids.add(event.message_id)
+                event_by_message_id[event.message_id].append(event)
+
+        if not message_ids:
+            return
+
+        messages_data = self.vk.method(
+            'messages.getById',
+            {'message_ids': message_ids}
+        )
+
+        for message in messages_data['items']:
+            for event in event_by_message_id[message['id']]:
+                event.message_data = message
+
+    def listen(self):
+        """ Слушать сервер
+
+        :yields: :class:`Event`
+        """
+
+        while True:
+            for event in self.check():
+                yield event
