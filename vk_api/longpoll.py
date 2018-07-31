@@ -222,7 +222,7 @@ class VkPeerFlag(IntEnum):
     UNANSWERED = 2
 
 
-class VkChatExtraFields(IntEnum):
+class VkChatEventType(IntEnum):
     """ Идентификатор типа изменения в чате """
 
     #: Изменилось название беседы
@@ -351,6 +351,7 @@ class Event(object):
 
         if self.type is VkEventType.CHAT_UPDATE:
             self._parse_chat_info()
+            self.type = VkChatEventType(self.type_id)
 
         if self.type is VkEventType.PEER_FLAGS_REPLACE:
             self._parse_peer_flags()
