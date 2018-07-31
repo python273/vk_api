@@ -349,6 +349,9 @@ class Event(object):
         if self.type in PARSE_MESSAGE_FLAGS_EVENTS:
             self._parse_message_flags()
 
+        if self.type is VkEventType.CHAT_UPDATE:
+            self._parse_chat_info()
+
         if self.type is VkEventType.PEER_FLAGS_REPLACE:
             self._parse_peer_flags()
 
@@ -416,6 +419,19 @@ class Event(object):
 
         except ValueError:
             pass
+
+    def _parse_chat_info(self):
+        if self.type_id in [1, 2]:
+            self.info = '0'
+
+        elif self.type_id == 3:
+            self.info = 'admin_id'
+
+        elif self.type_id == 5:
+            self.info = 'conversation_message_id'
+
+        elif self.type_id in [6, 7, 8, 9]:
+            self.info = 'user_id'
 
 
 class VkLongPoll(object):
