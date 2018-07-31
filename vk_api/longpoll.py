@@ -114,7 +114,7 @@ class VkEventType(IntEnum):
 
     #: Изменение информации чата $peer_id с типом $type_id
     #: $info — дополнительная информация об изменениях
-    CHAT_EDIT_2 = 52
+    CHAT_UPDATE = 52
 
     #: Пользователь $user_id набирает текст в диалоге.
     #: Событие приходит раз в ~5 секунд при наборе текста. $flags = 1.
@@ -232,10 +232,10 @@ class VkChatExtraFields(IntEnum):
     PHOTO = 2
 
     #: Назначен новый администратор
-    NEW_ADMIN = 3
+    ADMIN_ADDED = 3
 
     #: Закреплено сообщение
-    PIN_MESSAGE = 5
+    MESSAGE_PINNED = 5
 
     #: Пользователь присоединился к беседе
     USER_JOINED = 6
@@ -247,7 +247,7 @@ class VkChatExtraFields(IntEnum):
     USER_KICKED = 8
 
     #: С пользователя сняты права администратора
-    REMOVE_ADMIN = 9
+    ADMIN_REMOVED = 9
 
 
 MESSAGE_EXTRA_FIELDS = [
@@ -276,7 +276,7 @@ EVENT_ATTRS_MAPPING = {
     VkEventType.PEER_RESTORE_ALL: ['peer_id', 'local_id'],
 
     VkEventType.CHAT_EDIT: ['chat_id', 'self'],
-    VkEventType.CHAT_EDIT_2: ['type_id', 'peer_id', 'info'],
+    VkEventType.CHAT_UPDATE: ['type_id', 'peer_id', 'info'],
 
     VkEventType.USER_TYPING: ['user_id', 'flags'],
     VkEventType.USER_TYPING_IN_CHAT: ['user_id', 'chat_id'],
