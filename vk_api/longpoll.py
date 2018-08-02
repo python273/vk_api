@@ -112,6 +112,10 @@ class VkEventType(IntEnum):
     #: $self — 1 или 0 (вызваны ли изменения самим пользователем).
     CHAT_EDIT = 51
 
+    #: Изменение информации чата $peer_id с типом $type_id
+    #: $info — дополнительная информация об изменениях
+    CHAT_UPDATE = 52
+
     #: Пользователь $user_id набирает текст в диалоге.
     #: Событие приходит раз в ~5 секунд при наборе текста. $flags = 1.
     USER_TYPING = 61
@@ -218,6 +222,34 @@ class VkPeerFlag(IntEnum):
     UNANSWERED = 2
 
 
+class VkChatEventType(IntEnum):
+    """ Идентификатор типа изменения в чате """
+
+    #: Изменилось название беседы
+    TITLE = 1
+
+    #: Сменилась обложка беседы
+    PHOTO = 2
+
+    #: Назначен новый администратор
+    ADMIN_ADDED = 3
+
+    #: Закреплено сообщение
+    MESSAGE_PINNED = 5
+
+    #: Пользователь присоединился к беседе
+    USER_JOINED = 6
+
+    #: Пользователь покинул беседу
+    USER_LEFT = 7
+
+    #: Пользователя исключили из беседы
+    USER_KICKED = 8
+
+    #: С пользователя сняты права администратора
+    ADMIN_REMOVED = 9
+
+
 MESSAGE_EXTRA_FIELDS = [
     'peer_id', 'timestamp', 'subject', 'text', 'attachments', 'random_id'
 ]
@@ -244,6 +276,7 @@ EVENT_ATTRS_MAPPING = {
     VkEventType.PEER_RESTORE_ALL: ['peer_id', 'local_id'],
 
     VkEventType.CHAT_EDIT: ['chat_id', 'self'],
+    VkEventType.CHAT_UPDATE: ['type_id', 'peer_id', 'info'],
 
     VkEventType.USER_TYPING: ['user_id', 'flags'],
     VkEventType.USER_TYPING_IN_CHAT: ['user_id', 'chat_id'],
@@ -316,16 +349,20 @@ class Event(object):
         if self.type in PARSE_MESSAGE_FLAGS_EVENTS:
             self._parse_message_flags()
 
-        if self.type is VkEventType.PEER_FLAGS_REPLACE:
+        if self.type is VkEventType.CHAT_UPDATE:
+            self._parse_chat_info()
+            self.type = VkChatEventType(self.type_id)
+
+        elif self.type is VkEventType.PEER_FLAGS_REPLACE:
             self._parse_peer_flags()
 
-        if self.type is VkEventType.MESSAGE_NEW:
+        elif self.type is VkEventType.MESSAGE_NEW:
             self._parse_message()
 
-        if self.type is VkEventType.MESSAGE_EDIT:
+        elif self.type is VkEventType.MESSAGE_EDIT:
             self.text = self.text.replace('<br>', '\n')
 
-        if self.type in [VkEventType.USER_ONLINE, VkEventType.USER_OFFLINE]:
+        elif self.type in [VkEventType.USER_ONLINE, VkEventType.USER_OFFLINE]:
             self.user_id = abs(self.user_id)
             self._parse_online_status()
 
@@ -383,6 +420,20 @@ class Event(object):
 
         except ValueError:
             pass
+
+    def _parse_chat_info(self):
+
+        if self.type_id == VkChatEventType.ADMIN_ADDED.value:
+            self.info = {'admin_id': self.info}
+
+        elif self.type_id == VkChatEventType.MESSAGE_PINNED.value:
+            self.info = {'conversation_message_id': self.info}
+
+        elif self.type_id in [VkChatEventType.USER_JOINED.value,
+                              VkChatEventType.USER_LEFT.value,
+                              VkChatEventType.USER_KICKED.value,
+                              VkChatEventType.ADMIN_REMOVED.value]:
+            self.info = {'user_id': self.info}
 
 
 class VkLongPoll(object):
