@@ -422,16 +422,17 @@ class Event(object):
             pass
 
     def _parse_chat_info(self):
-        if self.type_id in [1, 2]:
-            self.info = '0'
 
-        elif self.type_id == 3:
+        if self.type_id == VkChatEventType.ADMIN_ADDED.value:
             self.info = {'admin_id': self.info}
 
-        elif self.type_id == 5:
+        elif self.type_id == VkChatEventType.MESSAGE_PINNED.value:
             self.info = {'conversation_message_id': self.info}
 
-        elif self.type_id in [6, 7, 8, 9]:
+        elif self.type_id in [VkChatEventType.USER_JOINED.value,
+                              VkChatEventType.USER_LEFT.value,
+                              VkChatEventType.USER_KICKED.value,
+                              VkChatEventType.ADMIN_REMOVED.value]:
             self.info = {'user_id': self.info}
 
 
