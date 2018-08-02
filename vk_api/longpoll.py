@@ -353,16 +353,16 @@ class Event(object):
             self._parse_chat_info()
             self.type = VkChatEventType(self.type_id)
 
-        if self.type is VkEventType.PEER_FLAGS_REPLACE:
+        elif self.type is VkEventType.PEER_FLAGS_REPLACE:
             self._parse_peer_flags()
 
-        if self.type is VkEventType.MESSAGE_NEW:
+        elif self.type is VkEventType.MESSAGE_NEW:
             self._parse_message()
 
-        if self.type is VkEventType.MESSAGE_EDIT:
+        elif self.type is VkEventType.MESSAGE_EDIT:
             self.text = self.text.replace('<br>', '\n')
 
-        if self.type in [VkEventType.USER_ONLINE, VkEventType.USER_OFFLINE]:
+        elif self.type in [VkEventType.USER_ONLINE, VkEventType.USER_OFFLINE]:
             self.user_id = abs(self.user_id)
             self._parse_online_status()
 
@@ -426,13 +426,13 @@ class Event(object):
             self.info = '0'
 
         elif self.type_id == 3:
-            self.info = 'admin_id'
+            self.info = {'admin_id': self.info}
 
         elif self.type_id == 5:
-            self.info = 'conversation_message_id'
+            self.info = {'conversation_message_id': self.info}
 
         elif self.type_id in [6, 7, 8, 9]:
-            self.info = 'user_id'
+            self.info = {'user_id': self.info}
 
 
 class VkLongPoll(object):
