@@ -4,7 +4,6 @@ from setuptools import setup
 
 """
 :authors: python273
-:contact: https://vk.com/python273
 :license: Apache License, Version 2.0, see LICENSE file
 
 :copyright: (c) 2018 python273
@@ -21,7 +20,7 @@ setup(
     version=version,
 
     author='python273',
-    author_email='whoami@python273.pw',
+    author_email='vk_api@python273.pw',
 
     description=(
         u'Python модуль для написания скриптов для социальной сети '

@@ -1,7 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 """
 :authors: python273
-:contact: https://vk.com/python273
 :license: Apache License, Version 2.0, see LICENSE file
 
 :copyright: (c) 2018 python273
@@ -299,7 +298,7 @@ class VkApi(object):
             self.storage.save()
         else:
             raise AuthError(
-                'Unknown error. Please send bugreport: https://vk.com/python273'
+                'Unknown error. Please send bugreport to vk_api@python273.pw'
             )
 
         response = self._pass_security_check(response)

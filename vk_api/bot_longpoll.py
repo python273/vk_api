@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 :authors: deker104, python273
-:contact: https://vk.com/python273
 :license: Apache License, Version 2.0, see LICENSE file
 
 :copyright: (c) 2018 python273
