@@ -1,5 +1,5 @@
-Модуль `bots_longpoll` (VkBotLongPoll)
-=======================================
+Модуль `bot_longpoll` (VkBotLongPoll)
+=====================================
 
 Модуль для работы с Bots Long Poll
 

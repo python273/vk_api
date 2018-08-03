@@ -39,7 +39,7 @@ vk_api – Python модуль для написания скриптов для
    upload
    tools
    longpoll
-   bots_longpoll
+   bot_longpoll
    keyboard
    audio
    streaming
