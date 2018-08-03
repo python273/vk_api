@@ -1,7 +1,7 @@
 Модуль `longpoll` (VkLongPoll)
 ==============================
 
-Модуль для работы с longpoll
+Модуль для работы с User Long Poll API
 
 .. module:: vk_api.longpoll
 .. autoclass:: VkLongPoll

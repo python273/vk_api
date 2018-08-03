@@ -1,7 +1,7 @@
 Модуль `bot_longpoll` (VkBotLongPoll)
 =====================================
 
-Модуль для работы с Bots Long Poll
+Модуль для работы с Bots Long Poll API
 
 .. module:: vk_api.bot_longpoll
 .. autoclass:: VkBotLongPoll
