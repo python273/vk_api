@@ -111,9 +111,8 @@ class VkAudio(object):
 
             if not response.text:
                 raise AccessDenied(
-                    'You don\'t have permissions to browse {}\'s albums'.format(
-                        owner_id
-                    )
+                    'You don\'t have permissions '
+                    'to browse {}\'s albums'.format(owner_id)
                 )
 
             albums = scrap_albums(response.text)
@@ -134,7 +133,7 @@ class VkAudio(object):
 
         return list(self.get_albums_iter(owner_id))
 
-    def search_user(self, owner_id=None, q=''):
+    def search_user(self, owner_id=None, q='', offset=0):
         """ Искать по аудиозаписям пользователя
 
         :param owner_id: ID владельца (отрицательные значения для групп)
@@ -144,44 +143,63 @@ class VkAudio(object):
         if owner_id is None:
             owner_id = self.user_id
 
-        response = self._vk.http.get(
-            'https://m.vk.com/audio',
-            params={
-                'id': owner_id,
-                'q': q
-            },
-            allow_redirects=False
-        )
-
-        if not response.text:
-            raise AccessDenied(
-                'You don\'t have permissions to browse {}\'s audio'.format(
-                    owner_id
-                )
+        while True:
+            response = self._vk.http.get(
+                'https://m.vk.com/audio',
+                params={
+                    'id': owner_id,
+                    'q': q,
+                    'offset': offset
+                },
+                allow_redirects=False
             )
 
-        return [
-            i for i in scrap_data(response.text, self.user_id)
-            if i['owner_id'] == owner_id
-        ]
+            if not response.text:
+                raise AccessDenied(
+                    'You don\'t have permissions to browse {}\'s audio'.format(
+                        owner_id
+                    )
+                )
 
-    def search(self, q='', offset=0):
+            audio_list = [
+                i for i in scrap_data(response.text, self.user_id)
+                if i['owner_id'] == owner_id
+            ]
+
+            if not audio_list:
+                break
+
+            for audio in audio_list:
+                yield audio
+
+            offset += len(audio_list)
+
+    def search_iter(self, q, offset=0):
         """ Искать аудиозаписи
 
         :param q: запрос
         :param offset: смещение
+        :return: generator который отдает list c аудиозаписями
         """
+        while True:
+            response = self._vk.http.get(
+                'https://m.vk.com/audio',
+                params={
+                    '_ajax': '1',
+                    'q': q,
+                    'offset': offset
+                }
+            )
 
-        response = self._vk.http.get(
-            'https://m.vk.com/audio',
-            params={
-                'act': 'search',
-                'q': q,
-                'offset': offset
-            }
-        )
+            audio_list = scrap_data(response.text, self.user_id)
 
-        return scrap_data(response.text, self.user_id)
+            if not audio_list:
+                break
+
+            for audio in audio_list:
+                yield audio
+
+            offset += len(audio_list)
 
 
 def scrap_data(html, user_id):
