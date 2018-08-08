@@ -7,6 +7,7 @@
 """
 
 import re
+from itertools import islice
 
 from bs4 import BeautifulSoup
 
@@ -165,23 +166,41 @@ class VkAudio(object):
             if i['owner_id'] == owner_id
         ]
 
-    def search(self, q='', offset=0):
+    def search(self, q, count=50):
         """ Искать аудиозаписи
+
+        :param q: запрос
+        :param count: количество
+        """
+
+        return islice(self.search_iter(q), count)
+
+    def search_iter(self, q, offset=0):
+        """ Искать аудиозаписи (генератор)
 
         :param q: запрос
         :param offset: смещение
         """
 
-        response = self._vk.http.get(
-            'https://m.vk.com/audio',
-            params={
-                'act': 'search',
-                'q': q,
-                'offset': offset
-            }
-        )
+        while True:
+            response = self._vk.http.get(
+                'https://m.vk.com/audio',
+                params={
+                    'act': 'search',
+                    'q': q,
+                    'offset': offset
+                }
+            )
 
-        return scrap_data(response.text, self.user_id)
+            tracks = scrap_data(response.text, self.user_id)
+
+            if not tracks:
+                break
+
+            for track in tracks:
+                yield track
+
+            offset += 50
 
 
 def scrap_data(html, user_id):
