@@ -13,5 +13,6 @@
 * [Получение аудиозаписей (VkAudio)](./get_all_audio.py)
 * [Составление клавиатуры для бота группы (VkKeyboard)](./keyboard.py)
 * [Получение большого кол-ва объектов (VkTools)](./get_full_wall.py)
+* [Работа с Streaming](./streaming.py)
 * [Работа с VkRequestsPool](./requests_pool.py)
 * [Работа с прокси и использование таймаутов](./proxies_timeout_retries.py)
