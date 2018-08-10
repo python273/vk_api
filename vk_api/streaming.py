@@ -92,6 +92,10 @@ class VkStreaming(object):
             return True
         elif response['code'] == 400:
             raise VkStreamingError(response['error'])
+ 
+    def delete_all_rules(self):
+        for item in self.get_rules():
+            self.delete_rule(item['tag'])
 
     def listen(self):
         """ Слушать сервер """
