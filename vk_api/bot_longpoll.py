@@ -153,7 +153,8 @@ class VkBotMessageEvent(VkBotEvent):
         self.from_user = False
         self.from_chat = False
         self.from_group = False
-        self.chat_id = None
+        event.chat_id = event.raw['object']['from_id']
+        event.text = event.raw['object']['text']
 
         if self.obj.peer_id < 0:
             self.from_group = True
