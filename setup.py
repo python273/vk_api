@@ -12,7 +12,7 @@ from setuptools import setup
 
 version = '11.0.0'
 
-with open('README.md') as f:
+with open('README.md', encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
