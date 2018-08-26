@@ -518,7 +518,7 @@ class VkLongPoll(object):
             'ts': self.ts,
             'wait': self.wait,
             'mode': self.mode,
-            'version': 3
+            'version': 1
         }
 
         response = self.session.get(
