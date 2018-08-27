@@ -351,7 +351,10 @@ class Event(object):
 
         if self.type is VkEventType.CHAT_UPDATE:
             self._parse_chat_info()
-            self.type = VkChatEventType(self.type_id)
+            try:
+                self.update_type = VkChatEventType(self.type_id)
+            except ValueError:
+                self.update_type = self.type_id
 
         elif self.type is VkEventType.NOTIFICATION_SETTINGS_UPDATE:
             self._dict_to_attr(self.values)
@@ -379,8 +382,8 @@ class Event(object):
             self.__setattr__(attrs[i], raw[i])
 
     def _dict_to_attr(self, values):
-        for i in values.keys():
-            self.__setattr__(i, values[i])
+        for k, v in six.iteritems(values):
+            self.__setattr__(k, v)
 
     def _parse_peer_id(self):
 
