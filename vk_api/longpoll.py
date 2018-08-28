@@ -233,6 +233,9 @@ class VkChatEventType(IntEnum):
     #: Назначен новый администратор
     ADMIN_ADDED = 3
 
+    #: Изменены настройки беседы
+    SETTINGS_CHANGED = 4
+
     #: Закреплено сообщение
     MESSAGE_PINNED = 5
 
@@ -283,9 +286,7 @@ EVENT_ATTRS_MAPPING = {
     VkEventType.USER_CALL: ['user_id', 'call_id'],
 
     VkEventType.MESSAGES_COUNTER_UPDATE: ['count'],
-    VkEventType.NOTIFICATION_SETTINGS_UPDATE: [
-        'peer_id', 'sound', 'disabled_until'
-    ]
+    VkEventType.NOTIFICATION_SETTINGS_UPDATE: ['values']
 }
 
 
@@ -350,7 +351,14 @@ class Event(object):
 
         if self.type is VkEventType.CHAT_UPDATE:
             self._parse_chat_info()
-            self.type = VkChatEventType(self.type_id)
+            try:
+                self.update_type = VkChatEventType(self.type_id)
+            except ValueError:
+                self.update_type = self.type_id
+
+        elif self.type is VkEventType.NOTIFICATION_SETTINGS_UPDATE:
+            self._dict_to_attr(self.values)
+            self._parse_peer_id()
 
         elif self.type is VkEventType.PEER_FLAGS_REPLACE:
             self._parse_peer_flags()
@@ -372,6 +380,10 @@ class Event(object):
 
         for i in range(min(len(raw), len(attrs))):
             self.__setattr__(attrs[i], raw[i])
+
+    def _dict_to_attr(self, values):
+        for k, v in six.iteritems(values):
+            self.__setattr__(k, v)
 
     def _parse_peer_id(self):
 
