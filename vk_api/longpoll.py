@@ -588,8 +588,5 @@ class VkLongPoll(object):
         """
 
         while True:
-            try:
-                for event in self.check():
-                    yield event
-            except KeyboardInterrupt:
-                break
+            for event in self.check():
+                yield event
