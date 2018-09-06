@@ -251,6 +251,9 @@ class VkChatEventType(IntEnum):
     #: С пользователя сняты права администратора
     ADMIN_REMOVED = 9
 
+    #: Бот прислал клавиатуру
+    KEYBOARD_RECEIVED = 11
+
 
 MESSAGE_EXTRA_FIELDS = [
     'peer_id', 'timestamp', 'subject', 'text', 'attachments', 'random_id'
