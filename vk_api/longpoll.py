@@ -324,7 +324,6 @@ class Event(object):
 
     def __init__(self, raw):
         self.raw = raw
-        print(self.raw)
 
         self.from_user = False
         self.from_chat = False
