@@ -85,7 +85,7 @@ class VkApi(object):
     def __init__(self, login=None, password=None, token=None,
                  auth_handler=None, captcha_handler=None,
                  config=jconfig.Config, config_filename='vk_config.v2.json',
-                 api_version='5.84', app_id=6222115, scope=DEFAULT_USER_SCOPE,
+                 api_version='5.85', app_id=6222115, scope=DEFAULT_USER_SCOPE,
                  client_secret=None):
 
         self.login = login
