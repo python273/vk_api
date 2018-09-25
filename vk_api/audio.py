@@ -208,7 +208,11 @@ def scrap_data(html, user_id):
 
     soup = BeautifulSoup(html, 'html.parser')
     tracks = []
-
+    
+    audio_showcase = re.compile('^AudioShowcase', flags=re.UNICODE)
+    for suggested in soup.find_all('div', {'class': audio_showcase}):
+        suggested.decompose()
+        
     for audio in soup.find_all('div', {'class': 'audio_item'}):
         if 'audio_item_disabled' in audio['class']:
             continue
@@ -249,7 +253,10 @@ def scrap_albums(html):
         full_id = tuple(int(i) for i in RE_ALBUM_ID.search(link).groups())
 
         stats_text = album.select_one('.audioPlaylistsPage__stats').text
-        plays = int(stats_text.split(maxsplit=1)[0])
+        try:
+            plays = int(stats_text.split(maxsplit=1)[0])
+        except Exception:
+            plays = 0
 
         albums.append({
             'id': full_id[1],
