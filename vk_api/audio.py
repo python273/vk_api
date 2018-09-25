@@ -208,7 +208,8 @@ def scrap_data(html, user_id):
 
     soup = BeautifulSoup(html, 'html.parser')
     tracks = []
-    for suggested in soup.find_all('div', {'class': lambda value: value and value.startswith("AudioShowcase")}):
+    audio_showcase = re.compile('^AudioShowcase', flags=re.UNICODE)
+    for suggested in soup.find_all('div', {'class': audio_showcase}):
         suggested.decompose()
     for audio in soup.find_all('div', {'class': 'audio_item'}):
         if 'audio_item_disabled' in audio['class']:
