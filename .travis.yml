@@ -1,0 +1,12 @@
+language: python
+python:
+- '3.6'
+script: echo "todo"
+deploy:
+  provider: pypi
+  user: python273_travisci
+  password:
+    secure: uWFjTKDz2OmQ/RECX/vm8/T8u14LEgU0n0d6E7m8zAtqBBj+Fy7r5zEg/eCYaclZ6Z5h+vBi05xQCqX/Gqlo++1v8PVdk+JKdDTqIpV1NCNZvXvT3LAul/ImqOVW54oVpr3tBwNOKBB1O3wJhQOM1kAaSJNFw6ohrp2sllzG4SS0gcRnHQvP6Il+A5XddPmbBBkWkP7ZaDvhaiSEzO3+zR8zvEcKjVvYjcR+uz/6TR3co2FH12NxLtGyVyceD4od0M+xdYdNCgI65gkQzgpmFZgkCJOvlfPh9A6DeiK3pRa0xKsptX0jMsWpe/1yoaKW8/oEgwaqc5XlpXBHYcq594bGmvIinomkNfdyXZ0ZuqOnYg9ba6UB/sXJyF3w313Ew2I1s1c2CuWOjoLQ9ldNoaYcdN3a/BqglMTHwCLgh89J4eBKHKa39aQi3t0SGndPKjNLUf6hlZFx1tp2P6MtbPASCv0eFrRe8wVxofvUVXxmtV+wvi8J6yx3qlCBTpM4cdIdPx7jg6paTVR3xtGTfH5cScv/Zfq2HSRJg8kEZgZmme/Y8qep7AO0rclJtWAkwcNfPP8519CdjZsgMptWKbkY79r9fqrsqzfLu7Co8tc8j+mNYFfZTotAesNFChDNY+hkvq/GpG3dZ5WNrU+EGgpOPZG0h0yvYZTJwq27zbw=
+  on:
+    tags: true
+    branch: master

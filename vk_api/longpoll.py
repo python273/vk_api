@@ -233,6 +233,9 @@ class VkChatEventType(IntEnum):
     #: Назначен новый администратор
     ADMIN_ADDED = 3
 
+    #: Изменены настройки беседы
+    SETTINGS_CHANGED = 4
+
     #: Закреплено сообщение
     MESSAGE_PINNED = 5
 
@@ -248,9 +251,12 @@ class VkChatEventType(IntEnum):
     #: С пользователя сняты права администратора
     ADMIN_REMOVED = 9
 
+    #: Бот прислал клавиатуру
+    KEYBOARD_RECEIVED = 11
+
 
 MESSAGE_EXTRA_FIELDS = [
-    'peer_id', 'timestamp', 'subject', 'text', 'attachments', 'random_id'
+    'peer_id', 'timestamp', 'text', 'extra_values', 'attachments', 'random_id'
 ]
 MSGID = 'message_id'
 
@@ -265,7 +271,7 @@ EVENT_ATTRS_MAPPING = {
     VkEventType.READ_ALL_OUTGOING_MESSAGES: ['peer_id', 'local_id'],
 
     VkEventType.USER_ONLINE: ['user_id', 'extra', 'timestamp'],
-    VkEventType.USER_OFFLINE: ['user_id', 'extra', 'timestamp'],
+    VkEventType.USER_OFFLINE: ['user_id', 'flags', 'timestamp'],
 
     VkEventType.PEER_FLAGS_RESET: ['peer_id', 'mask'],
     VkEventType.PEER_FLAGS_REPLACE: ['peer_id', 'flags'],
@@ -283,9 +289,7 @@ EVENT_ATTRS_MAPPING = {
     VkEventType.USER_CALL: ['user_id', 'call_id'],
 
     VkEventType.MESSAGES_COUNTER_UPDATE: ['count'],
-    VkEventType.NOTIFICATION_SETTINGS_UPDATE: [
-        'peer_id', 'sound', 'disabled_until'
-    ]
+    VkEventType.NOTIFICATION_SETTINGS_UPDATE: ['values']
 }
 
 
@@ -335,10 +339,11 @@ class Event(object):
         self.peer_id = None
         self.flags = None
         self.extra = None
+        self.extra_values = None
 
         try:
-            self.type = VkEventType(raw[0])
-            self._list_to_attr(raw[1:], EVENT_ATTRS_MAPPING[self.type])
+            self.type = VkEventType(self.raw[0])
+            self._list_to_attr(self.raw[1:], EVENT_ATTRS_MAPPING[self.type])
         except ValueError:
             pass
 
@@ -350,7 +355,14 @@ class Event(object):
 
         if self.type is VkEventType.CHAT_UPDATE:
             self._parse_chat_info()
-            self.type = VkChatEventType(self.type_id)
+            try:
+                self.update_type = VkChatEventType(self.type_id)
+            except ValueError:
+                self.update_type = self.type_id
+
+        elif self.type is VkEventType.NOTIFICATION_SETTINGS_UPDATE:
+            self._dict_to_attr(self.values)
+            self._parse_peer_id()
 
         elif self.type is VkEventType.PEER_FLAGS_REPLACE:
             self._parse_peer_flags()
@@ -368,13 +380,18 @@ class Event(object):
         if self.timestamp:
             self.datetime = datetime.utcfromtimestamp(self.timestamp)
 
-    def _list_to_attr(self, raw, attrs):
+        if self.extra_values:
+            self._dict_to_attr(self.extra_values)
 
+    def _list_to_attr(self, raw, attrs):
         for i in range(min(len(raw), len(attrs))):
             self.__setattr__(attrs[i], raw[i])
 
-    def _parse_peer_id(self):
+    def _dict_to_attr(self, values):
+        for k, v in six.iteritems(values):
+            self.__setattr__(k, v)
 
+    def _parse_peer_id(self):
         if self.peer_id < 0:  # Сообщение от/для группы
             self.from_group = True
             self.group_id = abs(self.peer_id)
@@ -401,7 +418,6 @@ class Event(object):
         )
 
     def _parse_message(self):
-
         if self.flags & VkMessageFlag.OUTBOX:
             self.from_me = True
         else:
@@ -421,7 +437,6 @@ class Event(object):
             pass
 
     def _parse_chat_info(self):
-
         if self.type_id == VkChatEventType.ADMIN_ADDED.value:
             self.info = {'admin_id': self.info}
 
@@ -509,7 +524,7 @@ class VkLongPoll(object):
             'ts': self.ts,
             'wait': self.wait,
             'mode': self.mode,
-            'version': 1
+            'version': 3
         }
 
         response = self.session.get(

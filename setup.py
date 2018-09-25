@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from io import open
 from setuptools import setup
 
 """
@@ -10,9 +11,9 @@ from setuptools import setup
 """
 
 
-version = '11.0.0'
+version = '11.1.0'
 
-with open('README.md') as f:
+with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
 
 setup(

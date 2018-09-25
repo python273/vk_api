@@ -8,6 +8,7 @@
 * [Обработка двухфакторной аутентификации](./two_factor_auth.py)
 * [Обработка капчи](./captcha_handle.py)
 * [Работа с пользовательским Long Poll (VkLongpoll)](./longpoll.py)
+* [Работа с Bots Long Poll (VkBotLongpoll)](./bot_longpoll.py)
 * [Работа с оберткой над execute (VkFunction)](./execute_functions.py)
 * [Получение альбомов музыки (VkAudio)](./get_album_audio.py)
 * [Получение аудиозаписей (VkAudio)](./get_all_audio.py)
