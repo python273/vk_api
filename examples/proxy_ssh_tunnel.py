@@ -13,7 +13,7 @@ server = SSHTunnelForwarder(
     ssh_proxy_enabled=True
 )
 server.start()
-proxies = dict(http=f'socks5://mediatube@127.0.0.1:{server.local_bind_port}',
-               https=f'socks5://mediatube@127.0.0.1:{server.local_bind_port}')
+proxies = dict(http=f'socks5://proxyuser@127.0.0.1:{server.local_bind_port}',
+               https=f'socks5://proxyuser@127.0.0.1:{server.local_bind_port}')
 vk_session = VkApi(login=access_login, password=access_password, token=access_token, proxies=proxies)
 server.stop()
