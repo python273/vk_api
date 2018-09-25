@@ -472,8 +472,10 @@ class VkApi(object):
         values = {
             'client_id': self.app_id,
             'client_secret': self.client_secret,
-            'v': self.api_version,
-            'grant_type': 'client_credentials'
+            'scope': self.scope,
+            'password': self.password,
+            'username': self.login,
+            'grant_type': 'password'
         }
 
         response = self.http.post(
