@@ -340,12 +340,16 @@ class Event(object):
         self.flags = None
         self.extra = None
         self.extra_values = None
+        self.type_id = None
 
         try:
             self.type = VkEventType(self.raw[0])
             self._list_to_attr(self.raw[1:], EVENT_ATTRS_MAPPING[self.type])
         except ValueError:
             pass
+
+        if self.extra_values:
+            self._dict_to_attr(self.extra_values)
 
         if self.type in PARSE_PEER_ID_EVENTS:
             self._parse_peer_id()
@@ -380,9 +384,6 @@ class Event(object):
         if self.timestamp:
             self.datetime = datetime.utcfromtimestamp(self.timestamp)
 
-        if self.extra_values:
-            self._dict_to_attr(self.extra_values)
-
     def _list_to_attr(self, raw, attrs):
         for i in range(min(len(raw), len(attrs))):
             self.__setattr__(attrs[i], raw[i])
@@ -400,8 +401,8 @@ class Event(object):
             self.from_chat = True
             self.chat_id = self.peer_id - CHAT_START_ID
 
-            if 'from' in self.attachments:
-                self.user_id = int(self.attachments['from'])
+            if self.extra_values and 'from' in self.extra_values:
+                self.user_id = int(self.extra_values['from'])
 
         else:  # Сообщение от/для пользователя
             self.from_user = True
