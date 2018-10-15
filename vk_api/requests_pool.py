@@ -89,7 +89,7 @@ class VkRequestsPool(object):
         self.execute()
 
     def method(self, method, values=None):
-        """ Добавляет запрос в пул. Невозможно использовать вместе с :func:`method_one_param`.
+        """ Добавляет запрос в пул.
             Возвращаемое значение будет содержать результат после закрытия пула.
 
         :param method: метод
@@ -184,8 +184,8 @@ def vk_many_methods(vk_session, pool):
 def vk_request_one_param_pool(vk_session, method, key, values,
                               default_values=None):
     """ Использовать, если изменяется значение только одного параметра.
-        Невозможно использовать вместе с :func:`method`.
-        Возвращаемое значение будет содержать результат после закрытия пула.
+        Возвращаемое значение содержит tuple из dict с результатами и
+        dict с ошибками при выполнении
 
     :param vk_session: объект VkApi
     :type vk_session: vk_api.VkAPi

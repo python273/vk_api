@@ -11,7 +11,7 @@ from setuptools import setup
 """
 
 
-version = '11.1.0'
+version = '11.2.1'
 
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
@@ -54,6 +54,7 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Programming Language :: Python :: Implementation :: CPython',
     ]

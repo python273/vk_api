@@ -161,10 +161,13 @@ class VkAudio(object):
                 )
             )
 
-        return [
-            i for i in scrap_data(response.text, self.user_id)
-            if i['owner_id'] == owner_id
-        ]
+        tracks = scrap_data(
+            response.text,
+            self.user_id,
+            filter_root_el={'class_': 'AudioSerp__foundOwned'}
+        )
+
+        return [track for track in tracks if track['owner_id'] == owner_id]
 
     def search(self, q, count=50):
         """ Искать аудиозаписи
@@ -203,8 +206,11 @@ class VkAudio(object):
             offset += 50
 
 
-def scrap_data(html, user_id):
+def scrap_data(html, user_id, filter_root_el=None):
     """ Парсинг списка аудиозаписей из html страницы """
+
+    if filter_root_el is None:
+        filter_root_el = {'id': 'au_search_items'}
 
     soup = BeautifulSoup(html, 'html.parser')
     tracks = []
@@ -251,10 +257,9 @@ def scrap_albums(html):
         full_id = tuple(int(i) for i in RE_ALBUM_ID.search(link).groups())
 
         stats_text = album.select_one('.audioPlaylistsPage__stats').text
-        try:
-            plays = int(stats_text.split(maxsplit=1)[0])
-        except Exception:
-            plays = 0
+
+        # "1 011 прослушиваний"
+        plays = int(stats_text.rsplit(' ', 1)[0].replace(' ', ''))
 
         albums.append({
             'id': full_id[1],
