@@ -346,7 +346,7 @@ class Event(object):
             self.type = VkEventType(self.raw[0])
             self._list_to_attr(self.raw[1:], EVENT_ATTRS_MAPPING[self.type])
         except ValueError:
-            pass
+            self.type = self.raw[0]
 
         if self.extra_values:
             self._dict_to_attr(self.extra_values)
