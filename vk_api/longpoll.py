@@ -385,6 +385,10 @@ class Event(object):
             self.user_id = abs(self.user_id)
             self._parse_online_status()
 
+        elif self.type is VkEventType.USER_RECORDING_VOICE:
+            if isinstance(self.user_id, list):
+                self.user_id = self.user_id[0]
+
         if self.timestamp:
             self.datetime = datetime.utcfromtimestamp(self.timestamp)
 
