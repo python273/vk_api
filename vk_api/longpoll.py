@@ -122,6 +122,9 @@ class VkEventType(IntEnum):
     #: Пользователь $user_id набирает текст в беседе $chat_id.
     USER_TYPING_IN_CHAT = 62
 
+    #: Пользователь $user_id записывает голосовое сообщение в диалоге/беседе $peer_id
+    USER_RECORDING_VOICE = 64
+
     #: Пользователь $user_id совершил звонок с идентификатором $call_id.
     USER_CALL = 70
 
@@ -285,6 +288,7 @@ EVENT_ATTRS_MAPPING = {
 
     VkEventType.USER_TYPING: ['user_id', 'flags'],
     VkEventType.USER_TYPING_IN_CHAT: ['user_id', 'chat_id'],
+    VkEventType.USER_RECORDING_VOICE: ['peer_id', 'user_id', 'flags', 'timestamp'],
 
     VkEventType.USER_CALL: ['user_id', 'call_id'],
 
