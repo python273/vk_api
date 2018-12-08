@@ -266,8 +266,8 @@ def scrap_albums(html):
 
         stats_text = album.select_one('.audioPlaylistsPage__stats').text
 
-        # "1 011 прослушиваний" / -1 если отсутствуют кол. прослушиваний
-        plays = -1 if '·' in stats_text else int(stats_text.rsplit(' ', 1)[0].replace(' ', ''))
+        # "1 011 прослушиваний" / None если отсутствуют кол. прослушиваний
+        plays = None if '·' in stats_text else int(stats_text.rsplit(' ', 1)[0].replace(' ', ''))
 
         albums.append({
             'id': full_id[1],
