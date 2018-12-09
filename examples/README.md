@@ -6,6 +6,7 @@
 * [Отправка запросов к API (VkApi)](./simple_example.py)
 * [Загрузка фото (VKUpload)](./upload_photo.py)
 * [Обработка двухфакторной аутентификации](./two_factor_auth.py)
+* [Получение access_token из сode после OAuth авторизации](./auth_by_code.py)
 * [Обработка капчи](./captcha_handle.py)
 * [Работа с пользовательским Long Poll (VkLongpoll)](./longpoll.py)
 * [Работа с Bots Long Poll (VkBotLongpoll)](./bot_longpoll.py)
