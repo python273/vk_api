@@ -472,6 +472,26 @@ class VkApi(object):
         else:
             self.token = response
 
+    def code_auth(self, code, redirect_url):
+        """ Получение access_token из code """
+        values = {
+            'client_id': self.app_id,
+            'client_secret': self.client_secret,
+            'v': self.api_version,
+            'redirect_uri': redirect_url,
+            'code': code,
+        }
+
+        response = self.http.post(
+            'https://oauth.vk.com/access_token', values
+        ).json()
+
+        if 'error' in response:
+            raise AuthError(response['error_description'])
+        else:
+            self.token = response
+        return response
+
     def _check_token(self):
         """ Проверка access_token юзера на валидность """
 
