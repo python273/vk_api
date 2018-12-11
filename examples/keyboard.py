@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import vk_api
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
+from vk_api.utils import get_random_id
 
 
 def main():
@@ -22,8 +23,9 @@ def main():
 
     vk.messages.send(
         peer_id=123456,
-        message='Пример клавиатуры',
-        keyboard=keyboard.get_keyboard()
+        random_id=get_random_id(),
+        keyboard=keyboard.get_keyboard(),
+        message='Пример клавиатуры'
     )
 
 

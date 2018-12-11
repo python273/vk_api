@@ -9,6 +9,7 @@
 from __future__ import print_function
 
 import six
+import time
 
 try:
     import simplejson as json
@@ -33,6 +34,10 @@ def search_re(reg, string):
 def clear_string(s):
     if s:
         return s.strip().replace('&nbsp;', '')
+
+
+def get_random_id():
+    return int(time.time() * 10000000)
 
 
 def code_from_number(prefix, postfix, number):
