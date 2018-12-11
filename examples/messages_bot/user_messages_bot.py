@@ -5,6 +5,7 @@ import requests
 import vk_api
 from vk_api import VkUpload
 from vk_api.longpoll import VkLongPoll, VkEventType
+from vk_api.utils import get_random_id
 
 
 def main():
@@ -51,6 +52,7 @@ def main():
             if not text:
                 vk.messages.send(
                     user_id=event.user_id,
+                    random_id=get_random_id(),
                     message='No results'
                 )
                 print('no results')
@@ -69,6 +71,7 @@ def main():
             vk.messages.send(
                 user_id=event.user_id,
                 attachment=','.join(attachments),
+                random_id=get_random_id(),
                 message=text
             )
             print('ok')
