@@ -642,11 +642,9 @@ class VkApiMethod(object):
             (self._method + '.' if self._method else '') + method
         )
 
-    def __call__(self, values_=None, **kwargs):
-        if values_:
-            kwargs = values_
-
-        for k, v in kwargs.items():
+    def __call__(self, **kwargs):
+        for k, v in six.iteritems(kwargs):
             if isinstance(v, (list, tuple)):
                 kwargs[k] = ','.join(str(x) for x in v)
+
         return self._vk.method(self._method, kwargs)
