@@ -663,4 +663,8 @@ class VkApiMethod(object):
         )
 
     def __call__(self, **kwargs):
+        for k, v in six.iteritems(kwargs):
+            if isinstance(v, (list, tuple)):
+                kwargs[k] = ','.join(str(x) for x in v)
+
         return self._vk.method(self._method, kwargs)
