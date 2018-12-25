@@ -6,6 +6,9 @@
 :copyright: (c) 2018 python273
 """
 
+from .vk_api import VkApi, VkApiMethod
+
+
 STORY_ALLOWED_LINK_TEXTS = {
     'to_store', 'vote', 'more', 'book', 'order',
     'enroll', 'fill', 'signup', 'buy', 'ticket',
@@ -17,13 +20,22 @@ STORY_ALLOWED_LINK_TEXTS = {
 class VkUpload(object):
     """ Загрузка файлов через API (https://vk.com/dev/upload_files)
 
-    :param vk: объект :class:`VkApi`
+    :param vk: объект :class:`VkApi` или :class:`VkApiMethod`
     """
 
     __slots__ = ('vk',)
 
     def __init__(self, vk):
-        self.vk = vk
+
+        if not isinstance(vk, (VkApi, VkApiMethod)):
+            raise TypeError(
+                'The arg should be VkApi or VkApiMethod instance'
+            )
+
+        if isinstance(vk, VkApiMethod):
+            self.vk = vk._vk
+        else:
+            self.vk = vk
 
     def photo(self, photos, album_id,
               latitude=None, longitude=None, caption=None, description=None,
