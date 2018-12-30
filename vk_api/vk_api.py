@@ -12,6 +12,7 @@ import re
 import threading
 import time
 
+import six
 import requests
 
 import jconfig

@@ -392,6 +392,11 @@ class Event(object):
         if self.timestamp:
             self.datetime = datetime.utcfromtimestamp(self.timestamp)
 
+    def __setattr__(self, name, value):
+        if name == 'from': # Избегаем недосягаемых параметров
+            name = 'from_id'
+        object.__setattr__(self, name, value)
+
     def _list_to_attr(self, raw, attrs):
         for i in range(min(len(raw), len(attrs))):
             self.__setattr__(attrs[i], raw[i])
