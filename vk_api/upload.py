@@ -33,9 +33,9 @@ class VkUpload(object):
             )
 
         if isinstance(vk, VkApiMethod):
-            self.vk = vk._vk
-        else:
             self.vk = vk
+        else:
+            self.vk = vk.get_api()
 
     def photo(self, photos, album_id,
               latitude=None, longitude=None, caption=None, description=None,
@@ -60,10 +60,10 @@ class VkUpload(object):
         if group_id:
             values['group_id'] = group_id
 
-        url = self.vk.method('photos.getUploadServer', values)['upload_url']
+        url = self.vk.photos.getUploadServer(**values)['upload_url']
 
         with FilesOpener(photos) as photo_files:
-            response = self.vk.http.post(url, files=photo_files).json()
+            response = self.vk._vk.http.post(url, files=photo_files).json()
 
         if 'album_id' not in response:
             response['album_id'] = response['aid']
@@ -77,7 +77,7 @@ class VkUpload(object):
 
         values.update(response)
 
-        return self.vk.method('photos.save', values)
+        return self.vk.photos.save(**values)
 
     def photo_messages(self, photos):
         """ Загрузка изображений в сообщения
@@ -86,12 +86,12 @@ class VkUpload(object):
         :type photos: str or list
         """
 
-        url = self.vk.method('photos.getMessagesUploadServer')['upload_url']
+        url = self.vk.photos.getMessagesUploadServer()['upload_url']
 
         with FilesOpener(photos) as photo_files:
-            response = self.vk.http.post(url, files=photo_files)
+            response = self.vk._vk.http.post(url, files=photo_files)
 
-        return self.vk.method('photos.saveMessagesPhoto', response.json())
+        return self.vk.photos.saveMessagesPhoto(**response.json())
 
     def photo_profile(self, photo, owner_id=None, crop_x=None, crop_y=None,
                       crop_width=None):
@@ -120,17 +120,17 @@ class VkUpload(object):
                 crop_x, crop_y, crop_width
             )
 
-        response = self.vk.method('photos.getOwnerPhotoUploadServer', values)
+        response = self.vk.photos.getOwnerPhotoUploadServer(**values)
         url = response['upload_url']
 
         with FilesOpener(photo, key_format='file') as photo_files:
-            response = self.vk.http.post(
+            response = self.vk._vk.http.post(
                 url,
                 data=crop_params,
                 files=photo_files
             )
 
-        return self.vk.method('photos.saveOwnerPhoto', response.json())
+        return self.vk.photos.saveOwnerPhoto(**response.json())
 
     def photo_chat(self, photo, chat_id):
         """ Загрузка и смена обложки в беседе
@@ -140,14 +140,14 @@ class VkUpload(object):
         """
 
         values = {'chat_id': chat_id}
-        url = self.vk.method('photos.getChatUploadServer', values)['upload_url']
+        url = self.vk.photos.getChatUploadServer(**values)['upload_url']
 
         with FilesOpener(photo, key_format='file') as photo_file:
-            response = self.vk.http.post(url, files=photo_file)
+            response = self.vk._vk.http.post(url, files=photo_file)
 
-        return self.vk.method('messages.setChatPhoto', {
-            'file': response.json()['response']
-        })
+        return self.vk.messages.setChatPhoto(
+            file=response.json()['response']
+        )
 
     def photo_wall(self, photos, user_id=None, group_id=None):
         """ Загрузка изображений на стену пользователя или в группу
@@ -166,15 +166,15 @@ class VkUpload(object):
         elif group_id:
             values['group_id'] = group_id
 
-        response = self.vk.method('photos.getWallUploadServer', values)
+        response = self.vk.photos.getWallUploadServer(**values)
         url = response['upload_url']
 
         with FilesOpener(photos) as photos_files:
-            response = self.vk.http.post(url, files=photos_files)
+            response = self.vk._vk.http.post(url, files=photos_files)
 
         values.update(response.json())
 
-        return self.vk.method('photos.saveWallPhoto', values)
+        return self.vk.photos.saveWallPhoto(**values)
 
     def audio(self, audio, artist, title):
         """ Загрузка аудио
@@ -184,17 +184,17 @@ class VkUpload(object):
         :param title: название
         """
 
-        url = self.vk.method('audio.getUploadServer')['upload_url']
+        url = self.vk.audio.getUploadServer()['upload_url']
 
         with FilesOpener(audio, key_format='file') as f:
-            response = self.vk.http.post(url, files=f).json()
+            response = self.vk._vk.http.post(url, files=f).json()
 
         response.update({
             'artist': artist,
             'title': title
         })
 
-        return self.vk.method('audio.save', response)
+        return self.vk.audio.save(**response)
 
     def video(self, video_file=None, link=None, name=None, description=None,
               is_private=None, wallpost=None, group_id=None,
@@ -269,11 +269,11 @@ class VkUpload(object):
             'repeat': repeat
         }
 
-        response = self.vk.method('video.save', values)
+        response = self.vk.video.save(**values)
         url = response['upload_url']
 
         with FilesOpener(video_file or [], 'video_file') as f:
-            return self.vk.http.post(
+            return self.vk._vk.http.post(
                 url,
                 files=f or None
             ).json()
@@ -295,23 +295,23 @@ class VkUpload(object):
         }
 
         if to_wall:
-            method = 'docs.getWallUploadServer'
+            method = self.vk.docs.getWallUploadServer
         elif message_peer_id:
-            method = 'docs.getMessagesUploadServer'
+            method = self.vk.docs.getMessagesUploadServer
         else:
-            method = 'docs.getUploadServer'
+            method = self.vk.docs.getUploadServer
 
-        url = self.vk.method(method, values)['upload_url']
+        url = method(**values)['upload_url']
 
         with FilesOpener(doc, 'file') as files:
-            response = self.vk.http.post(url, files=files).json()
+            response = self.vk._vk.http.post(url, files=files).json()
 
         response.update({
             'title': title,
             'tags': tags
         })
 
-        return self.vk.method('docs.save', response)
+        return self.vk.docs.save(**response)
 
     def document_wall(self, doc, title=None, tags=None, group_id=None):
         """ Загрузка документа в папку Отправленные,
@@ -392,16 +392,13 @@ class VkUpload(object):
             'crop_y2': crop_y2
         }
 
-        url = self.vk.method(
-            'photos.getOwnerCoverPhotoUploadServer', values
-        )['upload_url']
+        url = self.vk.photos.getOwnerCoverPhotoUploadServer(**values)['upload_url']
 
         with FilesOpener(photo, key_format='file') as photo_files:
-            response = self.vk.http.post(url, files=photo_files)
+            response = self.vk._vk.http.post(url, files=photo_files)
 
-        return self.vk.method(
-            'photos.saveOwnerCoverPhoto',
-            response.json()
+        return self.vk.photos.saveOwnerCoverPhoto(
+            **response.json()
         )
 
     def story(self, file, file_type, add_to_news=True, user_ids=None,
@@ -426,9 +423,9 @@ class VkUpload(object):
             user_ids = []
 
         if file_type == 'photo':
-            method = 'stories.getPhotoUploadServer'
+            method = self.vk.stories.getPhotoUploadServer
         elif file_type == 'video':
-            method = 'stories.getVideoUploadServer'
+            method = self.vk.stories.getVideoUploadServer
         else:
             raise ValueError('type should be either photo or video')
 
@@ -465,10 +462,10 @@ class VkUpload(object):
             'group_id': group_id
         }
 
-        url = self.vk.method(method, values)['upload_url']
+        url = method(**values)['upload_url']
 
         with FilesOpener(file, key_format='file') as files:
-            return self.vk.http.post(url, files=files)
+            return self.vk._vk.http.post(url, files=files)
 
 
 class FilesOpener(object):
