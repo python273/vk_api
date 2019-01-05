@@ -13,6 +13,7 @@ import threading
 import time
 
 import requests
+import six
 
 import jconfig
 from .enums import VkUserPermissions

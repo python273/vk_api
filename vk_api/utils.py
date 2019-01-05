@@ -8,8 +8,9 @@
 
 from __future__ import print_function
 
+import random
+
 import six
-import time
 
 try:
     import simplejson as json
@@ -37,7 +38,8 @@ def clear_string(s):
 
 
 def get_random_id():
-    return int(time.time() * 10000000)
+    """ Get random int32 number (signed) """
+    return random.getrandbits(31) * random.choice([-1, 1])
 
 
 def code_from_number(prefix, postfix, number):

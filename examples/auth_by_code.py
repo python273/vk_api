@@ -3,7 +3,8 @@ from vk_api import vk_api
 
 
 def main():
-    """ Пример получения access_token из сode после OAuth авторизации на сайте """
+    """ Пример получения access_token из сode после OAuth авторизации на сайте
+    """
 
     code = '18dczc1337a63427fa'
     redirect_url = 'http://example.com'
