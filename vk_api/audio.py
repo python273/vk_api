@@ -211,14 +211,13 @@ class VkAudio(object):
                 yield track
 
             offset += 50
-            
-    
+
     def get_audio_by_id(self, owner_id, audio_id):
         response = self._vk.http.get(
             'https://m.vk.com/audio{}_{}'.format(owner_id, audio_id),
             allow_redirects=False
         )
-        bs = BeautifulSoup(response.text, features='lxml')
+        bs = BeautifulSoup(response.text, 'html.parser')
         link = bs.select_one('.ai_body input[type=hidden]').attrs['value']
         return decode_audio_url(link, self.user_id)
 
