@@ -37,6 +37,10 @@ class VkUpload(object):
         else:
             self.vk = vk.get_api()
 
+    @property
+    def http(self):
+        return self.vk._vk.http
+
     def photo(self, photos, album_id,
               latitude=None, longitude=None, caption=None, description=None,
               group_id=None):
@@ -63,7 +67,7 @@ class VkUpload(object):
         url = self.vk.photos.getUploadServer(**values)['upload_url']
 
         with FilesOpener(photos) as photo_files:
-            response = self.vk._vk.http.post(url, files=photo_files).json()
+            response = self.http.post(url, files=photo_files).json()
 
         if 'album_id' not in response:
             response['album_id'] = response['aid']
@@ -89,7 +93,7 @@ class VkUpload(object):
         url = self.vk.photos.getMessagesUploadServer()['upload_url']
 
         with FilesOpener(photos) as photo_files:
-            response = self.vk._vk.http.post(url, files=photo_files)
+            response = self.http.post(url, files=photo_files)
 
         return self.vk.photos.saveMessagesPhoto(**response.json())
 
@@ -124,7 +128,7 @@ class VkUpload(object):
         url = response['upload_url']
 
         with FilesOpener(photo, key_format='file') as photo_files:
-            response = self.vk._vk.http.post(
+            response = self.http.post(
                 url,
                 data=crop_params,
                 files=photo_files
@@ -143,7 +147,7 @@ class VkUpload(object):
         url = self.vk.photos.getChatUploadServer(**values)['upload_url']
 
         with FilesOpener(photo, key_format='file') as photo_file:
-            response = self.vk._vk.http.post(url, files=photo_file)
+            response = self.http.post(url, files=photo_file)
 
         return self.vk.messages.setChatPhoto(
             file=response.json()['response']
@@ -170,7 +174,7 @@ class VkUpload(object):
         url = response['upload_url']
 
         with FilesOpener(photos) as photos_files:
-            response = self.vk._vk.http.post(url, files=photos_files)
+            response = self.http.post(url, files=photos_files)
 
         values.update(response.json())
 
@@ -187,7 +191,7 @@ class VkUpload(object):
         url = self.vk.audio.getUploadServer()['upload_url']
 
         with FilesOpener(audio, key_format='file') as f:
-            response = self.vk._vk.http.post(url, files=f).json()
+            response = self.http.post(url, files=f).json()
 
         response.update({
             'artist': artist,
@@ -273,7 +277,7 @@ class VkUpload(object):
         url = response['upload_url']
 
         with FilesOpener(video_file or [], 'video_file') as f:
-            return self.vk._vk.http.post(
+            return self.http.post(
                 url,
                 files=f or None
             ).json()
@@ -304,7 +308,7 @@ class VkUpload(object):
         url = method(**values)['upload_url']
 
         with FilesOpener(doc, 'file') as files:
-            response = self.vk._vk.http.post(url, files=files).json()
+            response = self.http.post(url, files=files).json()
 
         response.update({
             'title': title,
@@ -395,7 +399,7 @@ class VkUpload(object):
         url = self.vk.photos.getOwnerCoverPhotoUploadServer(**values)['upload_url']
 
         with FilesOpener(photo, key_format='file') as photo_files:
-            response = self.vk._vk.http.post(url, files=photo_files)
+            response = self.http.post(url, files=photo_files)
 
         return self.vk.photos.saveOwnerCoverPhoto(
             **response.json()
@@ -465,7 +469,7 @@ class VkUpload(object):
         url = method(**values)['upload_url']
 
         with FilesOpener(file, key_format='file') as files:
-            return self.vk._vk.http.post(url, files=files)
+            return self.http.post(url, files=files)
 
 
 class FilesOpener(object):
