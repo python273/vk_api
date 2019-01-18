@@ -11,7 +11,7 @@ from .requests_pool import VkRequestsPool, vk_request_one_param_pool
 from .tools import VkTools
 from .upload import VkUpload
 from .vk_api import VkApi
-
+from .streaming import VkStreaming
 
 __author__ = 'python273'
 __version__ = '11.3.0'
