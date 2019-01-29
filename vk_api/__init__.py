@@ -3,7 +3,7 @@
 :authors: python273
 :license: Apache License, Version 2.0, see LICENSE file
 
-:copyright: (c) 2018 python273
+:copyright: (c) 2019 python273
 """
 from .enums import *
 from .exceptions import *
@@ -14,5 +14,5 @@ from .vk_api import VkApi
 
 
 __author__ = 'python273'
-__version__ = '11.3.0'
+__version__ = '11.4.0'
 __email__ = 'vk_api@python273.pw'

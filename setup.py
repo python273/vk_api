@@ -7,11 +7,11 @@ from setuptools import setup
 :authors: python273
 :license: Apache License, Version 2.0, see LICENSE file
 
-:copyright: (c) 2018 python273
+:copyright: (c) 2019 python273
 """
 
 
-version = '11.3.0'
+version = '11.4.0'
 
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
