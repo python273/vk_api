@@ -83,16 +83,14 @@ class VkKeyboard(object):
         if isinstance(color, VkKeyboardColor):
             color_value = color_value.value
 
+        action = {'type': 'text', 'label': label}
+
         if payload is not None and not isinstance(payload, six.string_types):
-            payload = sjson_dumps(payload)
+            action['payload'] = sjson_dumps(payload)
 
         current_line.append({
             'color': color_value,
-            'action': {
-                'type': 'text',
-                'payload': payload,
-                'label': label,
-            }
+            'action': action
         })
 
     def add_line(self):
