@@ -96,6 +96,24 @@ class VkUpload(object):
             response = self.http.post(url, files=photo_files)
 
         return self.vk.photos.saveMessagesPhoto(**response.json())
+        
+    def photo_group_widget(self, photo, image_type):
+        """ Загрузка изображений в коллекцию сообщества для виджетов приложений сообществ
+
+        :param photo: путь к изображению или file-like объект
+        :type photo: str
+
+        :param image_type: тип изображиения в зависимости от выбранного виджета
+        (https://vk.com/dev/appWidgets.getGroupImageUploadServer)
+        :type image_type: str
+        """
+
+        url = self.vk.appWidgets.getGroupImageUploadServer(image_type=image_type)['upload_url']
+
+        with FilesOpener(photo, key_format='file') as photo_files:
+            response = self.http.post(url, files=photo_files)
+
+        return self.vk.appWidgets.saveGroupImage(**response.json())
 
     def photo_profile(self, photo, owner_id=None, crop_x=None, crop_y=None,
                       crop_width=None):
