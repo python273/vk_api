@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from six.moves import range
-
 from .exceptions import VkAudioUrlDecodeError
 
 VK_STR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN0PQRSTUVWXYZO123456789+/="
@@ -49,7 +47,7 @@ def decode_audio_url(string, user_id):
         elif cmd == 'i':
             tstr = vk_i(tstr, arg, user_id)
         else:
-            raise VkAudioUrlDecodeError(
+            raise Exception(
                 'Unknown decode cmd: "{}"; Please send bugreport'.format(cmd)
             )
 
@@ -140,4 +138,4 @@ def vk_s(t, e):
 
 
 def vk_i(t, e, user_id):
-    return vk_s(t, int(e) ^ user_id)
+    return vk_s(t, int(e) ^ int(user_id))
