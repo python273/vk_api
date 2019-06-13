@@ -12,14 +12,21 @@ def main():
 
     keyboard = VkKeyboard(one_time=True)
 
-    keyboard.add_button('Белая кнопка', color=VkKeyboardColor.DEFAULT)
-    keyboard.add_button('Зелёная кнопка', color=VkKeyboardColor.POSITIVE)
+    keyboard.add_text_button('Белая кнопка', color=VkKeyboardColor.DEFAULT)
+    keyboard.add_text_button('Зелёная кнопка', color=VkKeyboardColor.POSITIVE)
 
     keyboard.add_line()  # Переход на вторую строку
-    keyboard.add_button('Красная кнопка', color=VkKeyboardColor.NEGATIVE)
-
+    keyboard.add_location_button()
+    
     keyboard.add_line()
-    keyboard.add_button('Синяя кнопка', color=VkKeyboardColor.PRIMARY)
+    keyboard.add_vkpay_button(hash="something hash")
+    
+    keyboard.add_line()
+    keyboard.add_vkapps_button(app_id=1, 
+                               owner_id=5, 
+                               label="Something app",
+                               hash="something hash")
+                               
 
     vk.messages.send(
         peer_id=123456,
