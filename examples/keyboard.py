@@ -12,8 +12,8 @@ def main():
 
     keyboard = VkKeyboard(one_time=True)
 
-    keyboard.add_text_button('Белая кнопка', color=VkKeyboardColor.DEFAULT)
-    keyboard.add_text_button('Зелёная кнопка', color=VkKeyboardColor.POSITIVE)
+    keyboard.add_button('Белая кнопка', color=VkKeyboardColor.DEFAULT)
+    keyboard.add_button('Зелёная кнопка', color=VkKeyboardColor.POSITIVE)
 
     keyboard.add_line()  # Переход на вторую строку
     keyboard.add_location_button()
