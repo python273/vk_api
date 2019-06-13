@@ -74,7 +74,7 @@ class VkKeyboard(object):
         keyboard.keyboard['buttons'] = []
         return keyboard.get_keyboard()
 
-    def add_text_button(self, label, color=VkKeyboardColor.DEFAULT, payload=None):
+    def add_button(self, label, color=VkKeyboardColor.DEFAULT, payload=None):
         """ Добавить кнопку с текстом. Максимальное количество кнопок на строке - 4
 
         :param label: Надпись на кнопке и текст, отправляющийся при её нажатии.
