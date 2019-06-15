@@ -101,7 +101,7 @@ class VkKeyboard(object):
         current_line.append({
             'color': color_value,
             'action': {
-                'type': 'text',
+                'type': VkKeyboardButton.TEXT,
                 'payload': payload,
                 'label': label,
             }
@@ -117,7 +117,7 @@ class VkKeyboard(object):
         current_line = self.lines[-1]
 
         if len(current_line) != 0:
-            raise ValueError('A button of type Location occupies the entire line of the keyboard, besides it on the line of buttons cannot be.')
+            raise ValueError('This type of button takes the entire width of the line')
 
         if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
@@ -141,7 +141,7 @@ class VkKeyboard(object):
         current_line = self.lines[-1]
 
         if len(current_line) != 0:
-            raise ValueError('A button of type VKPay occupies the entire line of the keyboard, besides it on the line of buttons cannot be.')
+            raise ValueError('This type of button takes the entire width of the line')
 
         if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
@@ -172,7 +172,7 @@ class VkKeyboard(object):
         current_line = self.lines[-1]
 
         if len(current_line) != 0:
-            raise ValueError('A button of type VKApps occupies the entire line of the keyboard, besides it on the line of buttons cannot be.')
+            raise ValueError('This type of button takes the entire width of the line')
 
         if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
@@ -196,4 +196,4 @@ class VkKeyboard(object):
         if len(self.lines) >= 10:
             raise ValueError('Max 10 lines')
 
-self.lines.append([])
+        self.lines.append([])
