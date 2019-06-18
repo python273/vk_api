@@ -9,7 +9,7 @@ from enum import Enum
 
 import six
 
-from .utils import sjson_dumps
+
 
 
 class VkKeyboardColor(Enum):
@@ -99,10 +99,12 @@ class VkKeyboard(object):
         if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
 
+        button_type = VkKeyboardButton.TEXT
+
         current_line.append({
             'color': color_value,
             'action': {
-                'type': VkKeyboardButton.TEXT,
+                'type': button_type,
                 'payload': payload,
                 'label': label,
             }
@@ -124,9 +126,11 @@ class VkKeyboard(object):
         if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
 
+        button_type = VkKeyboardButton.LOCATION
+
         current_line.append({
             'action': {
-                'type': VkKeyboardButton.LOCATION,
+                'type': button_type,
                 'payload': payload
             }
         })
@@ -150,9 +154,11 @@ class VkKeyboard(object):
         if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
 
+        button_type = VkKeyboardButton.VKPAY
+
         current_line.append({
             'action': {
-                'type': VkKeyboardButton.VKPAY,
+                'type': button_type,
                 'payload': payload,
                 'hash': hash
             }
@@ -184,9 +190,11 @@ class VkKeyboard(object):
         if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
 
+        button_type = VkKeyboardButton.VKAPPS
+
         current_line.append({
             'action': {
-                'type': VkKeyboardButton.VKAPPS,
+                'type': button_type,
                 'app_id': app_id,
                 'owner_id': owner_id,
                 'label': label,
