@@ -9,6 +9,9 @@ from enum import Enum
 
 import six
 
+from .utils import sjson_dumps
+
+
 
 
 
@@ -99,7 +102,7 @@ class VkKeyboard(object):
         if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
 
-        button_type = VkKeyboardButton.TEXT
+        button_type = VkKeyboardButton.TEXT.value
 
         current_line.append({
             'color': color_value,
@@ -126,7 +129,7 @@ class VkKeyboard(object):
         if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
 
-        button_type = VkKeyboardButton.LOCATION
+        button_type = VkKeyboardButton.LOCATION.value
 
         current_line.append({
             'action': {
@@ -154,7 +157,7 @@ class VkKeyboard(object):
         if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
 
-        button_type = VkKeyboardButton.VKPAY
+        button_type = VkKeyboardButton.VKPAY.value
 
         current_line.append({
             'action': {
@@ -190,7 +193,7 @@ class VkKeyboard(object):
         if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
 
-        button_type = VkKeyboardButton.VKAPPS
+        button_type = VkKeyboardButton.VKAPPS.value
 
         current_line.append({
             'action': {
