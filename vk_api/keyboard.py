@@ -75,7 +75,8 @@ class VkKeyboard(object):
         return keyboard.get_keyboard()
 
     def add_button(self, label, color=VkKeyboardColor.DEFAULT, payload=None):
-        """ Добавить кнопку с текстом. Максимальное количество кнопок на строке - 4
+        """ Добавить кнопку с текстом.
+            Максимальное количество кнопок на строке - 4
 
         :param label: Надпись на кнопке и текст, отправляющийся при её нажатии.
         :type label: str
@@ -108,7 +109,8 @@ class VkKeyboard(object):
         })
 
     def add_location_button(self, payload=None):
-        """ Добавить кнопку с местоположением. Всегда занимает всю ширину линии.
+        """ Добавить кнопку с местоположением.
+            Всегда занимает всю ширину линии.
 
         :param payload: Параметр для callback api
         :type payload: str or list or dict
@@ -130,9 +132,11 @@ class VkKeyboard(object):
         })
 
     def add_vkpay_button(self, hash, payload=None):
-        """ Добавить кнопку с оплатой с помощью VKPay. Всегда занимает всю ширину линии.
+        """ Добавить кнопку с оплатой с помощью VKPay.
+            Всегда занимает всю ширину линии.
 
-        :param hash: Параметры платежа VKPay и ID приложения (в поле aid) разделённые &
+        :param hash: Параметры платежа VKPay и ID приложения
+        (в поле aid) разделённые &
         :type hash: str
         :param payload: Параметр для совместимости со старыми клиентами
         :type payload: str or list or dict
@@ -155,15 +159,18 @@ class VkKeyboard(object):
         })
 
     def add_vkapps_button(self, app_id, owner_id, label, hash, payload=None):
-        """ Добавить кнопку с приложением VK Apps. Всегда занимает всю ширину линии.
+        """ Добавить кнопку с приложением VK Apps.
+            Всегда занимает всю ширину линии.
 
         :param app_id: Идентификатор вызываемого приложения с типом VK Apps
         :type app_id: int
-        :param owner_id: Идентификатор сообщества, в котором установлено приложение, если требуется открыть в контексте сообщества
+        :param owner_id: Идентификатор сообщества, в котором установлено
+        приложение, если требуется открыть в контексте сообщества
         :type owner_id: int
         :param label: Название приложения, указанное на кнопке
         :type label: str
-        :param hash: хэш для навигации в приложении, будет передан в строке параметров запуска после символа #
+        :param hash: хэш для навигации в приложении, будет передан в строке
+        параметров запуска после символа #
         :type hash: str
         :param payload: Параметр для совместимости со старыми клиентами
         :type payload: str or list or dict
