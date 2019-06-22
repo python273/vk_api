@@ -19,13 +19,13 @@ def main():
     keyboard.add_location_button()
     
     keyboard.add_line()
-    keyboard.add_vkpay_button(hash="something hash")
+    keyboard.add_vkpay_button(hash="action=transfer-to-group&group_id=74030368&aid=6222115")
     
     keyboard.add_line()
-    keyboard.add_vkapps_button(app_id=1, 
-                               owner_id=5, 
-                               label="Something app",
-                               hash="something hash")
+    keyboard.add_vkapps_button(app_id=6979558, 
+                               owner_id=-181108510, 
+                               label="Отправить клавиатуру",
+                               hash="sendKeyboard")
                                
 
     vk.messages.send(
