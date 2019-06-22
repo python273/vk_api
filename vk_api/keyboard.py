@@ -124,7 +124,9 @@ class VkKeyboard(object):
         current_line = self.lines[-1]
 
         if len(current_line) != 0:
-            raise ValueError('This type of button takes the entire width of the line')
+            raise ValueError('
+                    This type of button takes the entire width of the line'
+                    )
 
         if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
@@ -152,7 +154,9 @@ class VkKeyboard(object):
         current_line = self.lines[-1]
 
         if len(current_line) != 0:
-            raise ValueError('This type of button takes the entire width of the line')
+            raise ValueError('
+                    This type of button takes the entire width of the line'
+                    )
 
         if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
@@ -188,7 +192,9 @@ class VkKeyboard(object):
         current_line = self.lines[-1]
 
         if len(current_line) != 0:
-            raise ValueError('This type of button takes the entire width of the line')
+            raise ValueError('
+                    This type of button takes the entire width of the line'
+                    )
 
         if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
