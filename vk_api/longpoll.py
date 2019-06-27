@@ -321,9 +321,13 @@ class Event(object):
     """ Событие, полученное от longpoll-сервера.
 
     Имеет поля в соответствии с `документацией
-    <https://vk.com/dev/using_longpoll?f=3.%20Структура%20событий>`_.
+    <https://vk.com/dev/using_longpoll_2?f=3.%2BСтруктура%2Bсобытий>`_.
 
-    События с полем `timestamp` также дополнительно имеют поле `datetime`
+    События `MESSAGE_NEW` и `MESSAGE_EDIT` имеют (среди прочих) такие поля:
+        - `text` - `экранированный <https://ru.wikipedia.org/wiki/Мнемоники_в_HTML>`_ текст
+        - `message` - оригинальный текст сообщения.
+
+    События с полем `timestamp` также дополнительно имеют поле `datetime`.
     """
 
     def __init__(self, raw):
@@ -375,11 +379,8 @@ class Event(object):
         elif self.type is VkEventType.PEER_FLAGS_REPLACE:
             self._parse_peer_flags()
 
-        elif self.type is VkEventType.MESSAGE_NEW:
+        elif self.type in [VkEventType.MESSAGE_NEW, VkEventType.MESSAGE_EDIT]:
             self._parse_message()
-
-        elif self.type is VkEventType.MESSAGE_EDIT:
-            self.text = self.text.replace('<br>', '\n')
 
         elif self.type in [VkEventType.USER_ONLINE, VkEventType.USER_OFFLINE]:
             self.user_id = abs(self.user_id)
@@ -427,12 +428,21 @@ class Event(object):
         )
 
     def _parse_message(self):
-        if self.flags & VkMessageFlag.OUTBOX:
-            self.from_me = True
-        else:
-            self.to_me = True
+        if self.type is VkEventType.MESSAGE_NEW:
+            if self.flags & VkMessageFlag.OUTBOX:
+                self.from_me = True
+            else:
+                self.to_me = True
+
+        # ВК возвращает сообщения в html-escaped виде,
+        # при этом переводы строк закодированы как <br> и не экранированы
 
         self.text = self.text.replace('<br>', '\n')
+        self.message = self.text \
+            .replace('&lt;', '<') \
+            .replace('&gt;', '>') \
+            .replace('&quot;', '"') \
+            .replace('&amp;', '&')
 
     def _parse_online_status(self):
         try:
