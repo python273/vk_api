@@ -8,6 +8,10 @@ callback-api для получения сообщений.
 
 Подробнее: https://vk.com/dev/callback_api
 
+P.S
+Лучше запускать с помощью gunicorn (pip install gunicorn):
+gunicorn callback_bot:app
+
 """
 
 app = Flask(__name__)
@@ -32,13 +36,9 @@ def bot():
     # если же это сообщение, отвечаем пользователю
     elif data['type'] == 'message_new':
         # получаем ID пользователя
-        from_id = data['object']['from_id']
+        from_id = data['object']['from_id']ls
         # отправляем сообщение
         vk.messages.send(message='Hello World!', random_id=0, peer_id=from_id)
         # возвращаем серверу VK "ok" и код 200
         return 'ok'
 
-# точка входа приложения
-if __name__ == '__main__':
-    # запускаем веб-сервер
-    app.run()
