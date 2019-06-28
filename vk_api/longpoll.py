@@ -489,10 +489,7 @@ class VkLongPoll(object):
     def __init__(self, vk, wait=25, mode=DEFAULT_MODE, preload_messages=False):
         self.vk = vk
         self.wait = wait
-
-        # Иначе название константы может оказаться в запросе к API
-        self.mode = int(mode)
-
+        self.mode = mode.value if isinstance(mode, VkLongpollMode) else mode
         self.preload_messages = preload_messages
 
         self.url = None
