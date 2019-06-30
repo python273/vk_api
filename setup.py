@@ -38,7 +38,7 @@ setup(
     license='Apache License, Version 2.0, see LICENSE file',
 
     packages=['vk_api', 'jconfig'],
-    install_requires=['requests', 'enum34', 'six'],
+    install_requires=['requests', 'enum34;python_version<"3.4"', 'six'],
     extras_require={
         'vkstreaming': ['websocket-client'],
         'vkaudio': ['beautifulsoup4'],
