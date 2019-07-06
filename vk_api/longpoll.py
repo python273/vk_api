@@ -469,10 +469,12 @@ class VkLongPoll(object):
     :param mode: дополнительные опции ответа
     :param preload_messages: предзагрузка данных сообщений для
         получения ссылок на прикрепленные файлы
+    :param group_id: идентификатор сообщества
+        (для сообщений сообщества с ключом доступа пользователя)
     """
 
     __slots__ = (
-        'vk', 'wait', 'mode', 'preload_messages',
+        'vk', 'wait', 'mode', 'preload_messages', 'group_id',
         'url', 'session',
         'key', 'server', 'ts', 'pts'
     )
@@ -486,11 +488,13 @@ class VkLongPoll(object):
         VkEventType.MESSAGE_EDIT
     ]
 
-    def __init__(self, vk, wait=25, mode=DEFAULT_MODE, preload_messages=False):
+    def __init__(self, vk, wait=25, mode=DEFAULT_MODE,
+                 preload_messages=False, group_id=None):
         self.vk = vk
         self.wait = wait
-        self.mode = mode
+        self.mode = mode.value if isinstance(mode, VkLongpollMode) else mode
         self.preload_messages = preload_messages
+        self.group_id = group_id
 
         self.url = None
         self.key = None
@@ -510,6 +514,10 @@ class VkLongPoll(object):
             'lp_version': '3',
             'need_pts': self.pts
         }
+
+        if self.group_id:
+            values['group_id'] = self.group_id
+            
         response = self.vk.method('messages.getLongPollServer', values)
 
         self.key = response['key']

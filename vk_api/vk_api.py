@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 :authors: python273
 :license: Apache License, Version 2.0, see LICENSE file
@@ -79,6 +79,9 @@ class VkApi(object):
     `login` и `password` необходимы для автоматического получения токена при помощи
     Implicit Flow авторизации пользователя и возможности работы с веб-версией сайта
     (включая :class:`vk_api.audio.VkAudio`)
+
+    :param session: Кастомная сессия со своими параметрами(из библиотеки requests)
+    :type session: :class:`requests.Session`
     """
 
     RPS_DELAY = 0.34  # ~3 requests per second
@@ -87,7 +90,7 @@ class VkApi(object):
                  auth_handler=None, captcha_handler=None,
                  config=jconfig.Config, config_filename='vk_config.v2.json',
                  api_version='5.92', app_id=6222115, scope=DEFAULT_USER_SCOPE,
-                 client_secret=None):
+                 client_secret=None, session=None):
 
         self.login = login
         self.password = password
@@ -101,11 +104,12 @@ class VkApi(object):
 
         self.storage = config(self.login, filename=config_filename)
 
-        self.http = requests.Session()
-        self.http.headers.update({
-            'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:52.0) '
-                          'Gecko/20100101 Firefox/52.0'
-        })
+        self.http = session or requests.Session()
+        if not session:
+            self.http.headers.update({
+                'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:52.0) '
+                              'Gecko/20100101 Firefox/52.0'
+            })
 
         self.last_request = 0.0
 

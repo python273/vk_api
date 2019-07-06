@@ -1,5 +1,5 @@
 beautifulsoup4
 requests
-enum-compat
+enum34;python_version<"3.4"
 websocket-client
 six
