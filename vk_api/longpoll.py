@@ -492,7 +492,7 @@ class VkLongPoll(object):
                  preload_messages=False, group_id=None):
         self.vk = vk
         self.wait = wait
-        self.mode = mode
+        self.mode = mode.value if isinstance(mode, VkLongpollMode) else mode
         self.preload_messages = preload_messages
         self.group_id = group_id
 
