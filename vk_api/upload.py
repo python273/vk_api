@@ -171,7 +171,7 @@ class VkUpload(object):
             file=response.json()['response']
         )
 
-    def photo_wall(self, photos, user_id=None, group_id=None):
+    def photo_wall(self, photos, user_id=None, group_id=None, caption=None):
         """ Загрузка изображений на стену пользователя или в группу
 
         :param photos: путь к изображению(ям) или file-like объект(ы)
@@ -179,6 +179,7 @@ class VkUpload(object):
 
         :param user_id: идентификатор пользователя
         :param group_id: идентификатор сообщества (если загрузка идет в группу)
+        :param caption: текст описания фотографии.
         """
 
         values = {}
@@ -187,6 +188,9 @@ class VkUpload(object):
             values['user_id'] = user_id
         elif group_id:
             values['group_id'] = group_id
+
+        if caption:
+            values['caption'] = caption
 
         response = self.vk.photos.getWallUploadServer(**values)
         url = response['upload_url']
