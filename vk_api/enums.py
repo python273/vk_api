@@ -12,7 +12,7 @@ from enum import IntEnum
 class VkUserPermissions(IntEnum):
     """
     Перечисление прав пользователя.
-    Список прав получается побитовым сложением (x & y) каждого права.
+    Список прав получается побитовым сложением (x | y) каждого права.
     Подробнее в документации VK API: https://vk.com/dev/permissions
     """
 
