@@ -3,6 +3,17 @@ import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 
 
+"""
+Пример не работает с дефолтным app_id
+
+Подробнее об ограничении доступа к сообщениям:
+https://vk.com/dev/messages_api
+
+Обсуждение:
+https://github.com/python273/vk_api/issues/219
+"""
+
+
 def main():
     """ Пример использования longpoll
 
