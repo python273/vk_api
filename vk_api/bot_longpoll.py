@@ -123,7 +123,7 @@ class VkBotEvent(object):
         self.t = self.type  # shortcut
 
         self.object = DotDict(raw['object'])
-        self.obj = self.object
+        self.obj = self.object  # shortcut
 
         self.group_id = raw['group_id']
 
