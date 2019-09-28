@@ -11,6 +11,7 @@ import random
 import re
 import threading
 import time
+import json
 
 import requests
 import six
@@ -330,11 +331,13 @@ class VkApi(object):
 
         response = self.http.post('https://vk.com/al_login.php', values)
         response_parsed = response.text.split('<!>')
+        response_parsed = response_parsed[0].replace('<!--', '').replace('\\"\\\\\\', '').replace('\\"', '')
+        response_parsed = json.loads(response_parsed)
 
-        if response_parsed[4] == '4':  # OK
-            return self.http.get('https://vk.com/' + response_parsed[5])
+        if response_parsed['payload'][0] == '4':  # OK
+            return self.http.get('https://vk.com/' + response_parsed['payload'][1][0])
 
-        elif response_parsed[4] == '8':  # Incorrect code
+        elif response_parsed['payload'][0] == '8':  # Incorrect code
             return self._pass_twofactor(auth_response)
 
         raise TwoFactorError('Two factor authentication failed')
