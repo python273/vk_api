@@ -6,6 +6,7 @@
 :copyright: (c) 2019 python273
 """
 
+import json
 import logging
 import random
 import re
@@ -329,13 +330,18 @@ class VkApi(object):
         }
 
         response = self.http.post('https://vk.com/al_login.php', values)
-        response_parsed = response.text.split('<!>')
+        data = json.loads(response.text.lstrip('<!--'))
+        status = data['payload'][0]
 
-        if response_parsed[4] == '4':  # OK
-            return self.http.get('https://vk.com/' + response_parsed[5])
+        if status == '4':  # OK
+            path = json.loads(data['payload'][1][0])
+            return self.http.get('https://vk.com' + path)
 
-        elif response_parsed[4] == '8':  # Incorrect code
+        elif status in [0, '8']:  # Incorrect code
             return self._pass_twofactor(auth_response)
+
+        elif status == '2':
+            raise TwoFactorError('Recaptcha required')
 
         raise TwoFactorError('Two factor authentication failed')
 
