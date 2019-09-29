@@ -202,6 +202,77 @@ class VkUpload(object):
 
         return self.vk.photos.saveWallPhoto(**values)
 
+    def photo_market(self, photo, group_id, main_photo=False,
+                     crop_x=None, crop_y=None, crop_width=None):
+        """ Загрузка изображений для товаров в магазине
+
+        :param photo: путь к изображению(ям) или file-like объект(ы)
+        :type photo: str or list
+
+        :param group_id: идентификатор сообщества, для которого необходимо загрузить фотографию товара
+        :type group_id: int
+        :param main_photo: является ли фотография обложкой товара
+        :type main_photo: bool
+        :param crop_x: координата x для обрезки фотографии (верхний правый угол)
+        :type crop_x: int
+        :param crop_y: координата y для обрезки фотографии (верхний правый угол)
+        :type crop_y: int
+        :param crop_width: ширина фотографии после обрезки в px
+        :type crop_width: int
+        """
+
+        if group_id < 0:
+            group_id = abs(group_id)
+
+        values = {
+            'main_photo': main_photo,
+            'group_id': group_id,
+        }
+
+        if crop_x is not None:
+            values['crop_x'] = crop_x
+        if crop_y is not None:
+            values['crop_y'] = crop_y
+        if crop_width is not None:
+            values['crop_width'] = crop_width
+
+        response = self.vk.photos.getMarketUploadServer(**values)
+        url = response['upload_url']
+
+        with FilesOpener(photo) as photos_files:
+            response = self.http.post(url, files=photos_files)
+
+        values.update(response.json())
+
+        return self.vk.photos.saveMarketPhoto(**values)
+
+    def photo_market_album(self, photo, group_id):
+        """ Загрузка фотографии для подборки товаров
+
+        :param photo: путь к изображению(ям) или file-like объект(ы)
+        :type photo: str or list
+
+        :param group_id: идентификатор сообщества, для которого необходимо загрузить фотографию для подборки товаров
+        :type group_id: int
+        """
+
+        if group_id < 0:
+            group_id = abs(group_id)
+
+        values = {
+            'group_id': group_id,
+        }
+
+        response = self.vk.photos.getMarketAlbumUploadServer(**values)
+        url = response['upload_url']
+
+        with FilesOpener(photo) as photos_files:
+            response = self.http.post(url, files=photos_files)
+
+        values.update(response.json())
+
+        return self.vk.photos.saveMarketAlbumPhoto(**values)
+
     def audio(self, audio, artist, title):
         """ Загрузка аудио
 
