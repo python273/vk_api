@@ -19,4 +19,4 @@ print(vk.wall.post(message='Hello world!'))
 
 Установка
 ------------
-    $ pip install vk_api
+    $ pip install vk-api
