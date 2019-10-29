@@ -55,12 +55,14 @@ class VkKeyboard(object):
 
     __slots__ = ('one_time', 'lines', 'keyboard')
 
-    def __init__(self, one_time=False):
+    def __init__(self, one_time=False, inline=False):
         self.one_time = one_time
+        self.inline = inline
         self.lines = [[]]
 
         self.keyboard = {
             'one_time': self.one_time,
+            'inline': self.inline,
             'buttons': self.lines
         }
 
