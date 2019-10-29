@@ -53,7 +53,7 @@ class VkKeyboard(object):
     :type one_time: bool
     """
 
-    __slots__ = ('one_time', 'lines', 'keyboard')
+    __slots__ = ('one_time', 'lines', 'keyboard', 'inline')
 
     def __init__(self, one_time=False, inline=False):
         self.one_time = one_time
