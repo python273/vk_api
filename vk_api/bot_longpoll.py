@@ -109,6 +109,7 @@ class VkBotEvent(object):
         'raw',
         't', 'type',
         'obj', 'object',
+        'client_info',
         'group_id'
     )
 
@@ -122,8 +123,15 @@ class VkBotEvent(object):
 
         self.t = self.type  # shortcut
 
-        self.object = DotDict(raw['object'])
+        try:
+            self.object = DotDict(raw['object']['message'])
+        except KeyError:
+            self.object = DotDict(raw['object'])
         self.obj = self.object
+        try:
+            self.client_info = DotDict(raw['object']['client_info'])
+        except KeyError:
+            self.client_info = "Not supported. Needed version api v5.103"
 
         self.group_id = raw['group_id']
 
