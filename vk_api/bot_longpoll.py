@@ -131,7 +131,7 @@ class VkBotEvent(object):
         try:
             self.client_info = DotDict(raw['object']['client_info'])
         except KeyError:
-            self.client_info = "Not supported. Needed version api v5.103"
+            self.client_info = "Not supported. Minimum api version v5.103 is required"
 
         self.group_id = raw['group_id']
 
