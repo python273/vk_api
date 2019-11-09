@@ -165,7 +165,7 @@ class VkBotMessageEvent(VkBotEvent):
         self.from_group = False
         self.chat_id = None
 
-        peer_id = self.obj.peer_id or self.obj.message['peer_id']
+        peer_id = self.obj.peer_id
         
         if peer_id < 0:
             self.from_group = True
