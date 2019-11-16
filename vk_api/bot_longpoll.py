@@ -109,6 +109,7 @@ class VkBotEvent(object):
         'raw',
         't', 'type',
         'obj', 'object',
+        'client_info', 'message',
         'group_id'
     )
 
@@ -123,7 +124,15 @@ class VkBotEvent(object):
         self.t = self.type  # shortcut
 
         self.object = DotDict(raw['object'])
+        try:
+            self.message = DotDict(raw['object']['message'])
+        except KeyError:
+            self.message = None
         self.obj = self.object
+        try:
+            self.client_info = DotDict(raw['object']['client_info'])
+        except KeyError:
+            self.client_info = None
 
         self.group_id = raw['group_id']
 
@@ -157,7 +166,7 @@ class VkBotMessageEvent(VkBotEvent):
         self.from_group = False
         self.chat_id = None
 
-        peer_id = self.obj.peer_id or self.obj.message['peer_id']
+        peer_id = self.obj.peer_id or self.message.peer_id
         
         if peer_id < 0:
             self.from_group = True
