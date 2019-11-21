@@ -6,6 +6,7 @@
 :copyright: (c) 2019 python273
 """
 
+import json
 import re
 from itertools import islice
 
@@ -13,6 +14,7 @@ from bs4 import BeautifulSoup
 
 from .audio_url_decoder import decode_audio_url
 from .exceptions import AccessDenied
+from .utils import search_key
 
 RE_AUDIO_ID = re.compile(r'audio(-?\d+)_(\d+)')
 RE_ALBUM_ID = re.compile(r'act=audio_playlist(-?\d+)_(\d+)')
@@ -240,17 +242,23 @@ def scrap_data(html, user_id, filter_root_el=None):
         artist = audio.select_one('.ai_artist').text
         title = audio.select_one('.ai_title').text
         duration = int(audio.select_one('.ai_dur')['data-dur'])
-        full_id = tuple(
-            int(i) for i in RE_AUDIO_ID.search(audio['id']).groups()
-        )
+        # full_id = tuple(
+        #     int(i) for i in RE_AUDIO_ID.search(audio['id']).groups()
+        # )
+
+        # convert string to python object
+        audio_data = json.loads(audio["data-audio"])
+        # find audio & owner id`s
+        audio_id = search_key(audio_data, "id")
+        owner_id = search_key(audio_data, "vk_id")
         link = audio.select_one('.ai_body').input['value']
 
         if 'audio_api_unavailable' in link:
             link = decode_audio_url(link, user_id)
 
         tracks.append({
-            'id': full_id[1],
-            'owner_id': full_id[0],
+            'id': audio_id,
+            'owner_id': owner_id,
             'url': link,
 
             'artist': artist,

@@ -23,6 +23,17 @@ except ImportError:  # python2
     from cookielib import Cookie
 
 
+def search_key(data, key):
+    """ Поиск ключа во вложенном списке из разных структур данных"""
+    for elem in data:
+        if isinstance(elem, list):
+            return search_key(elem, key)
+
+        elif isinstance(elem, dict):
+            if key in elem.keys():
+                return elem[key]
+
+
 def search_re(reg, string):
     """ Поиск по регулярке """
     s = reg.search(string)
