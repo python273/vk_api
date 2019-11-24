@@ -14,7 +14,6 @@ from bs4 import BeautifulSoup
 from .audio_url_decoder import decode_audio_url
 from .exceptions import AccessDenied
 
-RE_AUDIO_ID = re.compile(r'audio(-?\d+)_(\d+)')
 RE_ALBUM_ID = re.compile(r'act=audio_playlist(-?\d+)_(\d+)')
 RE_ACCESS_HASH = re.compile(r'access_hash=(\w+)')
 RE_M3U8_TO_MP3 = re.compile(r'/[0-9a-f]+(/audios)?/([0-9a-f]+)/index.m3u8')
@@ -242,7 +241,7 @@ def scrap_data(html, user_id, filter_root_el=None, convert_m3u8_links=True):
         title = audio.select_one('.ai_title').text
         duration = int(audio.select_one('.ai_dur')['data-dur'])
         full_id = tuple(
-            int(i) for i in RE_AUDIO_ID.search(audio['id']).groups()
+            int(i) for i in audio['data-id'].split()
         )
         link = audio.select_one('.ai_body').input['value']
 
