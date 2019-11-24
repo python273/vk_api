@@ -241,7 +241,7 @@ def scrap_data(html, user_id, filter_root_el=None, convert_m3u8_links=True):
         title = audio.select_one('.ai_title').text
         duration = int(audio.select_one('.ai_dur')['data-dur'])
         full_id = tuple(
-            int(i) for i in audio['data-id'].split()
+            int(i) for i in audio['data-id'].split('_')
         )
         link = audio.select_one('.ai_body').input['value']
 
