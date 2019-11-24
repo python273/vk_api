@@ -17,6 +17,7 @@ from .exceptions import AccessDenied
 RE_AUDIO_ID = re.compile(r'audio(-?\d+)_(\d+)')
 RE_ALBUM_ID = re.compile(r'act=audio_playlist(-?\d+)_(\d+)')
 RE_ACCESS_HASH = re.compile(r'access_hash=(\w+)')
+RE_M3U8_TO_MP3 = re.compile(r'/[0-9a-f]+(/audios)?/([0-9a-f]+)/index.m3u8')
 
 TRACKS_PER_USER_PAGE = 50
 TRACKS_PER_ALBUM_PAGE = 100
@@ -222,7 +223,7 @@ class VkAudio(object):
         return decode_audio_url(link, self.user_id)
 
 
-def scrap_data(html, user_id, filter_root_el=None):
+def scrap_data(html, user_id, filter_root_el=None, convert_m3u8_links=True):
     """ Парсинг списка аудиозаписей из html страницы """
 
     if filter_root_el is None:
@@ -247,6 +248,9 @@ def scrap_data(html, user_id, filter_root_el=None):
 
         if 'audio_api_unavailable' in link:
             link = decode_audio_url(link, user_id)
+
+        if convert_m3u8_links and 'm3u8' in link:
+            link = RE_M3U8_TO_MP3.sub(r'\1/\2.mp3', link)
 
         tracks.append({
             'id': full_id[1],
