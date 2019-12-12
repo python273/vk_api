@@ -22,7 +22,7 @@ def main():
     session.headers.update({
                 'User-agent': "KateMobileAndroid/52.1 lite-445 (Android 4.4.2; SDK 19; x86; unknown Android SDK built for x86; en)"})
 
-    vk_session = vk_api.VkApi(token=token, session=session)  #Варнинг о логине игнорируем иначе не будет работать.
+    vk_session = vk_api.VkApi(token=token, session=session)
 
     api = vk_session.get_api()
     
