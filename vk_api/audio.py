@@ -222,6 +222,11 @@ class VkAudio(object):
         return decode_audio_url(link, self.user_id)
 
     def get_post_audio(self, owner_id, post_id):
+        """ Получить список аудиозаписей поста пользователя или сообщества
+
+        :param owner_id: ID владельца (отрицательные значения для групп)
+        :param owner_id: ID поста
+        """
         response = self._vk.http.get(
             'https://m.vk.com/wall{}_{}'.format(owner_id, post_id)
         )
