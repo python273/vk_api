@@ -221,6 +221,19 @@ class VkAudio(object):
         link = bs.select_one('.ai_body input[type=hidden]').attrs['value']
         return decode_audio_url(link, self.user_id)
 
+    def get_post_audio(self, owner_id, post_id):
+        response = self._vk.http.get(
+            'https://m.vk.com/wall{}_{}'.format(owner_id, post_id)
+        )
+
+        tracks = scrap_data(
+            response.text,
+            self.user_id,
+            filter_root_el={'class': 'audios_list'}
+        )
+
+        return tracks
+
 
 def scrap_data(html, user_id, filter_root_el=None, convert_m3u8_links=True):
     """ Парсинг списка аудиозаписей из html страницы """
