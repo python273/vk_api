@@ -225,7 +225,7 @@ class VkAudio(object):
         """ Получить список аудиозаписей поста пользователя или сообщества
 
         :param owner_id: ID владельца (отрицательные значения для групп)
-        :param owner_id: ID поста
+        :param post_id: ID поста
         """
         response = self._vk.http.get(
             'https://m.vk.com/wall{}_{}'.format(owner_id, post_id)
