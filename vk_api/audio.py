@@ -212,14 +212,18 @@ class VkAudio(object):
 
             offset += 50
 
-    def get_audio_by_id(self, owner_id, audio_id):
+    def get_audio_by_id(self, owner_id, audio_id, convert_m3u8_links=True):
         response = self._vk.http.get(
             'https://m.vk.com/audio{}_{}'.format(owner_id, audio_id),
             allow_redirects=False
         )
         bs = BeautifulSoup(response.text, 'html.parser')
         link = bs.select_one('.ai_body input[type=hidden]').attrs['value']
-        return decode_audio_url(link, self.user_id)
+        decode_link = decode_audio_url(link, self.user_id)
+        if convert_m3u8_links and 'm3u8' in decode_link:
+            return link = RE_M3U8_TO_MP3.sub(r'\1/\2.mp3', decode_link)
+        else:
+            return decode_link
 
 
 def scrap_data(html, user_id, filter_root_el=None, convert_m3u8_links=True):
