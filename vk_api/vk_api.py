@@ -111,9 +111,6 @@ class VkApi(object):
                 'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:52.0) '
                               'Gecko/20100101 Firefox/52.0'
             })
-            self.http.cookies.update({
-                'remixmdevice': '1920/1080/1/!!-!!!!'
-            })
 
         self.last_request = 0.0
 

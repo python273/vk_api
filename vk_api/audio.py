@@ -36,6 +36,10 @@ class VkAudio(object):
         self.user_id = vk.method('users.get')[0]['id']
         self._vk = vk
 
+        self._vk.http.cookies.update({
+            'remixmdevice': '1920/1080/1/!!-!!!!'
+        })
+
     def get_iter(self, owner_id=None, album_id=None, access_hash=None):
         """ Получить список аудиозаписей пользователя (по частям)
 
@@ -221,14 +225,14 @@ class VkAudio(object):
         link = bs.select_one('.ai_body input[type=hidden]').attrs['value']
         return decode_audio_url(link, self.user_id)
 
-    def get_wall_audio(self, owner_id, wall_id):
+    def get_post_audio(self, owner_id, post_id):
         """ Получить список аудиозаписей из поста пользователя или группы
 
         :param owner_id: ID владельца (отрицательные значения для групп)
-        :param wall_id: ID поста
+        :param post_id: ID поста
         """
         response = self._vk.http.get(
-            'https://m.vk.com/wall{}_{}'.format(owner_id, wall_id)
+            'https://m.vk.com/wall{}_{}'.format(owner_id, post_id)
         )
 
         tracks = scrap_data(
