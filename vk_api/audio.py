@@ -31,10 +31,14 @@ class VkAudio(object):
 
     __slots__ = ('_vk', 'user_id')
 
-    def __init__(self, vk):
+    def __init__(self, vk, convert_m3u8_links=True):
 
         self.user_id = vk.method('users.get')[0]['id']
         self._vk = vk
+
+        self._vk.http.cookies.update({
+            'remixmdevice': '1920/1080/1/!!-!!!!'
+        })
 
     def get_iter(self, owner_id=None, album_id=None, access_hash=None):
         """ Получить список аудиозаписей пользователя (по частям)
@@ -212,7 +216,7 @@ class VkAudio(object):
 
             offset += 50
 
-    def get_audio_by_id(self, owner_id, audio_id, convert_m3u8_links=True):
+    def get_audio_by_id(self, owner_id, audio_id):
         response = self._vk.http.get(
             'https://m.vk.com/audio{}_{}'.format(owner_id, audio_id),
             allow_redirects=False
@@ -226,7 +230,25 @@ class VkAudio(object):
             return decode_link
 
 
-def scrap_data(html, user_id, filter_root_el=None, convert_m3u8_links=True):
+    def get_post_audio(self, owner_id, post_id):
+        """ Получить список аудиозаписей из поста пользователя или группы
+        :param owner_id: ID владельца (отрицательные значения для групп)
+        :param post_id: ID поста
+        """
+        response = self._vk.http.get(
+            'https://m.vk.com/wall{}_{}'.format(owner_id, post_id)
+        )
+
+        tracks = scrap_data(
+            response.text,
+            self.user_id,
+            filter_root_el={'class': 'audios_list'}
+        )
+
+        return tracks
+
+
+def scrap_data(html, user_id, filter_root_el=None):
     """ Парсинг списка аудиозаписей из html страницы """
 
     if filter_root_el is None:
