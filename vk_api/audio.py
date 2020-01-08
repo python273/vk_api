@@ -224,7 +224,7 @@ class VkAudio(object):
         bs = BeautifulSoup(response.text, 'html.parser')
         link = bs.select_one('.ai_body input[type=hidden]').attrs['value']
         decode_link = decode_audio_url(link, self.user_id)
-        if convert_m3u8_links and 'm3u8' in decode_link:
+        if self.convert_m3u8_links and 'm3u8' in decode_link:
             return link = RE_M3U8_TO_MP3.sub(r'\1/\2.mp3', decode_link)
         else:
             return decode_link
@@ -248,7 +248,7 @@ class VkAudio(object):
         return tracks
 
 
-def scrap_data(html, user_id, filter_root_el=None):
+def scrap_data(html, user_id, filter_root_el=None, convert_m3u8_links=True):
     """ Парсинг списка аудиозаписей из html страницы """
 
     if filter_root_el is None:
