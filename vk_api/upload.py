@@ -83,14 +83,14 @@ class VkUpload(object):
 
         return self.vk.photos.save(**values)
 
-    def photo_messages(self, photos):
+    def photo_messages(self, photos, peer_id=None):
         """ Загрузка изображений в сообщения
 
         :param photos: путь к изображению(ям) или file-like объект(ы)
         :type photos: str or list
         """
 
-        url = self.vk.photos.getMessagesUploadServer()['upload_url']
+        url = self.vk.photos.getMessagesUploadServer(peer_id=peer_id)['upload_url']
 
         with FilesOpener(photos) as photo_files:
             response = self.http.post(url, files=photo_files)
