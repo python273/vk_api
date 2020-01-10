@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-:authors: python273, Helow19274, klassik2k16
+:authors: python273, Helow19274, prostomarkeloff
 :license: Apache License, Version 2.0, see LICENSE file
 :copyright: (c) 2019 python273
 """
