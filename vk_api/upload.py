@@ -87,8 +87,8 @@ class VkUpload(object):
         """ Загрузка изображений в сообщения
 
         :param photos: путь к изображению(ям) или file-like объект(ы)
-        :param peer_id: peer_id беседы
         :type photos: str or list
+        :param peer_id: peer_id беседы
         :type peer_id: int
         """
 
