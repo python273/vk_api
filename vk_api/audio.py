@@ -31,7 +31,7 @@ class VkAudio(object):
 
     __slots__ = ('_vk', 'user_id')
 
-    def __init__(self, vk):
+    def __init__(self, vk, convert_m3u8_links=True):
 
         self.user_id = vk.method('users.get')[0]['id']
         self._vk = vk
@@ -223,7 +223,29 @@ class VkAudio(object):
         )
         bs = BeautifulSoup(response.text, 'html.parser')
         link = bs.select_one('.ai_body input[type=hidden]').attrs['value']
-        return decode_audio_url(link, self.user_id)
+        decode_link = decode_audio_url(link, self.user_id)
+        if self.convert_m3u8_links and 'm3u8' in decode_link:
+            return link = RE_M3U8_TO_MP3.sub(r'\1/\2.mp3', decode_link)
+        else:
+            return decode_link
+
+
+    def get_post_audio(self, owner_id, post_id):
+        """ Получить список аудиозаписей из поста пользователя или группы
+        :param owner_id: ID владельца (отрицательные значения для групп)
+        :param post_id: ID поста
+        """
+        response = self._vk.http.get(
+            'https://m.vk.com/wall{}_{}'.format(owner_id, post_id)
+        )
+
+        tracks = scrap_data(
+            response.text,
+            self.user_id,
+            filter_root_el={'class': 'audios_list'}
+        )
+
+        return tracks
 
     def get_post_audio(self, owner_id, post_id):
         """ Получить список аудиозаписей из поста пользователя или группы
