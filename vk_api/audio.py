@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 
 from .audio_url_decoder import decode_audio_url
 from .exceptions import AccessDenied
+from .utils import set_cookies_from_list
 
 RE_ALBUM_ID = re.compile(r'act=audio_playlist(-?\d+)_(\d+)')
 RE_ACCESS_HASH = re.compile(r'access_hash=(\w+)')
@@ -31,14 +32,52 @@ class VkAudio(object):
 
     __slots__ = ('_vk', 'user_id')
 
-    def __init__(self, vk, convert_m3u8_links=True):
+    DEFAULT_COOKIES = [
+        {  # если не установлено, то первый запрос ломается
+            'version': 0,
+            'name': 'remixaudio_show_alert_today',
+            'value': '0',
+            'port': None,
+            'port_specified': False,
+            'domain': '.vk.com',
+            'domain_specified': True,
+            'domain_initial_dot': True,
+            'path': '/',
+            'path_specified': True,
+            'secure': True,
+            'expires': None,
+            'discard': False,
+            'comment': None,
+            'comment_url': None,
+            'rfc2109': False,
+            'rest': {}
+        }, {  # для аудио из постов
+            'version': 0,
+            'name': 'remixmdevice',
+            'value': '1920/1080/2/!!-!!!!',
+            'port': None,
+            'port_specified': False,
+            'domain': '.vk.com',
+            'domain_specified': True,
+            'domain_initial_dot': True,
+            'path': '/',
+            'path_specified': True,
+            'secure': True,
+            'expires': None,
+            'discard': False,
+            'comment': None,
+            'comment_url': None,
+            'rfc2109': False,
+            'rest': {}
+        }
+    ]
 
+    def __init__(self, vk, convert_m3u8_links=True):
         self.user_id = vk.method('users.get')[0]['id']
         self._vk = vk
+        self.convert_m3u8_links = convert_m3u8_links
 
-        self._vk.http.cookies.update({
-            'remixmdevice': '1920/1080/1/!!-!!!!'
-        })
+        set_cookies_from_list(self._vk.http.cookies, self.DEFAULT_COOKIES)
 
     def get_iter(self, owner_id=None, album_id=None, access_hash=None):
         """ Получить список аудиозаписей пользователя (по частям)
@@ -230,7 +269,7 @@ class VkAudio(object):
         link = bs.select_one('.ai_body input[type=hidden]').attrs['value']
         decode_link = decode_audio_url(link, self.user_id)
         if self.convert_m3u8_links and 'm3u8' in decode_link:
-            return link = RE_M3U8_TO_MP3.sub(r'\1/\2.mp3', decode_link)
+            return RE_M3U8_TO_MP3.sub(r'\1/\2.mp3', decode_link)
         else:
             return decode_link
 
@@ -263,6 +302,9 @@ def scrap_data(html, user_id, filter_root_el=None, convert_m3u8_links=True):
     tracks = []
 
     root_el = soup.find(**filter_root_el)
+
+    if root_el is None:
+        raise ValueError('Could not find root el for audio')
 
     for audio in root_el.find_all('div', {'class': 'audio_item'}):
         if 'audio_item_disabled' in audio['class']:
