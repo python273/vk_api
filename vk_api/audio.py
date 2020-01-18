@@ -30,7 +30,7 @@ class VkAudio(object):
     :param vk: Объект :class:`VkApi`
     """
 
-    __slots__ = ('_vk', 'user_id')
+    __slots__ = ('_vk', 'user_id', 'convert_m3u8_links')
 
     DEFAULT_COOKIES = [
         {  # если не установлено, то первый запрос ломается
@@ -78,6 +78,8 @@ class VkAudio(object):
         self.convert_m3u8_links = convert_m3u8_links
 
         set_cookies_from_list(self._vk.http.cookies, self.DEFAULT_COOKIES)
+
+        self._vk.http.get('https://m.vk.com/')  # load cookies
 
     def get_iter(self, owner_id=None, album_id=None, access_hash=None):
         """ Получить список аудиозаписей пользователя (по частям)
