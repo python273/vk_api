@@ -329,6 +329,10 @@ def scrap_data(html, user_id, filter_root_el=None, convert_m3u8_links=True, http
     if root_el is None:
         raise ValueError('Could not find root el for audio')
 
+    playlist_snippets = soup.find_all('div', {'class': "audioPlaylistSnippet__list"})
+    for playlist in playlist_snippets:
+        playlist.decompose()
+
     for audio in root_el.find_all('div', {'class': 'audio_item'}):
         if 'audio_item_disabled' in audio['class']:
             continue
