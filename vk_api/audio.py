@@ -322,7 +322,11 @@ def scrap_data(html, user_id, filter_root_el=None, convert_m3u8_links=True, http
             continue
 
         data_audio = json.loads(audio['data-audio'])
-        data_audio[13] = re.sub('(/+)', '/', data_audio[13].strip('/')).split('/')[-2:]
+        data_audio[13] = re.sub('(/+)', '/', data_audio[13].strip('/')).split('/')
+        if len(data_audio[13]) == 6:
+            data_audio[13] = [data_audio[13][2], data_audio[13][4]]
+        else:
+            data_audio[13] = data_audio[13][-2:]
 
         full_id = (
             str(data_audio[1]), str(data_audio[0]), data_audio[13][0], data_audio[13][1]
