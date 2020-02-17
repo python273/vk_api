@@ -123,6 +123,7 @@ class VkAudio(object):
                 response.text,
                 self.user_id,
                 filter_root_el={'class_': 'audioPlaylist__list'} if album_id else None,
+                convert_m3u8_links=self.convert_m3u8_links,
                 http=self._vk.http
             )
 
@@ -221,6 +222,7 @@ class VkAudio(object):
             response.text,
             self.user_id,
             filter_root_el={'class_': 'AudioSerp__found'},
+            convert_m3u8_links=self.convert_m3u8_links,
             http=self._vk.http
         )
 
@@ -252,7 +254,12 @@ class VkAudio(object):
                 }
             )
 
-            tracks = scrap_data(response.text, self.user_id, http=self._vk.http)
+            tracks = scrap_data(
+                response.text,
+                self.user_id,
+                convert_m3u8_links=self.convert_m3u8_links,
+                http=self._vk.http
+            )
 
             if not tracks:
                 break
@@ -272,13 +279,17 @@ class VkAudio(object):
             'https://m.vk.com/audio{}_{}'.format(owner_id, audio_id),
             allow_redirects=False
         )
-        bs = BeautifulSoup(response.text, 'html.parser')
-        link = bs.select_one('.ai_body input[type=hidden]').attrs['value']
-        decode_link = decode_audio_url(link, self.user_id)
-        if self.convert_m3u8_links and 'm3u8' in decode_link:
-            return RE_M3U8_TO_MP3.sub(r'\1/\2.mp3', decode_link)
+        track = scrap_data(
+            response.text,
+            self.user_id,
+            filter_root_el={'class': 'basisDefault'},
+            convert_m3u8_links=self.convert_m3u8_links,
+            http=self._vk.http
+        )
+        if track:
+            return track['url']
         else:
-            return decode_link
+            return ''
 
     def get_post_audio(self, owner_id, post_id):
         """ Получить список аудиозаписей из поста пользователя или группы
@@ -294,6 +305,7 @@ class VkAudio(object):
             response.text,
             self.user_id,
             filter_root_el={'class': 'audios_list'},
+            convert_m3u8_links=self.convert_m3u8_links,
             http=self._vk.http
         )
 
