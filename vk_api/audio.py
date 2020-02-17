@@ -287,7 +287,7 @@ class VkAudio(object):
             http=self._vk.http
         )
         if track:
-            return track['url']
+            return track[0]['url']
         else:
             return ''
 
