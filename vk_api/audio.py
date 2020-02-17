@@ -374,6 +374,7 @@ def scrap_data(html, user_id, filter_root_el=None, convert_m3u8_links=True, http
                 tracks.append({
                     'id': audio[0],
                     'owner_id': audio[1],
+                    'track_covers': audio[14].split(',') if audio[14] else '',
                     'url': link,
 
                     'artist': artist,
