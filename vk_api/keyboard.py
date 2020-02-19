@@ -44,6 +44,9 @@ class VkKeyboardButton(Enum):
 
     #: Кнопка с приложением VK Apps
     VKAPPS = "open_app"
+    
+    #: Кнопка с ссылкой
+    OPENLINK = "open_link"
 
 
 
@@ -213,6 +216,37 @@ class VkKeyboard(object):
                 'hash': hash
             }
         })
+        
+    def add_openlink_button(self, label, link, payload=None):
+        """ Добавить кнопку с ссылкой
+            Максимальное количество кнопок на строке - 4
+
+        :param label: Надпись на кнопке
+        :type label: str
+        :param link: ссылка, которую необходимо открыть по нажатию на кнопку
+        :type link: str
+        :param payload: Параметр для callback api
+        :type payload: str or list or dict
+        """
+        current_line = self.lines[-1]
+
+        if len(current_line) >= 4:
+            raise ValueError('Max 4 buttons on a line')
+
+        if payload is not None and not isinstance(payload, six.string_types):
+            payload = sjson_dumps(payload)
+
+        button_type = VkKeyboardButton.OPENLINK.value
+
+        current_line.append({
+            'action': {
+                'type': button_type,
+                'link' : link,
+                'label': label,
+                'payload': payload
+            }
+        })
+        
 
     def add_line(self):
         """ Создаёт новую строку, на которой можно размещать кнопки.
