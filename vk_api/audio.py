@@ -22,7 +22,7 @@ RE_ACCESS_HASH = re.compile(r'access_hash=(\w+)')
 RE_M3U8_TO_MP3 = re.compile(r'/[0-9a-f]+(/audios)?/([0-9a-f]+)/index.m3u8')
 RPS_DELAY = 1.5
 
-TRACKS_PER_USER_PAGE = 50
+TRACKS_PER_USER_PAGE = 100
 TRACKS_PER_ALBUM_PAGE = 100
 ALBUMS_PER_USER_PAGE = 100
 
