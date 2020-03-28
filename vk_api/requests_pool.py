@@ -70,8 +70,12 @@ class VkRequestsPool(object):
     Позволяет сделать несколько обращений к API за один запрос
     за счет метода execute.
 
-    Служит как менеджер контекста: запросы к API добавляются в
+    Варианты использованя:
+    - В качестве менеджера контекста: запросы к API добавляются в
     открытый пул, и выполняются при его закрытии.
+    - В качестве объекта пула. запросы к API дабвляются по одному
+    в пул и выполняются все вместе при выполнении метода execute()
+
 
     :param vk_session: Объект :class:`VkApi`
     """
@@ -110,6 +114,11 @@ class VkRequestsPool(object):
         return result
 
     def execute(self):
+        """
+        Выполняет все находящиеся в пуле запросы и отчищает пул.
+        Необходим для использования пула-объекта.
+        Для пула менеджера контекста вызывается автоматически.
+        """
         for i in range(0, len(self.pool), 25):
             cur_pool = self.pool[i:i + 25]
 
@@ -136,6 +145,7 @@ class VkRequestsPool(object):
                     current_result.result = current_response
                 else:
                     current_result.error = next(response_errors_iter)
+        self.pool = []
 
 
 def check_one_method(pool):
