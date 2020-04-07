@@ -647,6 +647,11 @@ class VkApi(object):
 
         return response if raw else response['response']
 
+class VkApiGroup(VkApi):
+    """Предназначен для авторизации с токеном группы.
+    Увеличивает частоту обращений к API с 3 до 20 в секунду.
+    """
+    RPS_DELAY = 1 / 20.0
 
 class VkApiMethod(object):
     """ Дает возможность обращаться к методам API через:
