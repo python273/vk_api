@@ -12,7 +12,9 @@ import six
 from .utils import sjson_dumps
 
 
-
+MAX_BUTTONS_ON_LINE = 5
+MAX_DEFAULT_LINES = 10
+MAX_INLINE_LINES = 6
 
 
 class VkKeyboardColor(Enum):
@@ -22,13 +24,14 @@ class VkKeyboardColor(Enum):
     PRIMARY = 'primary'
 
     #: Белая
-    DEFAULT = 'default'
+    SECONDARY = 'secondary'
 
     #: Красная
     NEGATIVE = 'negative'
 
     #: Зелёная
     POSITIVE = 'positive'
+
 
 class VkKeyboardButton(Enum):
     """ Возможные типы кнопки """
@@ -44,10 +47,9 @@ class VkKeyboardButton(Enum):
 
     #: Кнопка с приложением VK Apps
     VKAPPS = "open_app"
-    
+
     #: Кнопка с ссылкой
     OPENLINK = "open_link"
-
 
 
 class VkKeyboard(object):
@@ -82,9 +84,8 @@ class VkKeyboard(object):
         keyboard.keyboard['buttons'] = []
         return keyboard.get_keyboard()
 
-    def add_button(self, label, color=VkKeyboardColor.DEFAULT, payload=None):
+    def add_button(self, label, color=VkKeyboardColor.SECONDARY, payload=None):
         """ Добавить кнопку с текстом.
-            Максимальное количество кнопок на строке - 4
 
         :param label: Надпись на кнопке и текст, отправляющийся при её нажатии.
         :type label: str
@@ -96,8 +97,8 @@ class VkKeyboard(object):
 
         current_line = self.lines[-1]
 
-        if len(current_line) >= 4:
-            raise ValueError('Max 4 buttons on a line')
+        if len(current_line) >= MAX_BUTTONS_ON_LINE:
+            raise ValueError('Max 5 buttons on a line')
 
         color_value = color
 
@@ -130,8 +131,8 @@ class VkKeyboard(object):
 
         if len(current_line) != 0:
             raise ValueError(
-                    'This type of button takes the entire width of the line'
-                    )
+                'This type of button takes the entire width of the line'
+            )
 
         if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
@@ -160,8 +161,8 @@ class VkKeyboard(object):
 
         if len(current_line) != 0:
             raise ValueError(
-                    'This type of button takes the entire width of the line'
-                    )
+                'This type of button takes the entire width of the line'
+            )
 
         if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
@@ -198,8 +199,8 @@ class VkKeyboard(object):
 
         if len(current_line) != 0:
             raise ValueError(
-                    'This type of button takes the entire width of the line'
-                    )
+                'This type of button takes the entire width of the line'
+            )
 
         if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
@@ -216,10 +217,9 @@ class VkKeyboard(object):
                 'hash': hash
             }
         })
-        
+
     def add_openlink_button(self, label, link, payload=None):
         """ Добавить кнопку с ссылкой
-            Максимальное количество кнопок на строке - 4
 
         :param label: Надпись на кнопке
         :type label: str
@@ -230,8 +230,8 @@ class VkKeyboard(object):
         """
         current_line = self.lines[-1]
 
-        if len(current_line) >= 4:
-            raise ValueError('Max 4 buttons on a line')
+        if len(current_line) >= MAX_BUTTONS_ON_LINE:
+            raise ValueError('Max 5 buttons on a line')
 
         if payload is not None and not isinstance(payload, six.string_types):
             payload = sjson_dumps(payload)
@@ -241,19 +241,20 @@ class VkKeyboard(object):
         current_line.append({
             'action': {
                 'type': button_type,
-                'link' : link,
+                'link': link,
                 'label': label,
                 'payload': payload
             }
         })
-        
 
     def add_line(self):
         """ Создаёт новую строку, на которой можно размещать кнопки.
-        Максимальное количество строк - 10.
         """
-
-        if len(self.lines) >= 10:
-            raise ValueError('Max 10 lines')
+        if self.inline:
+            if len(self.lines) >= MAX_INLINE_LINES:
+                raise ValueError('Max 6 lines for inline keyboard')
+        else:
+            if len(self.lines) >= MAX_DEFAULT_LINES:
+                raise ValueError('Max 10 lines for default keyboard')
 
         self.lines.append([])
