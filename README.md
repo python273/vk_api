@@ -5,6 +5,7 @@ vk_api [![PyPI](https://img.shields.io/pypi/v/vk_api.svg)](https://pypi.org/proj
 * [Документация](https://vk-api.readthedocs.io/en/latest/)
 * [Примеры использования](./examples) (python3)
 * [Документация по методам API](https://vk.com/dev/methods)
+* [Альтернативы vk_api](https://github.com/python273/vk_api/issues/356) (асинхронность; боты)
 
 ```python
 import vk_api
