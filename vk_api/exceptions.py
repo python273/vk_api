@@ -91,6 +91,7 @@ class ApiHttpError(VkApiError):
         self.values = values
         self.raw = raw
         self.response = response
+        super().init(*args, **kwargs)
 
     def try_method(self):
         """ Отправить запрос заново """
