@@ -142,10 +142,10 @@ class VkAudio(object):
             for i in tracks:
                 yield i
 
-            if response['data'][0]['totalCount'] <= 2000:
+            if response['data'][0]['hasMore']:
+                offset += offset_diff
+            else:
                 break
-
-            offset += offset_diff
 
     def get(self, owner_id=None, album_id=None, access_hash=None):
         """ Получить список аудиозаписей пользователя
@@ -248,7 +248,7 @@ class VkAudio(object):
                 convert_m3u8_links=self.convert_m3u8_links
             )
 
-            return tracks
+            return list(tracks)
         else:
             return []
 
@@ -334,7 +334,7 @@ class VkAudio(object):
         )
 
         if track:
-            return track[0]['url']
+            return list(track)[0]['url']
         else:
             return ''
 
@@ -445,18 +445,16 @@ def scrap_tracks(ids, user_id, http, convert_m3u8_links=True):
                 if convert_m3u8_links and 'm3u8' in link:
                     link = RE_M3U8_TO_MP3.sub(r'\1/\2.mp3', link)
 
-                tracks.append({
+                yield {
                     'id': audio[0],
                     'owner_id': audio[1],
-                    'track_covers': audio[14].split(',') if audio[14] else '',
+                    'track_covers': audio[14].split(',') if audio[14] else [],
                     'url': link,
 
                     'artist': artist,
                     'title': title,
                     'duration': duration,
-                })
-
-    return tracks
+                }
 
 
 def scrap_albums(html):
