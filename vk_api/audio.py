@@ -310,6 +310,56 @@ class VkAudio(object):
             )
             json_response = json.loads(response.text.replace('<!--', ''))
 
+    def get_updates_iter(self):
+        """ Искать обновления друзей (генератор) """
+
+        response = self._vk.http.post(
+            'https://vk.com/al_audio.php',
+            data={
+                'al': 1,
+                'act': 'section',
+                'claim': 0,
+                'is_layer': 0,
+                'owner_id': self.user_id,
+                'section': 'updates'
+            }
+        )
+        json_response = json.loads(response.text.replace('<!--', ''))
+
+        while True:
+            updates = [i['list'] for i in json_response['payload'][1][1]['playlists']]
+
+            ids = scrap_ids(
+                [i[0] for i in updates if i]
+            )
+
+            tracks = scrap_tracks(
+                ids,
+                self.user_id,
+                convert_m3u8_links=self.convert_m3u8_links,
+                http=self._vk.http
+            )
+
+            if not tracks:
+                break
+
+            for track in tracks:
+                yield track
+
+            if len(updates) < 11:
+                break
+
+            response = self._vk.http.post(
+                'https://vk.com/al_audio.php',
+                data={
+                    'al': 1,
+                    'act': 'load_catalog_section',
+                    'section_id': json_response['payload'][1][1]['sectionId'],
+                    'start_from': json_response['payload'][1][1]['nextFrom']
+                }
+            )
+            json_response = json.loads(response.text.replace('<!--', ''))
+
     def get_audio_by_id(self, owner_id, audio_id):
         """ Получить аудиозапись по ID
 
@@ -334,9 +384,9 @@ class VkAudio(object):
         )
 
         if track:
-            return list(track)[0]['url']
+            return next(track)
         else:
-            return ''
+            return []
 
     def get_post_audio(self, owner_id, post_id):
         """ Получить список аудиозаписей из поста пользователя или группы
@@ -415,8 +465,6 @@ def scrap_ids_from_html(html, filter_root_el=None):
 
 
 def scrap_tracks(ids, user_id, http, convert_m3u8_links=True):
-    tracks = []
-
     last_request = 0.0
 
     for ids_group in [ids[i:i + 10] for i in range(0, len(ids), 10)]:
