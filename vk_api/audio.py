@@ -237,6 +237,7 @@ class VkAudio(object):
                 json_response['payload'][1][1]['playlists'][0]['list']
             )
 
+
             tracks = scrap_tracks(
                 ids,
                 self.user_id,
@@ -256,7 +257,7 @@ class VkAudio(object):
 
         return islice(self.search_iter(q, offset=offset), count)
 
-    def search_iter(self, q, offset=0):
+    def search_iter(self, q):
         """ Искать аудиозаписи (генератор)
         :param q: запрос
         """
@@ -274,7 +275,6 @@ class VkAudio(object):
                 'q': q
             }
         )
-
         json_response = json.loads(response.text.replace('<!--', ''))
 
 
@@ -283,6 +283,7 @@ class VkAudio(object):
             ids = scrap_ids(
                 json_response['payload'][1][1]['playlist']['list']
             )
+
 
             #len(tracks) <= 10
             if offset_left + len(ids) >= offset:
@@ -304,6 +305,7 @@ class VkAudio(object):
 
 
             offset_left += len(ids)
+
 
             response = self._vk.http.post(
                 'https://vk.com/al_audio.php',
@@ -587,7 +589,6 @@ def scrap_ids_from_html(html, filter_root_el=None):
 
 
 def scrap_tracks(ids, user_id, http, convert_m3u8_links=True):
-    tracks = []
 
     last_request = 0.0
 
