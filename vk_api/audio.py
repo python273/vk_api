@@ -15,9 +15,9 @@ from itertools import islice
 
 from bs4 import BeautifulSoup
 
-from vk_api.audio_url_decoder import decode_audio_url
-from vk_api.exceptions import AccessDenied
-from vk_api.utils import set_cookies_from_list
+from .audio_url_decoder import decode_audio_url
+from .exceptions import AccessDenied
+from .utils import set_cookies_from_list
 
 RE_ALBUM_ID = re.compile(r'act=audio_playlist(-?\d+)_(\d+)')
 RE_ACCESS_HASH = re.compile(r'access_hash=(\w+)')
@@ -286,20 +286,15 @@ class VkAudio(object):
 
             #len(tracks) <= 10
             if offset_left + len(ids) >= offset:
-                if offset_left >= offset:
-                    tracks = scrap_tracks(
-                        ids,
-                        self.user_id,
-                        convert_m3u8_links=self.convert_m3u8_links,
-                        http=self._vk.http
-                    )
-                else:
-                    tracks = scrap_tracks(
-                        ids[offset - offset_left:],
-                        self.user_id,
-                        convert_m3u8_links=self.convert_m3u8_links,
-                        http=self._vk.http
-                    )
+                if offset_left < offset:
+                    ids = ids[offset - offset_left:]
+
+                tracks = scrap_tracks(
+                    ids,
+                    self.user_id,
+                    convert_m3u8_links=self.convert_m3u8_links,
+                    http=self._vk.http
+                )
 
                 if not tracks:
                     break
@@ -307,8 +302,6 @@ class VkAudio(object):
                 for track in tracks:
                     yield track
 
-            else:
-                pass
 
             offset_left += len(ids)
 
@@ -318,8 +311,58 @@ class VkAudio(object):
                     'al': 1,
                     'act': 'load_catalog_section',
                     'section_id': json_response['payload'][1][1]['sectionId'],
-                    'start_from': json_response['payload'][1][1]['nextFrom'],
-                    'offset':100
+                    'start_from': json_response['payload'][1][1]['nextFrom']
+                }
+            )
+            json_response = json.loads(response.text.replace('<!--', ''))
+
+
+    def get_updates_iter(self):
+        """ Искать обновления друзей (генератор) """
+
+        response = self._vk.http.post(
+            'https://vk.com/al_audio.php',
+            data={
+                'al': 1,
+                'act': 'section',
+                'claim': 0,
+                'is_layer': 0,
+                'owner_id': self.user_id,
+                'section': 'updates'
+            }
+        )
+        json_response = json.loads(response.text.replace('<!--', ''))
+
+        while True:
+            updates = [i['list'] for i in json_response['payload'][1][1]['playlists']]
+
+            ids = scrap_ids(
+                [i[0] for i in updates if i]
+            )
+
+            tracks = scrap_tracks(
+                ids,
+                self.user_id,
+                convert_m3u8_links=self.convert_m3u8_links,
+                http=self._vk.http
+            )
+
+            if not tracks:
+                break
+
+            for track in tracks:
+                yield track
+
+            if len(updates) < 11:
+                break
+
+            response = self._vk.http.post(
+                'https://vk.com/al_audio.php',
+                data={
+                    'al': 1,
+                    'act': 'load_catalog_section',
+                    'section_id': json_response['payload'][1][1]['sectionId'],
+                    'start_from': json_response['payload'][1][1]['nextFrom']
                 }
             )
             json_response = json.loads(response.text.replace('<!--', ''))
@@ -352,31 +395,23 @@ class VkAudio(object):
                 json_response['payload'][1][1]['playlist']['list']
             )
 
-            #len(tracks) <= 10
+
             if offset_left + len(ids) >= offset:
-                if offset_left >= offset:
-                    tracks = scrap_tracks(
-                        ids,
-                        self.user_id,
-                        convert_m3u8_links=self.convert_m3u8_links,
-                        http=self._vk.http
-                    )
-                else:
-                    tracks = scrap_tracks(
-                        ids[offset - offset_left:],
-                        self.user_id,
-                        convert_m3u8_links=self.convert_m3u8_links,
-                        http=self._vk.http
-                    )
+                if offset_left < offset:
+                    ids = ids[offset - offset_left:]
+
+                tracks = scrap_tracks(
+                    ids,
+                    self.user_id,
+                    convert_m3u8_links=self.convert_m3u8_links,
+                    http=self._vk.http
+                )
 
                 if not tracks:
                     break
 
                 for track in tracks:
                     yield track
-
-            else:
-                pass
 
             offset_left += len(ids)
 
@@ -417,31 +452,23 @@ class VkAudio(object):
                 json_response['payload'][1][1]['playlists'][0]['list']
             )
 
-            #len(tracks) <= 10
+
             if offset_left + len(ids) >= offset:
-                if offset_left >= offset:
-                    tracks = scrap_tracks(
-                        ids,
-                        self.user_id,
-                        convert_m3u8_links=self.convert_m3u8_links,
-                        http=self._vk.http
-                    )
-                else:
-                    tracks = scrap_tracks(
-                        ids[offset - offset_left:],
-                        self.user_id,
-                        convert_m3u8_links=self.convert_m3u8_links,
-                        http=self._vk.http
-                    )
+                if offset_left < offset:
+                    ids = ids[offset - offset_left:]
+
+                tracks = scrap_tracks(
+                    ids,
+                    self.user_id,
+                    convert_m3u8_links=self.convert_m3u8_links,
+                    http=self._vk.http
+                )
 
                 if not tracks:
                     break
 
                 for track in tracks:
                     yield track
-
-            else:
-                pass
 
             offset_left += len(ids)
 
@@ -482,7 +509,7 @@ class VkAudio(object):
         if track:
             return next(track)
         else:
-            return ''
+            return []
 
     def get_post_audio(self, owner_id, post_id):
         """ Получить список аудиозаписей из поста пользователя или группы
