@@ -551,6 +551,15 @@ def scrap_ids(audio_data):
     return ids
 
 
+def scrap_json(html_page):
+    """ Парсинг списка хэшей ауфдиозаписей новинок или популярных + nextFrom&sesionId """
+
+    find_json_pattern = r"new AudioPage\(.*?(\{.*\})"
+    fr = re.search(find_json_pattern, html_page).group(1)
+
+    return fr
+
+
 def scrap_ids_from_html(html, filter_root_el=None):
     """ Парсинг списка хэшей аудиозаписей из html страницы """
 
@@ -587,7 +596,6 @@ def scrap_ids_from_html(html, filter_root_el=None):
 
 
 def scrap_tracks(ids, user_id, http, convert_m3u8_links=True):
-    tracks = []
 
     last_request = 0.0
 
