@@ -167,10 +167,11 @@ class VkBotMessageEvent(VkBotEvent):
         self.chat_id = None
 
         peer_id = self.obj.peer_id or self.message.peer_id
-        
-        if peer_id < 0:
+        from_id = self.obj.from_id or self.message.from_id
+        # если id отрицательный - это группа
+        if from_id < 0:
             self.from_group = True
-        elif peer_id < CHAT_START_ID:
+        if peer_id < CHAT_START_ID:
             self.from_user = True
         else:
             self.from_chat = True
