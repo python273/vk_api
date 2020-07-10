@@ -6,6 +6,8 @@
 :copyright: (c) 2019 python273
 """
 
+from pprint import pprint
+
 import re
 import json
 import time
@@ -31,7 +33,6 @@ ALBUMS_PER_USER_PAGE = 100
 
 class VkAudio(object):
     """ Модуль для получения аудиозаписей без использования официального API.
-
     :param vk: Объект :class:`VkApi`
     """
 
@@ -88,7 +89,6 @@ class VkAudio(object):
 
     def get_iter(self, owner_id=None, album_id=None, access_hash=None):
         """ Получить список аудиозаписей пользователя (по частям)
-
         :param owner_id: ID владельца (отрицательные значения для групп)
         :param album_id: ID альбома
         :param access_hash: ACCESS_HASH альбома
@@ -149,7 +149,6 @@ class VkAudio(object):
 
     def get(self, owner_id=None, album_id=None, access_hash=None):
         """ Получить список аудиозаписей пользователя
-
         :param owner_id: ID владельца (отрицательные значения для групп)
         :param album_id: ID альбома
         :param access_hash: ACCESS_HASH альбома
@@ -159,7 +158,6 @@ class VkAudio(object):
 
     def get_albums_iter(self, owner_id=None):
         """ Получить список альбомов пользователя (по частям)
-
         :param owner_id: ID владельца (отрицательные значения для групп)
         """
 
@@ -198,7 +196,6 @@ class VkAudio(object):
 
     def get_albums(self, owner_id=None):
         """ Получить список альбомов пользователя
-
         :param owner_id: ID владельца (отрицательные значения для групп)
         """
 
@@ -206,7 +203,6 @@ class VkAudio(object):
 
     def search_user(self, owner_id=None, q=''):
         """ Искать по аудиозаписям пользователя
-
         :param owner_id: ID владельца (отрицательные значения для групп)
         :param q: запрос
         """
@@ -252,20 +248,19 @@ class VkAudio(object):
         else:
             return []
 
-    def search(self, q, count=100):
+    def search(self, q, count=100, offset=0):
         """ Искать аудиозаписи
-
         :param q: запрос
         :param count: количество
         """
 
-        return islice(self.search_iter(q), count)
+        return islice(self.search_iter(q, offset=offset), count)
 
-    def search_iter(self, q):
+    def search_iter(self, q, offset=0):
         """ Искать аудиозаписи (генератор)
-
         :param q: запрос
         """
+        offset_left = 0
 
         response = self._vk.http.post(
             'https://vk.com/al_audio.php',
@@ -279,25 +274,36 @@ class VkAudio(object):
                 'q': q
             }
         )
+
         json_response = json.loads(response.text.replace('<!--', ''))
 
-        while True:
+
+        while json_response['payload'][1][1]['playlist']:
+
             ids = scrap_ids(
                 json_response['payload'][1][1]['playlist']['list']
             )
 
-            tracks = scrap_tracks(
-                ids,
-                self.user_id,
-                convert_m3u8_links=self.convert_m3u8_links,
-                http=self._vk.http
-            )
+            #len(tracks) <= 10
+            if offset_left + len(ids) >= offset:
+                if offset_left < offset:
+                    ids = ids[offset - offset_left:]
 
-            if not tracks:
-                break
+                tracks = scrap_tracks(
+                    ids,
+                    self.user_id,
+                    convert_m3u8_links=self.convert_m3u8_links,
+                    http=self._vk.http
+                )
 
-            for track in tracks:
-                yield track
+                if not tracks:
+                    break
+
+                for track in tracks:
+                    yield track
+
+
+            offset_left += len(ids)
 
             response = self._vk.http.post(
                 'https://vk.com/al_audio.php',
@@ -309,6 +315,7 @@ class VkAudio(object):
                 }
             )
             json_response = json.loads(response.text.replace('<!--', ''))
+
 
     def get_updates_iter(self):
         """ Искать обновления друзей (генератор) """
@@ -360,9 +367,136 @@ class VkAudio(object):
             )
             json_response = json.loads(response.text.replace('<!--', ''))
 
+
+    def get_popular_iter(self,offset=0):
+        """ Искать популярные аудиозаписи  (генератор)
+
+        :param offset: смещение
+        """
+
+        response = self._vk.http.post(
+            'https://vk.com/audio',
+            data={
+                'block':'chart',
+                'section':'recoms'
+            }
+        )
+        json_response = json.loads(scrap_json(response.text))
+
+        ids = scrap_ids(
+            json_response['sectionData']['recoms']['playlist']['list']
+        )
+
+        #len(tracks) <= 10
+        if offset:
+            tracks = scrap_tracks(
+                ids[offset:],
+                self.user_id,
+                convert_m3u8_links=self.convert_m3u8_links,
+                http=self._vk.http
+            )
+        else:
+            tracks = scrap_tracks(
+                ids,
+                self.user_id,
+                convert_m3u8_links=self.convert_m3u8_links,
+                http=self._vk.http
+            )
+
+        for track in tracks:
+            yield track
+
+
+    def get_news_iter(self,offset=0):
+        """ Искать популярные аудиозаписи  (генератор)
+
+        :param offset: смещение
+        """
+
+        offset_left = 0
+
+        response = self._vk.http.post(
+            'https://vk.com/audio',
+            data={
+                'block':'new_songs',
+                'section':'recoms'
+            }
+        )
+        json_response = json.loads(scrap_json(response.text))
+
+        ids = scrap_ids(
+            json_response['sectionData']['recoms']['playlist']['list']
+        )
+
+        #len(tracks) <= 10
+        if offset_left + len(ids) >= offset:
+            if offset_left >= offset:
+                tracks = scrap_tracks(
+                    ids,
+                    self.user_id,
+                    convert_m3u8_links=self.convert_m3u8_links,
+                    http=self._vk.http
+                )
+            else:
+                tracks = scrap_tracks(
+                    ids[offset - offset_left:],
+                    self.user_id,
+                    convert_m3u8_links=self.convert_m3u8_links,
+                    http=self._vk.http
+                )
+
+            for track in tracks:
+                yield track
+
+
+        offset_left += len(ids)
+
+        while True:
+            response = self._vk.http.post(
+                'https://vk.com/al_audio.php',
+                data={
+                    'al': 1,
+                    'act': 'load_catalog_section',
+                    'section_id': json_response['sectionData']['recoms']['sectionId'],
+                    'start_from': json_response['sectionData']['recoms']['nextFrom']
+                }
+            )
+
+            json_response = json.loads(response.text.replace('<!--', ''))
+
+            ids = scrap_ids(
+                json_response['payload'][1][1]['playlist']['list']
+            )
+
+            #len(tracks) <= 10
+            if offset_left + len(ids) >= offset:
+                if offset_left >= offset:
+                    tracks = scrap_tracks(
+                        ids,
+                        self.user_id,
+                        convert_m3u8_links=self.convert_m3u8_links,
+                        http=self._vk.http
+                    )
+                else:
+                    tracks = scrap_tracks(
+                        ids[offset - offset_left:],
+                        self.user_id,
+                        convert_m3u8_links=self.convert_m3u8_links,
+                        http=self._vk.http
+                    )
+
+                if not tracks:
+                    break
+
+                for track in tracks:
+                    yield track
+
+
+            offset_left += len(ids)
+
+
     def get_audio_by_id(self, owner_id, audio_id):
         """ Получить аудиозапись по ID
-
         :param owner_id: ID владельца (отрицательные значения для групп)
         :param audio_id: ID аудио
         """
@@ -370,7 +504,7 @@ class VkAudio(object):
             'https://m.vk.com/audio{}_{}'.format(owner_id, audio_id),
             allow_redirects=False
         )
-        
+
         ids = scrap_ids_from_html(
             response.text,
             filter_root_el={'class': 'basisDefault'}
@@ -390,7 +524,6 @@ class VkAudio(object):
 
     def get_post_audio(self, owner_id, post_id):
         """ Получить список аудиозаписей из поста пользователя или группы
-
         :param owner_id: ID владельца (отрицательные значения для групп)
         :param post_id: ID поста
         """
@@ -429,6 +562,15 @@ def scrap_ids(audio_data):
     return ids
 
 
+def scrap_json(html_page):
+    """ Парсинг списка хэшей ауфдиозаписей новинок или популярных + nextFrom&sesionId """
+
+    find_json_pattern = r"new AudioPage\(.*?(\{.*\})"
+    fr = re.search(find_json_pattern, html_page).group(1)
+
+    return fr
+
+
 def scrap_ids_from_html(html, filter_root_el=None):
     """ Парсинг списка хэшей аудиозаписей из html страницы """
 
@@ -465,6 +607,7 @@ def scrap_ids_from_html(html, filter_root_el=None):
 
 
 def scrap_tracks(ids, user_id, http, convert_m3u8_links=True):
+
     last_request = 0.0
 
     for ids_group in [ids[i:i + 10] for i in range(0, len(ids), 10)]:
