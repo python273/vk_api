@@ -381,13 +381,13 @@ class VkAudio(object):
             'https://vk.com/audio',
             data={
                 'block': 'chart',
-                'section': 'recoms'
+                'section': 'explore'
             }
         )
         json_response = json.loads(scrap_json(response.text))
 
         ids = scrap_ids(
-            json_response['sectionData']['recoms']['playlist']['list']
+            json_response['sectionData']['explore']['playlist']['list']
         )
 
         if offset:
@@ -420,13 +420,13 @@ class VkAudio(object):
             'https://vk.com/audio',
             data={
                 'block': 'new_songs',
-                'section': 'recoms'
+                'section': 'explore'
             }
         )
         json_response = json.loads(scrap_json(response.text))
 
         ids = scrap_ids(
-            json_response['sectionData']['recoms']['playlist']['list']
+            json_response['sectionData']['explore']['playlist']['list']
         )
 
         if offset_left + len(ids) >= offset:
@@ -456,8 +456,8 @@ class VkAudio(object):
                 data={
                     'al': 1,
                     'act': 'load_catalog_section',
-                    'section_id': json_response['sectionData']['recoms']['sectionId'],
-                    'start_from': json_response['sectionData']['recoms']['nextFrom']
+                    'section_id': json_response['sectionData']['explore']['sectionId'],
+                    'start_from': json_response['sectionData']['explore']['nextFrom']
                 }
             )
 
@@ -493,6 +493,7 @@ class VkAudio(object):
 
     def get_audio_by_id(self, owner_id, audio_id):
         """ Получить аудиозапись по ID
+
         :param owner_id: ID владельца (отрицательные значения для групп)
         :param audio_id: ID аудио
         """
@@ -520,6 +521,7 @@ class VkAudio(object):
 
     def get_post_audio(self, owner_id, post_id):
         """ Получить список аудиозаписей из поста пользователя или группы
+
         :param owner_id: ID владельца (отрицательные значения для групп)
         :param post_id: ID поста
         """
