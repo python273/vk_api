@@ -22,6 +22,7 @@ class VkBotEventType(Enum):
     MESSAGE_NEW = 'message_new'
     MESSAGE_REPLY = 'message_reply'
     MESSAGE_EDIT = 'message_edit'
+    MESSAGE_EVENT = 'message_event'
 
     MESSAGE_TYPING_STATE = 'message_typing_state'
 

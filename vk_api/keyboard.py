@@ -51,6 +51,9 @@ class VkKeyboardButton(Enum):
     #: Кнопка с ссылкой
     OPENLINK = "open_link"
 
+    #: Callback-кнопка
+    CALLBACK = "callback"
+
 
 class VkKeyboard(object):
     """ Класс для создания клавиатуры для бота (https://vk.com/dev/bots_docs_3)
@@ -110,6 +113,42 @@ class VkKeyboard(object):
             payload = sjson_dumps(payload)
 
         button_type = VkKeyboardButton.TEXT.value
+
+        current_line.append({
+            'color': color_value,
+            'action': {
+                'type': button_type,
+                'payload': payload,
+                'label': label,
+            }
+        })
+
+    def add_callback_button(self, label, color=VkKeyboardColor.SECONDARY, payload=None):
+        """ Добавить callback-кнопку с текстом.
+            Максимальное количество кнопок на строке - MAX_BUTTONS_ON_LINE
+
+        :param label: Надпись на кнопке и текст, отправляющийся при её нажатии.
+        :type label: str
+        :param color: цвет кнопки.
+        :type color: VkKeyboardColor or str
+        :param payload: Параметр для callback api
+        :type payload: str or list or dict
+        """
+
+        current_line = self.lines[-1]
+
+        if len(current_line) >= MAX_BUTTONS_ON_LINE:
+            raise ValueError(f'Max {MAX_BUTTONS_ON_LINE} buttons on a line')
+
+        color_value = color
+
+        if isinstance(color, VkKeyboardColor):
+            color_value = color_value.value
+
+        if payload is not None and not isinstance(payload, six.string_types):
+            payload = sjson_dumps(payload)
+
+        button_type = VkKeyboardButton.CALLBACK.value
 
         current_line.append({
             'color': color_value,
