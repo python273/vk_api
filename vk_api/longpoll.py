@@ -13,6 +13,7 @@ from enum import IntEnum
 import requests
 import six
 from six.moves import range
+from time import sleep
 
 CHAT_START_ID = int(2E9)  # id с которого начинаются беседы
 
@@ -611,12 +612,22 @@ class VkLongPoll(object):
             for event in event_by_message_id[message['id']]:
                 event.message_data = message
 
-    def listen(self):
+    def listen(self, ignore_errors=False):
         """ Слушать сервер
 
+        :param ignore_errors: Игнорирование ошибок longpoll :class: `bool`
         :yields: :class:`Event`
         """
 
-        while True:
-            for event in self.check():
-                yield event
+        if ignore_errors:
+            while True:
+                try:
+                    for event in self.check():
+                        yield event
+                except Exception as e:
+                    sleep(0.33)
+                    continue
+        else:
+            while True:
+                for event in self.check():
+                    yield event
