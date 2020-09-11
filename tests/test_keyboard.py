@@ -27,7 +27,7 @@ keyboard = VkKeyboard()
 def test_keyboard():
     keyboard.add_button(
         'Test-1',
-        color=VkKeyboardColor.DEFAULT,
+        color=VkKeyboardColor.SECONDARY,
         payload={'test': 'some_payload'}
     )
     keyboard.add_line()
