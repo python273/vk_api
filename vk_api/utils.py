@@ -143,11 +143,16 @@ def enable_debug_mode(vk_session, print_content=False):
 
             total = end - start
 
+            body = request.body
+            if body and len(body) > 1024:
+                body = body[:1024] + '[STRIPPED]'
+
             print(
-                '{:0.2f} {} {} {} {}'.format(
+                '{:0.2f} {} {} {} {} {}'.format(
                     total,
                     request.method,
                     request.url,
+                    repr(body),
                     response.status_code,
                     response.history
                 )

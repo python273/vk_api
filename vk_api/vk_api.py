@@ -27,9 +27,7 @@ from .utils import (
 RE_LOGIN_HASH = re.compile(r'name="lg_h" value="([a-z0-9]+)"')
 RE_CAPTCHAID = re.compile(r"onLoginCaptcha\('(\d+)'")
 RE_NUMBER_HASH = re.compile(r"al_page: '3', hash: '([a-z0-9]+)'")
-RE_AUTH_HASH = re.compile(
-    r"\{.*?act: 'a_authcheck_code'.+?hash: '([a-z_0-9]+)'.*?\}"
-)
+RE_AUTH_HASH = re.compile(r"Authcheck\.init\('([a-z_0-9]+)'")
 RE_TOKEN_URL = re.compile(r'location\.href = "(.*?)"\+addr;')
 
 RE_PHONE_PREFIX = re.compile(r'label ta_r">\+(.*?)<')
@@ -317,19 +315,28 @@ class VkApi(object):
 
         :param auth_response: страница с приглашением к аутентификации
         """
-        code, remember_device = self.error_handlers[TWOFACTOR_CODE]()
 
         auth_hash = search_re(RE_AUTH_HASH, auth_response.text)
 
+        if not auth_hash:
+            raise TwoFactorError(
+                'Two factor authentication can not be passed:'
+                ' could not find "hash" value. Please create a bugreport'
+            )
+
+        code, remember_device = self.error_handlers[TWOFACTOR_CODE]()
+
         values = {
-            'act': 'a_authcheck_code',
             'al': '1',
             'code': code,
-            'remember': int(remember_device),
             'hash': auth_hash,
+            'remember': int(remember_device),
         }
 
-        response = self.http.post('https://vk.com/al_login.php', values)
+        response = self.http.post(
+            'https://vk.com/al_login.php?act=a_authcheck_code',
+            values
+        )
         data = json.loads(response.text.lstrip('<!--'))
         status = data['payload'][0]
 
