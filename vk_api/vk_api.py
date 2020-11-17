@@ -289,7 +289,7 @@ class VkApi(object):
             raise BadPassword('Bad password')
 
         if 'act=authcheck' in response.text:
-            self.logger.info('Two factor is required')
+            self.logger.info('2FA is required')
 
             response = self.http.get('https://vk.com/login?act=authcheck')
 
@@ -320,8 +320,8 @@ class VkApi(object):
 
         if not auth_hash:
             raise TwoFactorError(
-                'Two factor authentication can not be passed:'
-                ' could not find "hash" value. Please create a bugreport'
+                'Two-factor authentication can not be passed:'
+                ' could not find "hash" value. Please send a bugreport'
             )
 
         code, remember_device = self.error_handlers[TWOFACTOR_CODE]()
@@ -350,7 +350,10 @@ class VkApi(object):
         elif status == '2':
             raise TwoFactorError('Recaptcha required')
 
-        raise TwoFactorError('Two factor authentication failed')
+        raise TwoFactorError(
+            'Two-factor authentication can not be passed.'
+            ' Please send a bugreport'
+        )
 
     def _pass_security_check(self, response=None):
         """ Функция для обхода проверки безопасности (запрос номера телефона)
