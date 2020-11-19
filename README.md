@@ -1,9 +1,10 @@
-vk_api [![PyPI](https://img.shields.io/pypi/v/vk_api.svg)](https://pypi.org/project/vk_api/) ![Python 3.6, 3.7, 3.8](https://img.shields.io/pypi/pyversions/vk_api.svg) [![Telegram Chat](https://img.shields.io/badge/-Telegram%20Chat-green?logo=telegram&color=27A7E5)](https://t.me/python273_vk_api)
+vk_api [![PyPI](https://img.shields.io/pypi/v/vk_api.svg)](https://pypi.org/project/vk_api/) ![Python 3.6, 3.7, 3.8](https://img.shields.io/pypi/pyversions/vk_api.svg)
 =================================================================================================================================================================================
-**vk_api** – Python модуль для создания скриптов для социальной сети Вконтакте (vk.com API wrapper)
+**vk_api** – Python модуль для создания скриптов для ВКонтакте (vk.com API wrapper)
 
 * [Документация](https://vk-api.readthedocs.io/en/latest/)
-* [Примеры использования](./examples) (python3)
+* [Примеры](./examples)
+* [Чат в Telegram](https://t.me/python273_vk_api)
 * [Документация по методам API](https://vk.com/dev/methods)
 * [Альтернативы vk_api](https://github.com/python273/vk_api/issues/356) (асинхронность; боты)
 
