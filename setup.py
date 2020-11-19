@@ -11,7 +11,7 @@ from setuptools import setup
 """
 
 
-version = '11.9.0'
+version = '11.9.1'
 
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
