@@ -1,66 +1,75 @@
 # -*- coding: utf-8 -*-
-import vk_api
+import vk_api, traceback
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
+from requests.exceptions import ConnectionError, ReadTimeout
 
+def connect():
+    
+    vk_session = vk_api.VkApi(token='your_group_token')
+    longpoll = VkBotLongPoll(vk_session, 'your_group_id')
 
 def main():
     """ Пример использования bots longpoll
 
         https://vk.com/dev/bots_longpoll
     """
+    connect()
+    
+    while True:
+        try:
+            
+            for event in longpoll.listen():
 
-    vk_session = vk_api.VkApi(token='your_group_token')
+                if event.type == VkBotEventType.MESSAGE_NEW:
+                    print('Новое сообщение:')
 
-    longpoll = VkBotLongPoll(vk_session, 'your_group_id')
+                    print('Для меня от: ', end='')
 
-    for event in longpoll.listen():
+                    print(event.obj.from_id)
 
-        if event.type == VkBotEventType.MESSAGE_NEW:
-            print('Новое сообщение:')
+                    print('Текст:', event.obj.text)
+                    print()
 
-            print('Для меня от: ', end='')
+                elif event.type == VkBotEventType.MESSAGE_REPLY:
+                    print('Новое сообщение:')
 
-            print(event.obj.from_id)
+                    print('От меня для: ', end='')
 
-            print('Текст:', event.obj.text)
-            print()
+                    print(event.obj.peer_id)
 
-        elif event.type == VkBotEventType.MESSAGE_REPLY:
-            print('Новое сообщение:')
+                    print('Текст:', event.obj.text)
+                    print()
 
-            print('От меня для: ', end='')
+                elif event.type == VkBotEventType.MESSAGE_TYPING_STATE:
+                    print('Печатает ', end='')
 
-            print(event.obj.peer_id)
+                    print(event.obj.from_id, end=' ')
 
-            print('Текст:', event.obj.text)
-            print()
+                    print('для ', end='')
 
-        elif event.type == VkBotEventType.MESSAGE_TYPING_STATE:
-            print('Печатает ', end='')
+                    print(event.obj.to_id)
+                    print()
 
-            print(event.obj.from_id, end=' ')
+                elif event.type == VkBotEventType.GROUP_JOIN:
+                    print(event.obj.user_id, end=' ')
 
-            print('для ', end='')
+                    print('Вступил в группу!')
+                    print()
 
-            print(event.obj.to_id)
-            print()
+                elif event.type == VkBotEventType.GROUP_LEAVE:
+                    print(event.obj.user_id, end=' ')
 
-        elif event.type == VkBotEventType.GROUP_JOIN:
-            print(event.obj.user_id, end=' ')
+                    print('Покинул группу!')
+                    print()
 
-            print('Вступил в группу!')
-            print()
-
-        elif event.type == VkBotEventType.GROUP_LEAVE:
-            print(event.obj.user_id, end=' ')
-
-            print('Покинул группу!')
-            print()
-
-        else:
-            print(event.type)
-            print()
-
+                else:
+                    print(event.type)
+                    print()
+            
+            except (ConnectionError, ReadTimeOut):
+                """Переподключение в случае долгой неактивности или перезагрузки серверов"""
+                
+                connect()
 
 if __name__ == '__main__':
     main()
