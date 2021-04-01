@@ -3,11 +3,13 @@ import vk_api, traceback
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
 from requests.exceptions import RequestException
 
+
 def connect():
     
     vk_session = vk_api.VkApi(token='your_group_token')
     longpoll = VkBotLongPoll(vk_session, 'your_group_id')
 
+    
 def main():
     """ Пример использования bots longpoll
 
@@ -65,8 +67,7 @@ def main():
                 else:
                     print(event.type)
                     print()
-            
-            except RequestException:
+        except RequestException:
                 """Переподключение в случае долгой неактивности или перезагрузки серверов"""
                 
                 connect()
