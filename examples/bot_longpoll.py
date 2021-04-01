@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import vk_api, traceback
 from vk_api.bot_longpoll import VkBotLongPoll, VkBotEventType
-from requests.exceptions import ConnectionError, ReadTimeout
+from requests.exceptions import RequestException
 
 def connect():
     
@@ -66,7 +66,7 @@ def main():
                     print(event.type)
                     print()
             
-            except (ConnectionError, ReadTimeOut):
+            except RequestException:
                 """Переподключение в случае долгой неактивности или перезагрузки серверов"""
                 
                 connect()
