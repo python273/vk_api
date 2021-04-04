@@ -11,7 +11,7 @@ vk_api [![PyPI](https://img.shields.io/pypi/v/vk_api.svg)](https://pypi.org/proj
 ```python
 import vk_api
 
-vk_session = vk_api.VkApi('+71234567890', 'mypassword')
+vk_session = vk_api.VkApi('+7(XXX)-XXX-XX-XX', 'mypassword')
 vk_session.auth()
 
 vk = vk_session.get_api()
