@@ -61,15 +61,20 @@ class VkTools(object):
         count = None
 
         while True:
-            try:
-                response = vk_get_all_items(
-                    self.vk, method, key, values, count, offset,
-                    offset_mul=-1 if negative_offset else 1
-                )
-            except ApiError:
+            response = vk_get_all_items(
+                self.vk, method, key, values, count, offset,
+                offset_mul=-1 if negative_offset else 1
+            )
+
+            if 'execute_errors' in response:
                 raise VkToolsException(
-                    'Can\'t load items. Check access to requested items'
+                    'Could not load items: {}'.format(
+                        response['execute_errors']
+                    ),
+                    response=response
                 )
+
+            response = response['response']
 
             items = response["items"]
             items_count += len(items)
@@ -202,6 +207,7 @@ class VkTools(object):
 vk_get_all_items = VkFunction(
     args=('method', 'key', 'values', 'count', 'offset', 'offset_mul'),
     clean_args=('method', 'key', 'offset', 'offset_mul'),
+    return_raw=True,
     code='''
     var params = %(values)s,
         calls = 0,
@@ -217,6 +223,9 @@ vk_get_all_items = VkFunction(
         var response = API.%(method)s(params),
             new_count = response.count,
             count_diff = (count == null ? 0 : new_count - count);
+        if (!response) {
+            return {"_error": 1};
+        }
 
         if (count_diff < 0) {
             offset = offset + count_diff;
