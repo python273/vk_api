@@ -446,10 +446,9 @@ class VkApi(object):
             parsed_url = urlparse(response.url)
             parsed_query = parse_qs(parsed_url.query)
 
-            if 'authorize_url' not in parsed_query:
-                raise AuthError(get_unknown_exc_str('API AUTH; no authorize_url'))
+            if 'authorize_url' in parsed_query:
+                parsed_url = urlparse(parsed_query['authorize_url'][0])
 
-            parsed_url = urlparse(parsed_query['authorize_url'][0])
             parsed_query = parse_qs(parsed_url.fragment)
 
             token = {k: v[0] for k, v in parsed_query.items()}
