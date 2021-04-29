@@ -12,6 +12,7 @@ import random
 import re
 import threading
 import time
+from urllib.parse import urlparse, parse_qs
 
 import requests
 import six
@@ -35,6 +36,10 @@ RE_PHONE_POSTFIX = re.compile(r'phone_postfix">.*?(\d+).*?<')
 
 
 DEFAULT_USER_SCOPE = sum(VkUserPermissions)
+
+
+def get_unknown_exc_str(s):
+    return 'Unknown error ({}). Please send bugreport to GitHub or vk_api@python273.pw'.format(s)
 
 
 class VkApi(object):
@@ -301,9 +306,7 @@ class VkApi(object):
             self.storage.cookies = cookies_to_list(self.http.cookies)
             self.storage.save()
         else:
-            raise AuthError(
-                'Unknown error. Please send bugreport to vk_api@python273.pw'
-            )
+            raise AuthError(get_unknown_exc_str('AUTH; no sid'))
 
         response = self._pass_security_check(response)
 
@@ -319,10 +322,7 @@ class VkApi(object):
         auth_hash = search_re(RE_AUTH_HASH, auth_response.text)
 
         if not auth_hash:
-            raise TwoFactorError(
-                'Two-factor authentication can not be passed:'
-                ' could not find "hash" value. Please send a bugreport'
-            )
+            raise TwoFactorError(get_unknown_exc_str('2FA; no hash'))
 
         code, remember_device = self.error_handlers[TWOFACTOR_CODE]()
 
@@ -350,10 +350,7 @@ class VkApi(object):
         elif status == '2':
             raise TwoFactorError('Recaptcha required')
 
-        raise TwoFactorError(
-            'Two-factor authentication can not be passed.'
-            ' Please send a bugreport'
-        )
+        raise TwoFactorError(get_unknown_exc_str('2FA; unknown status'))
 
     def _pass_security_check(self, response=None):
         """ Функция для обхода проверки безопасности (запрос номера телефона)
@@ -446,8 +443,19 @@ class VkApi(object):
                 response = self.http.get(url)
 
         if 'access_token' in response.url:
-            params = response.url.split('#', 1)[1].split('&')
-            token = dict(param.split('=', 1) for param in params)
+            parsed_url = urlparse(response.url)
+            parsed_query = parse_qs(parsed_url.query)
+
+            if 'authorize_url' not in parsed_query:
+                raise AuthError(get_unknown_exc_str('API AUTH; no authorize_url'))
+
+            parsed_url = urlparse(parsed_query['authorize_url'][0])
+            parsed_query = parse_qs(parsed_url.fragment)
+
+            token = {k: v[0] for k, v in parsed_query.items()}
+
+            if not isinstance(token.get('access_token'), str):
+                raise AuthError(get_unknown_exc_str('API AUTH; no access_token'))
 
             self.token = token
 
@@ -619,7 +627,7 @@ class VkApi(object):
 
             response = self.http.post(
                 'https://api.vk.com/method/' + method,
-                values
+                values,
             )
             self.last_request = time.time()
 
