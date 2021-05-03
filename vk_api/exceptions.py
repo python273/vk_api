@@ -49,6 +49,8 @@ class TwoFactorError(AuthError):
 class SecurityCheck(AuthError):
 
     def __init__(self, phone_prefix=None, phone_postfix=None, response=None):
+        super(SecurityCheck, self).__init__()
+
         self.phone_prefix = phone_prefix
         self.phone_postfix = phone_postfix
         self.response = response
@@ -66,6 +68,8 @@ class SecurityCheck(AuthError):
 class ApiError(VkApiError):
 
     def __init__(self, vk, method, values, raw, error):
+        super(ApiError, self).__init__()
+
         self.vk = vk
         self.method = method
         self.values = values
@@ -86,6 +90,8 @@ class ApiError(VkApiError):
 class ApiHttpError(VkApiError):
 
     def __init__(self, vk, method, values, raw, response):
+        super(ApiHttpError, self).__init__()
+
         self.vk = vk
         self.method = method
         self.values = values
@@ -104,6 +110,8 @@ class ApiHttpError(VkApiError):
 class Captcha(VkApiError):
 
     def __init__(self, vk, captcha_sid, func, args=None, kwargs=None, url=None):
+        super(Captcha, self).__init__()
+
         self.vk = vk
         self.sid = captcha_sid
         self.func = func
@@ -161,7 +169,9 @@ class VkAudioUrlDecodeError(VkAudioException):
 
 
 class VkToolsException(VkApiError):
-    pass
+    def __init__(self, *args, response=None):
+        super().__init__(*args)
+        self.response = response
 
 
 class VkRequestsPoolException(Exception):

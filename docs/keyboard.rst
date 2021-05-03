@@ -8,3 +8,5 @@ VkKeyboard
     :members:
 .. autoclass:: VkKeyboardColor
     :members:
+.. autoclass:: VkKeyboardButton
+    :members:

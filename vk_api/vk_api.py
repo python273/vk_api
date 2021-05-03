@@ -12,6 +12,7 @@ import random
 import re
 import threading
 import time
+from urllib.parse import urlparse, parse_qs
 
 import requests
 import six
@@ -27,9 +28,7 @@ from .utils import (
 RE_LOGIN_HASH = re.compile(r'name="lg_h" value="([a-z0-9]+)"')
 RE_CAPTCHAID = re.compile(r"onLoginCaptcha\('(\d+)'")
 RE_NUMBER_HASH = re.compile(r"al_page: '3', hash: '([a-z0-9]+)'")
-RE_AUTH_HASH = re.compile(
-    r"\{.*?act: 'a_authcheck_code'.+?hash: '([a-z_0-9]+)'.*?\}"
-)
+RE_AUTH_HASH = re.compile(r"Authcheck\.init\('([a-z_0-9]+)'")
 RE_TOKEN_URL = re.compile(r'location\.href = "(.*?)"\+addr;')
 
 RE_PHONE_PREFIX = re.compile(r'label ta_r">\+(.*?)<')
@@ -37,6 +36,10 @@ RE_PHONE_POSTFIX = re.compile(r'phone_postfix">.*?(\d+).*?<')
 
 
 DEFAULT_USER_SCOPE = sum(VkUserPermissions)
+
+
+def get_unknown_exc_str(s):
+    return 'Unknown error ({}). Please send bugreport to GitHub or vk_api@python273.pw'.format(s)
 
 
 class VkApi(object):
@@ -291,7 +294,7 @@ class VkApi(object):
             raise BadPassword('Bad password')
 
         if 'act=authcheck' in response.text:
-            self.logger.info('Two factor is required')
+            self.logger.info('2FA is required')
 
             response = self.http.get('https://vk.com/login?act=authcheck')
 
@@ -303,9 +306,7 @@ class VkApi(object):
             self.storage.cookies = cookies_to_list(self.http.cookies)
             self.storage.save()
         else:
-            raise AuthError(
-                'Unknown error. Please send bugreport to vk_api@python273.pw'
-            )
+            raise AuthError(get_unknown_exc_str('AUTH; no sid'))
 
         response = self._pass_security_check(response)
 
@@ -317,19 +318,25 @@ class VkApi(object):
 
         :param auth_response: страница с приглашением к аутентификации
         """
-        code, remember_device = self.error_handlers[TWOFACTOR_CODE]()
 
         auth_hash = search_re(RE_AUTH_HASH, auth_response.text)
 
+        if not auth_hash:
+            raise TwoFactorError(get_unknown_exc_str('2FA; no hash'))
+
+        code, remember_device = self.error_handlers[TWOFACTOR_CODE]()
+
         values = {
-            'act': 'a_authcheck_code',
             'al': '1',
             'code': code,
-            'remember': int(remember_device),
             'hash': auth_hash,
+            'remember': int(remember_device),
         }
 
-        response = self.http.post('https://vk.com/al_login.php', values)
+        response = self.http.post(
+            'https://vk.com/al_login.php?act=a_authcheck_code',
+            values
+        )
         data = json.loads(response.text.lstrip('<!--'))
         status = data['payload'][0]
 
@@ -343,7 +350,7 @@ class VkApi(object):
         elif status == '2':
             raise TwoFactorError('Recaptcha required')
 
-        raise TwoFactorError('Two factor authentication failed')
+        raise TwoFactorError(get_unknown_exc_str('2FA; unknown status'))
 
     def _pass_security_check(self, response=None):
         """ Функция для обхода проверки безопасности (запрос номера телефона)
@@ -436,8 +443,18 @@ class VkApi(object):
                 response = self.http.get(url)
 
         if 'access_token' in response.url:
-            params = response.url.split('#', 1)[1].split('&')
-            token = dict(param.split('=', 1) for param in params)
+            parsed_url = urlparse(response.url)
+            parsed_query = parse_qs(parsed_url.query)
+
+            if 'authorize_url' in parsed_query:
+                parsed_url = urlparse(parsed_query['authorize_url'][0])
+
+            parsed_query = parse_qs(parsed_url.fragment)
+
+            token = {k: v[0] for k, v in parsed_query.items()}
+
+            if not isinstance(token.get('access_token'), str):
+                raise AuthError(get_unknown_exc_str('API AUTH; no access_token'))
 
             self.token = token
 
@@ -609,7 +626,7 @@ class VkApi(object):
 
             response = self.http.post(
                 'https://api.vk.com/method/' + method,
-                values
+                values,
             )
             self.last_request = time.time()
 
@@ -647,6 +664,11 @@ class VkApi(object):
 
         return response if raw else response['response']
 
+class VkApiGroup(VkApi):
+    """Предназначен для авторизации с токеном группы.
+    Увеличивает частоту обращений к API с 3 до 20 в секунду.
+    """
+    RPS_DELAY = 1 / 20.0
 
 class VkApiMethod(object):
     """ Дает возможность обращаться к методам API через:

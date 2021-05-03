@@ -1,21 +1,14 @@
 Документация vk_api
 ===================
 
-vk_api – Python модуль для написания скриптов для социальной сети Вконтакте
-(vk.com) (API wrapper)
+vk_api – Python модуль для создания скриптов для социальной сети Вконтакте (vk.com API wrapper)
 
 `Установка через PIP
 <https://pythonworld.ru/osnovy/pip.html>`_:
 
 .. code-block:: shell-session
 
-   $ pip install --user vk_api
-
-или
-
-.. code-block:: shell-session
-
-   # pip install vk_api
+   # pip3 install vk_api
 
 Примеры по использованию библиотеки доступны на `GitHub <https://github.com/python273/vk_api/tree/master/examples>`_.
 

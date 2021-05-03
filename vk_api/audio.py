@@ -251,6 +251,7 @@ class VkAudio(object):
         """ Искать аудиозаписи
         :param q: запрос
         :param count: количество
+        :param offset: смещение
         """
 
         return islice(self.search_iter(q, offset=offset), count)
@@ -275,7 +276,6 @@ class VkAudio(object):
         )
 
         json_response = json.loads(response.text.replace('<!--', ''))
-
 
         while json_response['payload'][1][1]['playlist']:
 
@@ -314,7 +314,7 @@ class VkAudio(object):
             )
             json_response = json.loads(response.text.replace('<!--', ''))
 
-
+            
     def get_updates_iter(self):
         """ Искать обновления друзей (генератор) """
 
@@ -429,7 +429,6 @@ class VkAudio(object):
             for track in tracks:
                 yield track
 
-
         offset_left += len(ids)
 
         while True:
@@ -463,9 +462,7 @@ class VkAudio(object):
                 for track in tracks:
                     yield track
 
-
             offset_left += len(ids)
-
 
     def get_audio_by_id(self, owner_id, audio_id):
         """ Получить аудиозапись по ID
@@ -535,7 +532,7 @@ def scrap_ids(audio_data):
 
 
 def scrap_json(html_page):
-    """ Парсинг списка хэшей ауфдиозаписей новинок или популярных + nextFrom&sesionId """
+    """ Парсинг списка хэшей аудиозаписей новинок или популярных + nextFrom&sessionId """
 
     find_json_pattern = r"new AudioPage\(.*?(\{.*\})"
     fr = re.search(find_json_pattern, html_page).group(1)

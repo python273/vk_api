@@ -11,7 +11,7 @@ from setuptools import setup
 """
 
 
-version = '11.7.0'
+version = '11.9.3'
 
 with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
@@ -24,8 +24,8 @@ setup(
     author_email='vk_api@python273.pw',
 
     description=(
-        u'Python модуль для написания скриптов для социальной сети '
-        u'Вконтакте (vk.com) (API wrapper)'
+        u'Python модуль для создания скриптов для социальной сети '
+        u'Вконтакте (vk.com API wrapper)'
     ),
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -48,13 +48,10 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Programming Language :: Python :: Implementation :: CPython',
     ]
