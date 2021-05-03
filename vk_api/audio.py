@@ -128,6 +128,8 @@ class VkAudio(object):
             ids = scrap_ids(
                 response['data'][0]['list']
             )
+            if not ids:
+                break
 
             tracks = scrap_tracks(
                 ids,
@@ -135,9 +137,6 @@ class VkAudio(object):
                 self._vk.http,
                 convert_m3u8_links=self.convert_m3u8_links
             )
-
-            if not tracks:
-                break
 
             for i in tracks:
                 yield i
@@ -283,6 +282,8 @@ class VkAudio(object):
             ids = scrap_ids(
                 json_response['payload'][1][1]['playlist']['list']
             )
+            if not ids:
+                break
 
             #len(tracks) <= 10
             if offset_left + len(ids) >= offset:
@@ -295,9 +296,6 @@ class VkAudio(object):
                     convert_m3u8_links=self.convert_m3u8_links,
                     http=self._vk.http
                 )
-
-                if not tracks:
-                    break
 
                 for track in tracks:
                     yield track
@@ -339,6 +337,8 @@ class VkAudio(object):
             ids = scrap_ids(
                 [i[0] for i in updates if i]
             )
+            if not ids:
+                break
 
             tracks = scrap_tracks(
                 ids,
@@ -346,9 +346,6 @@ class VkAudio(object):
                 convert_m3u8_links=self.convert_m3u8_links,
                 http=self._vk.http
             )
-
-            if not tracks:
-                break
 
             for track in tracks:
                 yield track
@@ -388,20 +385,12 @@ class VkAudio(object):
         )
 
         #len(tracks) <= 10
-        if offset:
-            tracks = scrap_tracks(
-                ids[offset:],
-                self.user_id,
-                convert_m3u8_links=self.convert_m3u8_links,
-                http=self._vk.http
-            )
-        else:
-            tracks = scrap_tracks(
-                ids,
-                self.user_id,
-                convert_m3u8_links=self.convert_m3u8_links,
-                http=self._vk.http
-            )
+        tracks = scrap_tracks(
+            ids[offset:] if offset else ids,
+            self.user_id,
+            convert_m3u8_links=self.convert_m3u8_links,
+            http=self._vk.http
+        )
 
         for track in tracks:
             yield track
@@ -430,20 +419,12 @@ class VkAudio(object):
 
         #len(tracks) <= 10
         if offset_left + len(ids) >= offset:
-            if offset_left >= offset:
-                tracks = scrap_tracks(
-                    ids,
-                    self.user_id,
-                    convert_m3u8_links=self.convert_m3u8_links,
-                    http=self._vk.http
-                )
-            else:
-                tracks = scrap_tracks(
-                    ids[offset - offset_left:],
-                    self.user_id,
-                    convert_m3u8_links=self.convert_m3u8_links,
-                    http=self._vk.http
-                )
+            tracks = scrap_tracks(
+                ids if offset_left >= offset else ids[offset - offset_left:],
+                self.user_id,
+                convert_m3u8_links=self.convert_m3u8_links,
+                http=self._vk.http
+            )
 
             for track in tracks:
                 yield track
@@ -467,26 +448,17 @@ class VkAudio(object):
             ids = scrap_ids(
                 json_response['payload'][1][1]['playlist']['list']
             )
+            if not ids:
+                break
 
             #len(tracks) <= 10
             if offset_left + len(ids) >= offset:
-                if offset_left >= offset:
-                    tracks = scrap_tracks(
-                        ids,
-                        self.user_id,
-                        convert_m3u8_links=self.convert_m3u8_links,
-                        http=self._vk.http
-                    )
-                else:
-                    tracks = scrap_tracks(
-                        ids[offset - offset_left:],
-                        self.user_id,
-                        convert_m3u8_links=self.convert_m3u8_links,
-                        http=self._vk.http
-                    )
-
-                if not tracks:
-                    break
+                tracks = scrap_tracks(
+                    ids if offset_left >= offset else ids[offset - offset_left:],
+                    self.user_id,
+                    convert_m3u8_links=self.convert_m3u8_links,
+                    http=self._vk.http
+                )
 
                 for track in tracks:
                     yield track
