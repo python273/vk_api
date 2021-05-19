@@ -12,7 +12,7 @@ import random
 import re
 import threading
 import time
-from urllib.parse import urlparse, parse_qs
+import urllib.parse
 
 import requests
 import six
@@ -443,13 +443,18 @@ class VkApi(object):
                 response = self.http.get(url)
 
         if 'access_token' in response.url:
-            parsed_url = urlparse(response.url)
-            parsed_query = parse_qs(parsed_url.query)
+            parsed_url = urllib.parse.urlparse(response.url)
+            parsed_query = urllib.parse.parse_qs(parsed_url.query)
 
             if 'authorize_url' in parsed_query:
-                parsed_url = urlparse(parsed_query['authorize_url'][0])
+                url = parsed_query['authorize_url'][0]
 
-            parsed_query = parse_qs(parsed_url.fragment)
+                if url.startswith('https%3A'):  # double-encoded
+                    url = urllib.parse.unquote(url)
+
+                parsed_url = urllib.parse.urlparse(url)
+
+            parsed_query = urllib.parse.parse_qs(parsed_url.fragment)
 
             token = {k: v[0] for k, v in parsed_query.items()}
 
