@@ -6,6 +6,9 @@
 :copyright: (c) 2019 python273
 """
 
+import requests
+
+
 from .vk_api import VkApi, VkApiMethod
 
 
@@ -23,7 +26,7 @@ class VkUpload(object):
     :param vk: объект :class:`VkApi` или :class:`VkApiMethod`
     """
 
-    __slots__ = ('vk',)
+    __slots__ = ('vk', 'http')
 
     def __init__(self, vk):
 
@@ -37,9 +40,8 @@ class VkUpload(object):
         else:
             self.vk = vk.get_api()
 
-    @property
-    def http(self):
-        return self.vk._vk.http
+        self.http = requests.Session()
+        self.http.headers.pop('user-agent')
 
     def photo(self, photos, album_id,
               latitude=None, longitude=None, caption=None, description=None,
