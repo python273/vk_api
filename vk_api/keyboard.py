@@ -7,7 +7,6 @@
 
 from enum import Enum
 
-import six
 
 from .utils import sjson_dumps
 
@@ -109,7 +108,7 @@ class VkKeyboard(object):
         if isinstance(color, VkKeyboardColor):
             color_value = color_value.value
 
-        if payload is not None and not isinstance(payload, six.string_types):
+        if payload is not None and not isinstance(payload, str):
             payload = sjson_dumps(payload)
 
         button_type = VkKeyboardButton.TEXT.value
@@ -145,7 +144,7 @@ class VkKeyboard(object):
         if isinstance(color, VkKeyboardColor):
             color_value = color_value.value
 
-        if payload is not None and not isinstance(payload, six.string_types):
+        if payload is not None and not isinstance(payload, str):
             payload = sjson_dumps(payload)
 
         button_type = VkKeyboardButton.CALLBACK.value
@@ -174,7 +173,7 @@ class VkKeyboard(object):
                 'This type of button takes the entire width of the line'
             )
 
-        if payload is not None and not isinstance(payload, six.string_types):
+        if payload is not None and not isinstance(payload, str):
             payload = sjson_dumps(payload)
 
         button_type = VkKeyboardButton.LOCATION.value
@@ -204,7 +203,7 @@ class VkKeyboard(object):
                 'This type of button takes the entire width of the line'
             )
 
-        if payload is not None and not isinstance(payload, six.string_types):
+        if payload is not None and not isinstance(payload, str):
             payload = sjson_dumps(payload)
 
         button_type = VkKeyboardButton.VKPAY.value
@@ -242,7 +241,7 @@ class VkKeyboard(object):
                 'This type of button takes the entire width of the line'
             )
 
-        if payload is not None and not isinstance(payload, six.string_types):
+        if payload is not None and not isinstance(payload, str):
             payload = sjson_dumps(payload)
 
         button_type = VkKeyboardButton.VKAPPS.value
@@ -274,7 +273,7 @@ class VkKeyboard(object):
         if len(current_line) >= MAX_BUTTONS_ON_LINE:
             raise ValueError(f'Max {MAX_BUTTONS_ON_LINE} buttons on a line')
 
-        if payload is not None and not isinstance(payload, six.string_types):
+        if payload is not None and not isinstance(payload, str):
             payload = sjson_dumps(payload)
 
         button_type = VkKeyboardButton.OPENLINK.value

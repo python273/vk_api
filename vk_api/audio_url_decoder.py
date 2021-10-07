@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from six.moves import range
-
 from .exceptions import VkAudioUrlDecodeError
 
 VK_STR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMN0PQRSTUVWXYZO123456789+/="

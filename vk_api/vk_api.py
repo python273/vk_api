@@ -15,7 +15,6 @@ import time
 import urllib.parse
 
 import requests
-import six
 
 import jconfig
 from .enums import VkUserPermissions
@@ -701,7 +700,7 @@ class VkApiMethod(object):
         )
 
     def __call__(self, **kwargs):
-        for k, v in six.iteritems(kwargs):
+        for k, v in kwargs.items():
             if isinstance(v, (list, tuple)):
                 kwargs[k] = ','.join(str(x) for x in v)
 

@@ -10,17 +10,12 @@ from __future__ import print_function
 
 import random
 
-import six
-
 try:
     import simplejson as json
 except ImportError:
     import json
 
-try:
-    from http.cookiejar import Cookie
-except ImportError:  # python2
-    from cookielib import Cookie
+from http.cookiejar import Cookie
 
 
 def search_re(reg, string):
@@ -82,7 +77,7 @@ HTTP_COOKIE_ARGS = [
 
 def cookie_to_dict(cookie):
     cookie_dict = {
-        k: v for k, v in six.iteritems(cookie.__dict__) if k in HTTP_COOKIE_ARGS
+        k: v for k, v in cookie.__dict__.items() if k in HTTP_COOKIE_ARGS
     }
 
     cookie_dict['rest'] = cookie._rest
@@ -148,10 +143,11 @@ def enable_debug_mode(vk_session, print_content=False):
                 body = body[:1024] + '[STRIPPED]'
 
             print(
-                '{:0.2f} {} {} {} {} {}'.format(
+                '{:0.2f} {} {} {} {} {} {}'.format(
                     total,
                     request.method,
                     request.url,
+                    request.headers,
                     repr(body),
                     response.status_code,
                     response.history
