@@ -24,7 +24,11 @@ from .utils import (
     cookies_to_list, set_cookies_from_list
 )
 
-RE_LOGIN_HASH = re.compile(r'name="lg_h" value="([a-z0-9]+)"')
+RE_LOGIN_TO = re.compile(r'"to":"(.*?)"')
+RE_LOGIN_IP_H = re.compile(r'name="ip_h" value="([a-z0-9]+)"')
+RE_LOGIN_LG_H = re.compile(r'name="lg_h" value="([a-z0-9]+)"')
+RE_LOGIN_LG_DOMAIN_H = re.compile(r'name="lg_domain_h" value="([a-z0-9]+)"')
+
 RE_CAPTCHAID = re.compile(r"onLoginCaptcha\('(\d+)'")
 RE_NUMBER_HASH = re.compile(r"al_page: '3', hash: '([a-z0-9]+)'")
 RE_AUTH_HASH = re.compile(r"Authcheck\.init\('([a-z_0-9]+)'")
@@ -33,6 +37,7 @@ RE_TOKEN_URL = re.compile(r'location\.href = "(.*?)"\+addr;')
 RE_PHONE_PREFIX = re.compile(r'label ta_r">\+(.*?)<')
 RE_PHONE_POSTFIX = re.compile(r'phone_postfix">.*?(\d+).*?<')
 
+DEFAULT_USERAGENT = 'Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0'
 
 DEFAULT_USER_SCOPE = sum(VkUserPermissions)
 
@@ -109,10 +114,7 @@ class VkApi(object):
 
         self.http = session or requests.Session()
         if not session:
-            self.http.headers.update({
-                'User-agent': 'Mozilla/5.0 (Windows NT 6.1; rv:52.0) '
-                              'Gecko/20100101 Firefox/52.0'
-            })
+            self.http.headers['User-agent'] = DEFAULT_USERAGENT
 
         self.last_request = 0.0
 
@@ -248,14 +250,27 @@ class VkApi(object):
         # Get cookies
         response = self.http.get('https://vk.com/')
 
+        headers = {
+            'Referer': 'https://vk.com/',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Origin': 'https://vk.com',
+        }
+
         values = {
             'act': 'login',
             'role': 'al_frame',
+            'expire': '',
+            'to': search_re(RE_LOGIN_TO, response.text),
+            'recaptcha': '',
+            'captcha_sid': '',
+            'captcha_key': '',
             '_origin': 'https://vk.com',
-            'utf8': '1',
+            'ip_h': search_re(RE_LOGIN_IP_H, response.text),
+            'lg_h': search_re(RE_LOGIN_LG_H, response.text),
+            'lg_domain_h': search_re(RE_LOGIN_LG_DOMAIN_H, response.text),
+            'ul': '',
             'email': self.login,
-            'pass': self.password,
-            'lg_h': search_re(RE_LOGIN_HASH, response.text)
+            'pass': self.password
         }
 
         if captcha_sid and captcha_key:
@@ -265,13 +280,14 @@ class VkApi(object):
                     captcha_key
                 )
             )
+            values['captcha_sid'] = captcha_sid
+            values['captcha_key'] = captcha_key
 
-            values.update({
-                'captcha_sid': captcha_sid,
-                'captcha_key': captcha_key
-            })
-
-        response = self.http.post('https://login.vk.com/', values)
+        response = self.http.post(
+            'https://login.vk.com/?act=login',
+            data=values,
+            headers=headers
+        )
 
         if 'onLoginCaptcha(' in response.text:
             self.logger.info('Captcha code is required')
