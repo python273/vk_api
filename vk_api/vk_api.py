@@ -265,6 +265,7 @@ class VkApi(object):
             'captcha_sid': '',
             'captcha_key': '',
             '_origin': 'https://vk.com',
+            'utf8': '1',
             'ip_h': search_re(RE_LOGIN_IP_H, response.text),
             'lg_h': search_re(RE_LOGIN_LG_H, response.text),
             'lg_domain_h': search_re(RE_LOGIN_LG_DOMAIN_H, response.text),
