@@ -37,7 +37,7 @@ RE_TOKEN_URL = re.compile(r'location\.href = "(.*?)"\+addr;')
 RE_PHONE_PREFIX = re.compile(r'label ta_r">\+(.*?)<')
 RE_PHONE_POSTFIX = re.compile(r'phone_postfix">.*?(\d+).*?<')
 
-DEFAULT_USERAGENT = 'Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0'
+DEFAULT_USERAGENT = 'Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0'
 
 DEFAULT_USER_SCOPE = sum(VkUserPermissions)
 
@@ -248,9 +248,11 @@ class VkApi(object):
         self.http.cookies.clear()
 
         # Get cookies
-        response = self.http.get('https://vk.com/')
+        response = self.http.get('https://vk.com/login')
 
         headers = {
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
             'Referer': 'https://vk.com/',
             'Content-Type': 'application/x-www-form-urlencoded',
             'Origin': 'https://vk.com',
@@ -358,7 +360,7 @@ class VkApi(object):
 
         if status == '4':  # OK
             path = json.loads(data['payload'][1][0])
-            return self.http.get('https://vk.com' + path)
+            return self.http.get(path)
 
         elif status in [0, '8']:  # Incorrect code
             return self._pass_twofactor(auth_response)
