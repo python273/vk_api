@@ -43,7 +43,10 @@ DEFAULT_USER_SCOPE = sum(VkUserPermissions)
 
 
 def get_unknown_exc_str(s):
-    return 'Unknown error ({}). Please send bugreport to GitHub or vk_api@python273.pw'.format(s)
+    return (
+        f'Unknown error ({s}). Please send a bugreport to GitHub: '
+        'https://github.com/python273/vk_api/issues'
+    )
 
 
 class VkApi(object):
