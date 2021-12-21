@@ -675,6 +675,7 @@ def scrap_albums(html):
             'access_hash': access_hash.group(1) if access_hash else None,
 
             'title': album.select_one('.audioPlaylistsPage__title').text,
+            'artist': album.select_one('.audioPlaylistsPage__author').text,
             'plays': plays
         })
 
