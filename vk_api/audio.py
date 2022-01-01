@@ -203,6 +203,48 @@ class VkAudio(object):
         """
 
         return list(self.get_albums_iter(owner_id))
+    
+    def search_artist_albums(self, author = ""):
+        """Искать альбомы артиста по имени
+
+        :param author: str - имя артиста.
+        """
+        if author is None or author == "":
+            raise ValueError("Invalid value passed")
+        
+        response = self._vk.http.post(
+            'https://m.vk.com/audio',
+            data={
+                '_ajax': 1,
+                'q': author
+            },
+            headers={
+                'Host': 'm.vk.com',
+                'Accept': '*/*',
+                'Accept-Language': 'ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Origin': 'https://m.vk.com',
+                'Sec-Fetch-Dest': 'empty',
+                'Sec-Fetch-Mode': 'cors',
+                'Sec-Fetch-Site': 'same-origin',
+                'Connection': 'keep-alive',
+            }
+        ).json()
+        
+        if "OwnerRow OwnerRow_artist al_artist" not in response['data'][2]:
+            raise ValueError("Invalid value passed")
+
+        soup = BeautifulSoup(response['data'][2], 'html.parser')
+        
+        artist = soup.find('div', {'class': 'OwnerRow OwnerRow_artist al_artist'})
+        link = f"https://m.vk.com{artist.find('a', {'class': 'OwnerRow__content'})['href']}/albums"
+        
+        albums = scrap_albums(self._vk.http.get(link).text)
+
+        for i in albums:
+            yield i
 
     def search_user(self, owner_id=None, q=''):
         """ Искать по аудиозаписям пользователя
