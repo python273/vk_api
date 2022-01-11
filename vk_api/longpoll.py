@@ -11,6 +11,8 @@ from datetime import datetime
 from enum import IntEnum
 
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 CHAT_START_ID = int(2E9)  # id с которого начинаются беседы
 
@@ -511,6 +513,9 @@ class VkLongPoll(object):
         self.pts = mode & VkLongpollMode.GET_PTS
 
         self.session = requests.Session()
+        self.retry = Retry(connect=3, backoff_factor=0.33)
+        self.http_adapter = HTTPAdapter(max_retries=self.retry)
+        self.session.mount('https://', self.http_adapter)
 
         self.update_longpoll_server()
 
