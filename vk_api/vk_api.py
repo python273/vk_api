@@ -441,9 +441,8 @@ class VkApi(object):
         if not self._sid:
             raise AuthError('API auth error (no remixsid)')
 
-        for cookie_name in ['p', 'l']:
-            if not self.http.cookies.get(cookie_name, domain='.login.vk.com'):
-                raise AuthError('API auth error (no login cookies)')
+        if not self.http.cookies.get('p', domain='.login.vk.com'):
+            raise AuthError('API auth error (no login cookies)')
 
         response = self.http.get(
             'https://oauth.vk.com/authorize',
