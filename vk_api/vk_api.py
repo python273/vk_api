@@ -135,6 +135,8 @@ class VkApi(object):
     @property
     def _sid(self):
         return (
+            self.http.cookies.get('remixsid', domain='.vk.com') or
+            self.http.cookies.get('remixsid6', domain='.vk.com') or
             self.http.cookies.get('remixsid', domain='.vk.ru') or
             self.http.cookies.get('remixsid6', domain='.vk.ru')
         )
