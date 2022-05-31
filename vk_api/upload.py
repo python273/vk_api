@@ -7,7 +7,8 @@
 """
 
 import requests
-
+from io import BytesIO
+from functools import reduce
 
 from .vk_api import VkApi, VkApiMethod
 
@@ -19,6 +20,57 @@ STORY_ALLOWED_LINK_TEXTS = {
     'contact', 'watch', 'play', 'install', 'read'
 }
 
+
+class AttachmentHandler(object):
+    """Вспомогательный класс, используемый для хранения и обработки результата загрузки объекта"""
+
+    __slots__ = ('key', 'raw', 'access_key', 'owner_id', 'id')
+
+    def __init__(self, raw, key):
+        self.raw = raw
+        self.key = key
+        self.owner_id = self.raw["owner_id"]
+        self.id = self.raw["id"]
+        self.access_key = self.raw.get("access_key")
+
+    def to_attachment(self):
+        """Формирует вложение в формате вк"""
+        return (
+            f"{self.key}{self.owner_id}_{self.id}_{self.access_key}"
+            if self.access_key is not None
+            else f"{self.key}{self.owner_id}_{self.id}"
+        )
+
+
+class AttachmentsHandler(list):
+    """Вспомогательный класс, используемый для хранения и обработки результата загрузки объектов
+
+    :param raw: результат загрузки, полученный от одного из методов VkUpload
+    :param key: формат вложения (doc/audio/photo), используемый для формирования вложения в формате вк
+    """
+
+    __slots__ = ('raw',)
+
+    def __init__(self, key, raw) -> None:
+        super().__init__(AttachmentHandler(obj, key) for obj in raw)
+
+    def to_attachments(self):
+        """Формирует вложение в формате вк"""
+        return ",".join([obj.to_attachment() for obj in self])
+
+    def __iadd__(self, other):
+        if not isinstance(other, type(self)) or not isinstance(other, list):
+            raise NotImplementedError(f"Class {self.__class__.__name__} doesn't support addition of type {type(other)}")
+        if isinstance(other, type(self)):
+            super().__iadd__(other)
+            return self
+        else:
+            return self.__iadd__(AttachmentsHandler(other))
+
+    __add__ = __iadd__
+
+
+DISALLOWED_FROM_METHODS = ["from_link", "from_bytes"]
 
 class VkUpload(object):
     """ Загрузка файлов через API (https://vk.com/dev/upload_files)
@@ -42,6 +94,46 @@ class VkUpload(object):
 
         self.http = requests.Session()
         self.http.headers.pop('user-agent')
+
+    def from_bytes(self, method, bytes, *args, **kwargs):
+        """ Создание медиавложений из байтов 
+
+        :param method: название метода класса VkUpload, который будет использоваться для загрузки
+        :type method: str
+
+        :param bytes: байты, которые нужно загрузить
+        :type bytes: bytes or list[bytes]
+
+        :param args: дополнительные позиционные аргументы, которые будут переданы в метод загрузки
+        :param kwargs: дополнительные непозиционные аргументы, которые будут переданы в метод загрузки
+        """
+
+        if method in DISALLOWED_FROM_METHODS:
+            raise ValueError(f"Метод {method} не является действительным для загрузки.")
+
+        if isinstance(bytes, list):
+            return reduce(lambda x, y: x+y, [getattr(self, method)(BytesIO(_bytes), *args, **kwargs) for _bytes in bytes])
+
+        return getattr(self, method)(BytesIO(bytes), *args, **kwargs)
+
+    def from_link(self, method, links, *args, **kwargs):
+        """ Создания медиавложения из ссылки 
+        
+        :param method: название метода класса VkUpload, который будет использоваться для загрузки
+        :type method: str
+
+        :param links: ссылка или список ссылок, 
+        :type links: str or list[str]
+
+        :param args: дополнительные позиционные аргументы, которые будут переданы в метод загрузки
+        :param kwargs: дополнительные непозиционные аргументы, которые будут переданы в метод загрузки
+        """
+
+        if method in DISALLOWED_FROM_METHODS:
+            raise ValueError(f"Метод {method} не является действительным для загрузки.")
+
+        send_bytes = self.http.get(links).content if isinstance(links, str) else [self.http.get(link).content for link in links]
+        return self.from_bytes(method, send_bytes, *args, **kwargs)
 
     def photo(self, photos, album_id,
               latitude=None, longitude=None, caption=None, description=None,
@@ -83,7 +175,7 @@ class VkUpload(object):
 
         values.update(response)
 
-        return self.vk.photos.save(**values)
+        return AttachmentsHandler("photo", self.vk.photos.save(**values))
 
     def photo_messages(self, photos, peer_id=None):
         """ Загрузка изображений в сообщения
@@ -94,13 +186,14 @@ class VkUpload(object):
         :type peer_id: int
         """
 
-        url = self.vk.photos.getMessagesUploadServer(peer_id=peer_id)['upload_url']
+        url = self.vk.photos.getMessagesUploadServer(peer_id=peer_id)[
+            'upload_url']
 
         with FilesOpener(photos) as photo_files:
             response = self.http.post(url, files=photo_files)
 
-        return self.vk.photos.saveMessagesPhoto(**response.json())
-        
+        return AttachmentsHandler("photo", self.vk.photos.saveMessagesPhoto(**response.json()))
+
     def photo_group_widget(self, photo, image_type):
         """ Загрузка изображений в коллекцию сообщества для виджетов приложений сообществ
 
@@ -112,12 +205,13 @@ class VkUpload(object):
         :type image_type: str
         """
 
-        url = self.vk.appWidgets.getGroupImageUploadServer(image_type=image_type)['upload_url']
+        url = self.vk.appWidgets.getGroupImageUploadServer(image_type=image_type)[
+            'upload_url']
 
         with FilesOpener(photo, key_format='file') as photo_files:
             response = self.http.post(url, files=photo_files)
 
-        return self.vk.appWidgets.saveGroupImage(**response.json())
+        return AttachmentsHandler("photo", self.vk.appWidgets.saveGroupImage(**response.json()))
 
     def photo_profile(self, photo, owner_id=None, crop_x=None, crop_y=None,
                       crop_width=None):
@@ -156,7 +250,7 @@ class VkUpload(object):
                 files=photo_files
             )
 
-        return self.vk.photos.saveOwnerPhoto(**response.json())
+        return AttachmentsHandler("photo", self.vk.photos.saveOwnerPhoto(**response.json()))
 
     def photo_chat(self, photo, chat_id):
         """ Загрузка и смена обложки в беседе
@@ -204,7 +298,7 @@ class VkUpload(object):
 
         values.update(response.json())
 
-        return self.vk.photos.saveWallPhoto(**values)
+        return AttachmentsHandler("photo", self.vk.photos.saveWallPhoto(**values))
 
     def photo_market(self, photo, group_id, main_photo=False,
                      crop_x=None, crop_y=None, crop_width=None):
@@ -295,7 +389,7 @@ class VkUpload(object):
             'title': title
         })
 
-        return self.vk.audio.save(**response)
+        return AttachmentsHandler("audio", self.vk.audio.save(**response))
 
     def video(self, video_file=None, link=None, name=None, description=None,
               is_private=None, wallpost=None, group_id=None,
@@ -380,7 +474,6 @@ class VkUpload(object):
             ).json())
             return response
 
-
     def document(self, doc, title=None, tags=None, group_id=None,
                  to_wall=False, message_peer_id=None, doc_type=None):
         """ Загрузка документа
@@ -414,7 +507,7 @@ class VkUpload(object):
             'tags': tags
         })
 
-        return self.vk.docs.save(**response)
+        return AttachmentsHandler("doc", self.vk.docs.save(**response))
 
     def document_wall(self, doc, title=None, tags=None, group_id=None):
         """ Загрузка документа в папку Отправленные,
@@ -495,7 +588,8 @@ class VkUpload(object):
             'crop_y2': crop_y2
         }
 
-        url = self.vk.photos.getOwnerCoverPhotoUploadServer(**values)['upload_url']
+        url = self.vk.photos.getOwnerCoverPhotoUploadServer(
+            **values)['upload_url']
 
         with FilesOpener(photo, key_format='file') as photo_files:
             response = self.http.post(url, files=photo_files)
