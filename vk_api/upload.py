@@ -21,17 +21,17 @@ STORY_ALLOWED_LINK_TEXTS = {
 }
 
 
-class AttachmentHandler(object):
+class AttachmentHandler(dict):
     """Вспомогательный класс, используемый для хранения и обработки результата загрузки объекта"""
 
-    __slots__ = ('key', 'raw', 'access_key', 'owner_id', 'id')
+    __slots__ = ('key', 'access_key', 'owner_id', 'id')
 
-    def __init__(self, raw, key):
-        self.raw = raw
+    def __init__(self, key, raw):
+        super().__init__(raw)
         self.key = key
-        self.owner_id = self.raw["owner_id"]
-        self.id = self.raw["id"]
-        self.access_key = self.raw.get("access_key")
+        self.owner_id = self["owner_id"]
+        self.id = self["id"]
+        self.access_key = self.get("access_key")
 
     def to_attachment(self):
         """Формирует вложение в формате вк"""
@@ -52,7 +52,7 @@ class AttachmentsHandler(list):
     __slots__ = ('raw',)
 
     def __init__(self, key, raw) -> None:
-        super().__init__(AttachmentHandler(obj, key) for obj in raw)
+        super().__init__(AttachmentHandler(key, obj) for obj in raw)
 
     def to_attachments(self):
         """Формирует вложение в формате вк"""
