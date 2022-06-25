@@ -14,5 +14,5 @@ from .vk_api import VkApi
 
 
 __author__ = 'python273'
-__version__ = '11.9.8'
+__version__ = '11.9.9'
 __email__ = 'vk_api@python273.pw'
