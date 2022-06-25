@@ -260,6 +260,8 @@ class VkApi(object):
             hash429_md5 = md5(self.http.cookies['hash429'].encode('ascii')).hexdigest()
             self.http.cookies.pop('hash429')
             response = self.http.get(f'{response.url}&key={hash429_md5}')
+            if not response.url.startswith('https://vk.com/login'):
+                raise AuthError('Could not pass 429.html')
 
         headers = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
