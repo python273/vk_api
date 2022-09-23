@@ -13,6 +13,7 @@ import re
 import threading
 import time
 import urllib.parse
+from hashlib import md5
 
 import requests
 
@@ -254,6 +255,11 @@ class VkApi(object):
 
         # Get cookies
         response = self.http.get('https://vk.com/login')
+
+        if response.url.startswith('https://vk.com/429.html?'):
+            hash429_md5 = md5(self.http.cookies['hash429'].encode('ascii')).hexdigest()
+            self.http.cookies.pop('hash429')
+            response = self.http.get(f'{response.url}&key={hash429_md5}')
 
         headers = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -654,6 +660,7 @@ class VkApi(object):
             response = self.http.post(
                 'https://api.vk.com/method/' + method,
                 values,
+                headers={'Cookie': ''}
             )
             self.last_request = time.time()
 
