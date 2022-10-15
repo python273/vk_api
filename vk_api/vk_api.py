@@ -665,7 +665,11 @@ class VkApi(object):
             self.last_request = time.time()
 
         if response.ok:
-            response = response.json()
+            try:
+                response = response.json()
+            except json.decoder.JSONDecodeError:
+                sanitized = rx.sub(r'\p{C}', '', response.content)
+                response = json.loads(sanitized)
         else:
             error = ApiHttpError(self, method, values, raw, response)
             response = self.http_handler(error)
