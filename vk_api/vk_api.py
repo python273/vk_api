@@ -668,8 +668,12 @@ class VkApi(object):
             try:
                 response = response.json()
             except json.decoder.JSONDecodeError:
-                sanitized = rx.sub(r'\p{C}', '', response.content)
-                response = json.loads(sanitized)
+                # This allows control characters
+                response = response.json(strict=False)
+                # Alternative: replace control characters with
+                # empty string
+                # sanitized = re.sub(r'\p{C}', '', response.content)
+                # response = json.loads(sanitized)
         else:
             error = ApiHttpError(self, method, values, raw, response)
             response = self.http_handler(error)
