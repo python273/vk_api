@@ -672,7 +672,7 @@ class VkApi(object):
                 response = response.json(strict=False)
                 # Alternative: replace control characters with
                 # empty string
-                # sanitized = re.sub(r'\p{C}', '', response.content)
+                # sanitized = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', response.content)
                 # response = json.loads(sanitized)
         else:
             error = ApiHttpError(self, method, values, raw, response)
