@@ -11,3 +11,4 @@ __version__ = '3.0'
 __email__ = 'vk_api@python273.pw'
 
 from .jconfig import Config
+from .memory import MemoryConfig
