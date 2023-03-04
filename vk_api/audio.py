@@ -261,7 +261,8 @@ class VkAudio(object):
         :param hash: хэш для редактирования аудиозаписи
         :param performer: название аудиозаписи
         :param title: заголовок аудиозаписи
-        :param test: текст аудиозаписи
+        :param text: текст аудиозаписи
+        :param genre: жанр аудиозаписи
         """
         data = {
             'al': 1,
