@@ -283,10 +283,10 @@ class VkAudio(object):
         json_response = json.loads(response.text.replace('<!--', ''))
         return json_response["payload"][1][0]
 
-    def new_audio(self, group_id: int):
+    def new_audio(self, group_id: int = 0):
         """ Получение данных для новой аудиозаписи
 
-        :param group_id: ID группы
+        :param group_id: ID группы, для юзера - 0
         """
 
         response = self._vk.http.post(
@@ -302,10 +302,10 @@ class VkAudio(object):
 
         return json_response["payload"][1]
 
-    def get_upload_url(self, group_id: int):
+    def get_upload_url(self, group_id: int = 0):
         """ Получение ссылки для залива аудиозаписи
 
-        :param group_id: ID группы
+        :param group_id: ID группы, для юзера - 0
         """
         response = self.new_audio(group_id)[2]
         return re.search("(https?:[^']*)", response).group(0)
@@ -327,10 +327,10 @@ class VkAudio(object):
         json_response = json.loads(response.text.replace('<!--', ''))
         return json_response["payload"][1][0]
 
-    def upload_audio(self, audio: str, group_id: int):
+    def upload_audio(self, audio: str, group_id: int = 0):
         """ Загрузка аудиозаписи
 
-        :param group_id: ID группы
+        :param group_id: ID группы, для юзера - 0
         """
         url = self.get_upload_url(group_id)
         with FilesOpener(audio, key_format='file') as f:
