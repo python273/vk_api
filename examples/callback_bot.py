@@ -49,7 +49,7 @@ def bot():
     # если же это сообщение, отвечаем пользователю
     elif data['type'] == 'message_new':
         # получаем ID пользователя
-        from_id = data['object']['from_id']
+        from_id = data['object']['message']['from_id']
         # отправляем сообщение
         vk.messages.send(
             message='Hello World!',
