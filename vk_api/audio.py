@@ -21,6 +21,8 @@ RE_ALBUM_ID = re.compile(r'act=audio_playlist(-?\d+)_(\d+)')
 RE_ACCESS_HASH = re.compile(r'access_hash=(\w+)')
 RE_M3U8_TO_MP3 = re.compile(r'/[0-9a-f]+(/audios)?/([0-9a-f]+)/index.m3u8')
 
+RE_USER_AUDIO_HASH = re.compile(r"AudioUtils.(un)?followOwner\(\d+, &#39;([^)]+)&#39;\)")
+
 RPS_DELAY_RELOAD_AUDIO = 1.5
 RPS_DELAY_LOAD_SECTION = 2.0
 
@@ -542,6 +544,56 @@ class VkAudio(object):
         )
 
         return tracks
+
+    def follow_user(self, user_id):
+        data = self._vk.http.get(f"https://vk.com/audios{user_id}")
+
+        user_hash = RE_USER_AUDIO_HASH.search(data.text)
+        if user_hash is None:
+            raise AccessDenied(
+                'You don\'t have permissions to browse {}\'s audio'.format(
+                    user_id
+                )
+            )
+        user_hash = user_hash.groups()[1]
+
+        response = self._vk.http.post(
+            'https://vk.com/al_audio.php',
+            data={
+                'al': 1,
+                'act': 'follow_owner',
+                'owner_id': user_id,
+                'hash': user_hash,
+            }
+        )
+        json_response = json.loads(response.text.replace('<!--', ''))
+
+        return json_response
+    
+    def unfollow_user(self, user_id):
+        data = self._vk.http.get(f"https://vk.com/audios{user_id}")
+
+        user_hash = RE_USER_AUDIO_HASH.search(data.text)
+        if user_hash is None:
+            raise AccessDenied(
+                'You don\'t have permissions to browse {}\'s audio'.format(
+                    user_id
+                )
+            )
+        user_hash = user_hash.groups()[1]
+
+        response = self._vk.http.post(
+            'https://vk.com/al_audio.php',
+            data={
+                'al': 1,
+                'act': 'unfollow_owner',
+                'owner_id': user_id,
+                'hash': user_hash,
+            }
+        )
+        json_response = json.loads(response.text.replace('<!--', ''))
+
+        return json_response
 
 
 def scrap_ids(audio_data):
