@@ -130,6 +130,8 @@ class VkAudio(object):
             ids = scrap_ids(
                 response['data'][0]['list']
             )
+            if not ids:
+                break
 
             tracks = scrap_tracks(
                 ids,
@@ -137,9 +139,6 @@ class VkAudio(object):
                 self._vk.http,
                 convert_m3u8_links=self.convert_m3u8_links
             )
-
-            if not tracks:
-                break
 
             for i in tracks:
                 yield i
@@ -292,6 +291,8 @@ class VkAudio(object):
             ids = scrap_ids(
                 json_response['payload'][1][1]['playlist']['list']
             )
+            if not ids:
+                break
 
             if offset_left + len(ids) >= offset:
                 if offset_left < offset:
@@ -303,9 +304,6 @@ class VkAudio(object):
                     convert_m3u8_links=self.convert_m3u8_links,
                     http=self._vk.http
                 )
-
-                if not tracks:
-                    break
 
                 for track in tracks:
                     yield track
@@ -345,6 +343,8 @@ class VkAudio(object):
             ids = scrap_ids(
                 [i[0] for i in updates if i]
             )
+            if not ids:
+                break
 
             tracks = scrap_tracks(
                 ids,
@@ -352,9 +352,6 @@ class VkAudio(object):
                 convert_m3u8_links=self.convert_m3u8_links,
                 http=self._vk.http
             )
-
-            if not tracks:
-                break
 
             for track in tracks:
                 yield track
@@ -383,29 +380,21 @@ class VkAudio(object):
             'https://vk.com/audio',
             data={
                 'block': 'chart',
-                'section': 'explore'
+                'section': 'recoms'
             }
         )
         json_response = json.loads(scrap_json(response.text))
 
         ids = scrap_ids(
-            json_response['sectionData']['explore']['playlist']['list']
+            json_response['sectionData']['recoms']['playlist']['list']
         )
 
-        if offset:
-            tracks = scrap_tracks(
-                ids[offset:],
-                self.user_id,
-                convert_m3u8_links=self.convert_m3u8_links,
-                http=self._vk.http
-            )
-        else:
-            tracks = scrap_tracks(
-                ids,
-                self.user_id,
-                convert_m3u8_links=self.convert_m3u8_links,
-                http=self._vk.http
-            )
+        tracks = scrap_tracks(
+            ids[offset:] if offset else ids,
+            self.user_id,
+            convert_m3u8_links=self.convert_m3u8_links,
+            http=self._vk.http
+        )
 
         for track in tracks:
             yield track
@@ -422,30 +411,22 @@ class VkAudio(object):
             'https://vk.com/audio',
             data={
                 'block': 'new_songs',
-                'section': 'explore'
+                'section': 'recoms'
             }
         )
         json_response = json.loads(scrap_json(response.text))
 
         ids = scrap_ids(
-            json_response['sectionData']['explore']['playlist']['list']
+            json_response['sectionData']['recoms']['playlist']['list']
         )
 
         if offset_left + len(ids) >= offset:
-            if offset_left >= offset:
-                tracks = scrap_tracks(
-                    ids,
-                    self.user_id,
-                    convert_m3u8_links=self.convert_m3u8_links,
-                    http=self._vk.http
-                )
-            else:
-                tracks = scrap_tracks(
-                    ids[offset - offset_left:],
-                    self.user_id,
-                    convert_m3u8_links=self.convert_m3u8_links,
-                    http=self._vk.http
-                )
+            tracks = scrap_tracks(
+                ids if offset_left >= offset else ids[offset - offset_left:],
+                self.user_id,
+                convert_m3u8_links=self.convert_m3u8_links,
+                http=self._vk.http
+            )
 
             for track in tracks:
                 yield track
@@ -458,8 +439,8 @@ class VkAudio(object):
                 data={
                     'al': 1,
                     'act': 'load_catalog_section',
-                    'section_id': json_response['sectionData']['explore']['sectionId'],
-                    'start_from': json_response['sectionData']['explore']['nextFrom']
+                    'section_id': json_response['sectionData']['recoms']['sectionId'],
+                    'start_from': json_response['sectionData']['recoms']['nextFrom']
                 }
             )
 
@@ -468,25 +449,16 @@ class VkAudio(object):
             ids = scrap_ids(
                 json_response['payload'][1][1]['playlist']['list']
             )
+            if not ids:
+                break
 
             if offset_left + len(ids) >= offset:
-                if offset_left >= offset:
-                    tracks = scrap_tracks(
-                        ids,
-                        self.user_id,
-                        convert_m3u8_links=self.convert_m3u8_links,
-                        http=self._vk.http
-                    )
-                else:
-                    tracks = scrap_tracks(
-                        ids[offset - offset_left:],
-                        self.user_id,
-                        convert_m3u8_links=self.convert_m3u8_links,
-                        http=self._vk.http
-                    )
-
-                if not tracks:
-                    break
+                tracks = scrap_tracks(
+                    ids if offset_left >= offset else ids[offset - offset_left:],
+                    self.user_id,
+                    convert_m3u8_links=self.convert_m3u8_links,
+                    http=self._vk.http
+                )
 
                 for track in tracks:
                     yield track
@@ -613,7 +585,7 @@ def scrap_ids(audio_data):
 
 
 def scrap_json(html_page):
-    """ Парсинг списка хэшей ауфдиозаписей новинок или популярных + nextFrom&sessionId """
+    """ Парсинг списка хэшей аудиозаписей новинок или популярных + nextFrom&sessionId """
 
     find_json_pattern = r"new AudioPage\(.*?(\{.*\})"
     fr = re.search(find_json_pattern, html_page).group(1)
