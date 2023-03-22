@@ -264,64 +264,19 @@ class VkAudio(object):
         :param text: текст аудиозаписи
         :param genre: жанр аудиозаписи
         """
-        data = {
-            'al': 1,
-            'act': 'edit_audio',
-            'aid': audio_id,
-            'oid': owner_id,
-            'force_edit_hash': '',
-            'hash': hash,
-            'performer': performer,
-            'text': text,
-            'title': title,
-            'genre': genre
-        }
-        response = self._vk.http.post(
-            'https://vk.com/al_audio.php',
-            data=data
-        )
-        json_response = json.loads(response.text.replace('<!--', ''))
-        return json_response["payload"][1][0]
-
-    def new_audio(self, group_id: int = 0):
-        """ Получение данных для новой аудиозаписи
-
-        :param group_id: ID группы, для юзера - 0
-        """
-
         response = self._vk.http.post(
             'https://vk.com/al_audio.php',
             data={
                 'al': 1,
-                'act': 'new_audio',
-                'boxhash': base36encode(),
-                'gid': group_id
-            }
-        )
-        json_response = json.loads(response.text.replace('<!--', ''))
-
-        return json_response["payload"][1]
-
-    def get_upload_url(self, group_id: int = 0):
-        """ Получение ссылки для залива аудиозаписи
-
-        :param group_id: ID группы, для юзера - 0
-        """
-        response = self.new_audio(group_id)[2]
-        return re.search("(https?:[^']*)", response).group(0)
-
-    def done_add(self, uploader_response: str):
-        """ Подтверждение загрузки аудиозаписи
-
-        :param uploader_response: результат залива аудиозаписи
-        """
-        response = self._vk.http.post(
-            'https://vk.com/al_audio.php',
-            data={
-                'al': 1,
-                'act': 'done_add',
-                'go_uploader_response': uploader_response,
-                'upldr': 1
+                'act': 'edit_audio',
+                'aid': audio_id,
+                'oid': owner_id,
+                'force_edit_hash': '',
+                'hash': hash,
+                'performer': performer,
+                'text': text,
+                'title': title,
+                'genre': genre
             }
         )
         json_response = json.loads(response.text.replace('<!--', ''))
@@ -332,11 +287,28 @@ class VkAudio(object):
 
         :param group_id: ID группы, для юзера - 0
         """
-        url = self.get_upload_url(group_id)
+        response = self._vk.http.post(
+            'https://vk.com/al_audio.php',
+            data={
+                'al': 1,
+                'act': 'new_audio',
+                'boxhash': base36encode(),
+                'gid': group_id
+            }
+        )
+        url = re.search("(https?:[^']*)", json.loads(response.text.replace('<!--', ''))["payload"][1][2]).group(0)
         with FilesOpener(audio, key_format='file') as f:
             uploader_response = self._vk.http.post(url, files=f).json()
-        response = self.done_add(json.dumps(uploader_response))
-        return response
+        response = self._vk.http.post(
+            'https://vk.com/al_audio.php',
+            data={
+                'al': 1,
+                'act': 'done_add',
+                'go_uploader_response': json.dumps(uploader_response),
+                'upldr': 1
+            }
+        )
+        return json.loads(response.text.replace('<!--', ''))["payload"][1][0]
 
     def search(self, q, count=100, offset=0):
         """ Искать аудиозаписи
