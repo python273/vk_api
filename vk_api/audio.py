@@ -16,6 +16,7 @@ from bs4 import BeautifulSoup
 from .audio_url_decoder import decode_audio_url
 from .exceptions import AccessDenied
 from .utils import set_cookies_from_list
+from .upload import FilesOpener
 
 RE_ALBUM_ID = re.compile(r'act=audio_playlist(-?\d+)_(\d+)')
 RE_ACCESS_HASH = re.compile(r'access_hash=(\w+)')
@@ -252,6 +253,63 @@ class VkAudio(object):
             return list(tracks)
         else:
             return []
+
+    def edit_audio(self, audio_id: int, owner_id: int, hash: str, performer: str, title: str, text: str = "", genre: int = 1001):
+        """ Редактировать аудиозапись
+
+        :param audio_id: ID аудиозаписи
+        :param owner_id: ID владельца (отрицательные значения для групп)
+        :param hash: хэш для редактирования аудиозаписи
+        :param performer: название аудиозаписи
+        :param title: заголовок аудиозаписи
+        :param text: текст аудиозаписи
+        :param genre: жанр аудиозаписи
+        """
+        response = self._vk.http.post(
+            'https://vk.com/al_audio.php',
+            data={
+                'al': 1,
+                'act': 'edit_audio',
+                'aid': audio_id,
+                'oid': owner_id,
+                'force_edit_hash': '',
+                'hash': hash,
+                'performer': performer,
+                'text': text,
+                'title': title,
+                'genre': genre
+            }
+        )
+        json_response = json.loads(response.text.replace('<!--', ''))
+        return json_response["payload"][1][0]
+
+    def upload_audio(self, audio: str, group_id: int = 0):
+        """ Загрузка аудиозаписи
+
+        :param group_id: ID группы, для юзера - 0
+        """
+        response = self._vk.http.post(
+            'https://vk.com/al_audio.php',
+            data={
+                'al': 1,
+                'act': 'new_audio',
+                'boxhash': base36encode(),
+                'gid': group_id
+            }
+        )
+        url = re.search("(https?:[^']*)", json.loads(response.text.replace('<!--', ''))["payload"][1][2]).group(0)
+        with FilesOpener(audio, key_format='file') as f:
+            uploader_response = self._vk.http.post(url, files=f).json()
+        response = self._vk.http.post(
+            'https://vk.com/al_audio.php',
+            data={
+                'al': 1,
+                'act': 'done_add',
+                'go_uploader_response': json.dumps(uploader_response),
+                'upldr': 1
+            }
+        )
+        return json.loads(response.text.replace('<!--', ''))["payload"][1][0]
 
     def search(self, q, count=100, offset=0):
         """ Искать аудиозаписи
@@ -704,3 +762,14 @@ def scrap_albums(html):
         })
 
     return albums
+
+def base36encode():
+    number = int(time.time() * 1000)
+    alphabet = '0123456789abcdefghijklmnopqrstuvwxyz'
+    base36 = ''
+
+    while number != 0:
+        number, i = divmod(number, len(alphabet))
+        base36 = alphabet[i] + base36
+
+    return base36
