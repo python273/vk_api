@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+title: vk_api
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Kirill
+    family-names: R.
+    email: vk_api@python273.pw
+repository-code: 'https://github.com/python273/vk_api'
+repository-artifact: 'https://pypi.org/project/vk-api/'
+abstract: >-
+  Python модуль для создания скриптов для социальной сети
+  Вконтакте (vk.com API wrapper)
+keywords:
+  - vk.com
+  - vkontakte
+  - python
+license: Apache-2.0
