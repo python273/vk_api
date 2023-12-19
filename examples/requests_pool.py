@@ -49,8 +49,6 @@ def main():
     """ Пример получения друзей у нескольких пользователей за один запрос
     """
 
-    friends = {}
-
     with vk_api.VkRequestsPool(vk_session) as pool:
         for user_id in [1, 183433824]:
             friends[user_id] = pool.method('friends.get', {
