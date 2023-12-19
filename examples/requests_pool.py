@@ -49,6 +49,8 @@ def main():
     """ Пример получения друзей у нескольких пользователей за один запрос
     """
 
+    friends = {}
+
     with vk_api.VkRequestsPool(vk_session) as pool:
         for user_id in [1, 183433824]:
             friends[user_id] = pool.method('friends.get', {
@@ -64,12 +66,15 @@ def main():
     """Пример использования пула в виде объекта. Такой пул можно
     передать в качестве параметра"""
 
+    friends = {}
+    
     pool = vk_api.VkRequestsPool(vk_session)
     for user_id in [1, 183433824]:
         friends[user_id] = pool.method('friends.get', {
             'user_id': user_id,
             'fields': 'photo'
         })
+        
     pool.execute()
 
     for key, value in friends.items():
