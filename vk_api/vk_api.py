@@ -466,7 +466,8 @@ class VkApi(object):
             raise AccountBlocked('Account is blocked')
 
         if 'access_token' not in response.url:
-            if url := search_re(RE_TOKEN_URL, response.text):
+            url = search_re(RE_TOKEN_URL, response.text)
+            if url:
                 response = self.http.get(url)
             elif 'redirect_uri' in response.url:
                 response = self.http.get(response.url)

@@ -503,12 +503,13 @@ class VkAudio(object):
             filter_root_el={'class': 'basisDefault'}
         )
 
-        if track := scrap_tracks(
+        track = scrap_tracks(
             ids,
             self.user_id,
             http=self._vk.http,
             convert_m3u8_links=self.convert_m3u8_links,
-        ):
+        )
+        if track:
             return next(track)
         else:
             return []

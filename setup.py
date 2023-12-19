@@ -19,31 +19,23 @@ with open('README.md', encoding='utf-8') as f:
 setup(
     name='vk_api',
     version=version,
-
     author='python273',
     author_email='vk_api@python273.pw',
-
     description=(
         'Python модуль для создания скриптов для социальной сети '
         'Вконтакте (vk.com API wrapper)'
     ),
     long_description=long_description,
     long_description_content_type='text/markdown',
-
     url='https://github.com/python273/vk_api',
-    download_url='https://github.com/python273/vk_api/archive/v{}.zip'.format(
-        version
-    ),
-
+    download_url=f'https://github.com/python273/vk_api/archive/v{version}.zip',
     license='Apache License, Version 2.0, see LICENSE file',
-
     packages=['vk_api', 'jconfig'],
     install_requires=['requests'],
     extras_require={
         'vkstreaming': ['websocket-client'],
         'vkaudio': ['beautifulsoup4'],
     },
-
     classifiers=[
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
@@ -54,5 +46,5 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
-    ]
+    ],
 )

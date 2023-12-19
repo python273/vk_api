@@ -20,7 +20,8 @@ from http.cookiejar import Cookie
 
 def search_re(reg, string):
     """ Поиск по регулярке """
-    if s := reg.search(string):
+    s = reg.search(string)
+    if s:
         groups = s.groups()
         return groups[0]
 

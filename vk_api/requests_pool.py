@@ -117,7 +117,8 @@ class VkRequestsPool(object):
         for i in range(0, len(self.pool), 25):
             cur_pool = self.pool[i:i + 25]
 
-            if one_method := check_one_method(cur_pool):
+            one_method = check_one_method(cur_pool)
+            if one_method:
                 value_list = [i.values for i in cur_pool]
 
                 response_raw = vk_one_method(
