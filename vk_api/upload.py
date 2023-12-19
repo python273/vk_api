@@ -35,11 +35,7 @@ class VkUpload(object):
                 'The arg should be VkApi or VkApiMethod instance'
             )
 
-        if isinstance(vk, VkApiMethod):
-            self.vk = vk
-        else:
-            self.vk = vk.get_api()
-
+        self.vk = vk if isinstance(vk, VkApiMethod) else vk.get_api()
         self.http = requests.Session()
         self.http.headers.pop('user-agent')
 
@@ -142,9 +138,7 @@ class VkUpload(object):
         crop_params = {}
 
         if crop_x is not None and crop_y is not None and crop_width is not None:
-            crop_params['_square_crop'] = '{},{},{}'.format(
-                crop_x, crop_y, crop_width
-            )
+            crop_params['_square_crop'] = f'{crop_x},{crop_y},{crop_width}'
 
         response = self.vk.photos.getOwnerPhotoUploadServer(**values)
         url = response['upload_url']
@@ -595,19 +589,14 @@ class FilesOpener(object):
             if hasattr(file, 'read'):
                 f = file
 
-                if hasattr(file, 'name'):
-                    filename = file.name
-                else:
-                    filename = '.jpg'
+                filename = file.name if hasattr(file, 'name') else '.jpg'
             else:
                 filename = file
                 f = open(filename, 'rb')
                 self.opened_files.append(f)
 
             ext = filename.split('.')[-1]
-            files.append(
-                (self.key_format.format(x), ('file{}.{}'.format(x, ext), f))
-            )
+            files.append((self.key_format.format(x), (f'file{x}.{ext}', f)))
 
         return files
 

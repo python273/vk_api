@@ -25,9 +25,7 @@ def main():
         group_id=74030368
     )
 
-    vk_photo_url = 'https://vk.com/photo{}_{}'.format(
-        photo[0]['owner_id'], photo[0]['id']
-    )
+    vk_photo_url = f"https://vk.com/photo{photo[0]['owner_id']}_{photo[0]['id']}"
 
     print(photo, '\nLink: ', vk_photo_url)
 

@@ -23,8 +23,6 @@ def main():
             print(event.obj.from_id)
 
             print('Текст:', event.obj.text)
-            print()
-
         elif event.type == VkBotEventType.MESSAGE_REPLY:
             print('Новое сообщение:')
 
@@ -33,8 +31,6 @@ def main():
             print(event.obj.peer_id)
 
             print('Текст:', event.obj.text)
-            print()
-
         elif event.type == VkBotEventType.MESSAGE_TYPING_STATE:
             print('Печатает ', end='')
 
@@ -43,23 +39,18 @@ def main():
             print('для ', end='')
 
             print(event.obj.to_id)
-            print()
-
         elif event.type == VkBotEventType.GROUP_JOIN:
             print(event.obj.user_id, end=' ')
 
             print('Вступил в группу!')
-            print()
-
         elif event.type == VkBotEventType.GROUP_LEAVE:
             print(event.obj.user_id, end=' ')
 
             print('Покинул группу!')
-            print()
-
         else:
             print(event.type)
-            print()
+
+        print()
 
 
 if __name__ == '__main__':

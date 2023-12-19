@@ -105,7 +105,7 @@ class VkKeyboard(object):
 
         color_value = color
 
-        if isinstance(color, VkKeyboardColor):
+        if isinstance(color_value, VkKeyboardColor):
             color_value = color_value.value
 
         if payload is not None and not isinstance(payload, str):
@@ -141,7 +141,7 @@ class VkKeyboard(object):
 
         color_value = color
 
-        if isinstance(color, VkKeyboardColor):
+        if isinstance(color_value, VkKeyboardColor):
             color_value = color_value.value
 
         if payload is not None and not isinstance(payload, str):
@@ -296,8 +296,7 @@ class VkKeyboard(object):
         if self.inline:
             if len(self.lines) >= MAX_INLINE_LINES:
                 raise ValueError(f'Max {MAX_INLINE_LINES} lines for inline keyboard')
-        else:
-            if len(self.lines) >= MAX_DEFAULT_LINES:
-                raise ValueError(f'Max {MAX_DEFAULT_LINES} lines for default keyboard')
+        elif len(self.lines) >= MAX_DEFAULT_LINES:
+            raise ValueError(f'Max {MAX_DEFAULT_LINES} lines for default keyboard')
 
         self.lines.append([])

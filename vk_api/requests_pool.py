@@ -44,10 +44,7 @@ class RequestResult(object):
         if self._error:
             raise VkRequestsPoolException(
                 self._error,
-                'Got error while executing request: [{}] {}'.format(
-                    self.error['error_code'],
-                    self.error['error_msg']
-                )
+                f"Got error while executing request: [{self.error['error_code']}] {self.error['error_msg']}",
             )
 
         return self._result
@@ -121,7 +118,6 @@ class VkRequestsPool(object):
             cur_pool = self.pool[i:i + 25]
 
             one_method = check_one_method(cur_pool)
-
             if one_method:
                 value_list = [i.values for i in cur_pool]
 
@@ -179,12 +175,9 @@ vk_one_method = VkFunction(
 
 
 def vk_many_methods(vk_session, pool):
-    requests = ','.join(
-        'API.{}({})'.format(i.method, sjson_dumps(i.values))
-        for i in pool
-    )
+    requests = ','.join(f'API.{i.method}({sjson_dumps(i.values)})' for i in pool)
 
-    code = 'return [{}];'.format(requests)
+    code = f'return [{requests}];'
 
     return vk_session.method('execute', {'code': code}, raw=True)
 

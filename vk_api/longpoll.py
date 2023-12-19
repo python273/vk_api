@@ -416,14 +416,10 @@ class Event(object):
             self.user_id = self.peer_id
 
     def _parse_message_flags(self):
-        self.message_flags = set(
-            x for x in VkMessageFlag if self.flags & x
-        )
+        self.message_flags = {x for x in VkMessageFlag if self.flags & x}
 
     def _parse_peer_flags(self):
-        self.peer_flags = set(
-            x for x in VkPeerFlag if self.flags & x
-        )
+        self.peer_flags = {x for x in VkPeerFlag if self.flags & x}
 
     def _parse_message(self):
         if self.type is VkEventType.MESSAGE_NEW:
@@ -525,13 +521,13 @@ class VkLongPoll(object):
 
         if self.group_id:
             values['group_id'] = self.group_id
-            
+
         response = self.vk.method('messages.getLongPollServer', values)
 
         self.key = response['key']
         self.server = response['server']
 
-        self.url = 'https://' + self.server
+        self.url = f'https://{self.server}'
 
         if update_ts:
             self.ts = response['ts']
@@ -616,5 +612,4 @@ class VkLongPoll(object):
         """
 
         while True:
-            for event in self.check():
-                yield event
+            yield from self.check()

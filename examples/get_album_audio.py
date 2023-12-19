@@ -29,7 +29,7 @@ def main():
     tracks = vkaudio.get(album_id=albums[0]['id'])
 
     for n, track in enumerate(tracks, 1):
-        print('{}. {} {}'.format(n, track['title'], track['url']))
+        print(f"{n}. {track['title']} {track['url']}")
 
 
 if __name__ == '__main__':
