@@ -67,12 +67,11 @@ def main():
     передать в качестве параметра"""
 
     pool = vk_api.VkRequestsPool(vk_session)
-    friends = {
-        user_id: pool.method(
-            'friends.get', {'user_id': user_id, 'fields': 'photo'}
-        )
-        for user_id in [1, 183433824]
-    }
+    for user_id in [1, 183433824]:
+        friends[user_id] = pool.method('friends.get', {
+            'user_id': user_id,
+            'fields': 'photo'
+        })
     pool.execute()
 
     for key, value in friends.items():
