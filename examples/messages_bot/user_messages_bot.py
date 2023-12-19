@@ -36,7 +36,7 @@ def main():
 
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW and event.to_me and event.text:
-            print('id{}: "{}"'.format(event.user_id, event.text), end=' ')
+            print(f'id{event.user_id}: "{event.text}"', end=' ')
 
             response = session.get(
                 'http://api.duckduckgo.com/',
@@ -64,9 +64,7 @@ def main():
                 image = session.get(image_url, stream=True)
                 photo = upload.photo_messages(photos=image.raw)[0]
 
-                attachments.append(
-                    'photo{}_{}'.format(photo['owner_id'], photo['id'])
-                )
+                attachments.append(f"photo{photo['owner_id']}_{photo['id']}")
 
             vk.messages.send(
                 user_id=event.user_id,

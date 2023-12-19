@@ -31,14 +31,10 @@ class VkFunction(object):
         self.return_raw = return_raw
 
     def compile(self, args):
-        compiled_args = {}
-
-        for key, value in args.items():
-            if key in self.clean_args:
-                compiled_args[key] = str(value)
-            else:
-                compiled_args[key] = sjson_dumps(value)
-
+        compiled_args = {
+            key: str(value) if key in self.clean_args else sjson_dumps(value)
+            for key, value in args.items()
+        }
         return self._minified_code % compiled_args
 
     def __call__(self, vk, *args, **kwargs):
@@ -77,20 +73,16 @@ def parse_args(function_args, args, kwargs):
             parsed_args[arg_name] = kwargs[arg_name]
         else:
             raise VkFunctionException(
-                'function got an unexpected keyword argument \'{}\''.format(
-                    arg_name
-                ))
+                f"function got an unexpected keyword argument \'{arg_name}\'"
+            )
 
     args_count = len(args) + len(kwargs)
     func_args_count = len(function_args)
 
     if args_count != func_args_count:
         raise VkFunctionException(
-            'function takes exactly {} argument{} ({} given)'.format(
-                func_args_count,
-                's' if func_args_count > 1 else '',
-                args_count
-            ))
+            f"function takes exactly {func_args_count} argument{'s' if func_args_count > 1 else ''} ({args_count} given)"
+        )
 
     for arg_name, arg_value in zip(function_args, args):
         parsed_args[arg_name] = arg_value

@@ -66,15 +66,13 @@ def main():
     """Пример использования пула в виде объекта. Такой пул можно
     передать в качестве параметра"""
 
-    friends = {}
-    
     pool = vk_api.VkRequestsPool(vk_session)
-    for user_id in [1, 183433824]:
-        friends[user_id] = pool.method('friends.get', {
-            'user_id': user_id,
-            'fields': 'photo'
-        })
-        
+    friends = {
+        user_id: pool.method(
+            'friends.get', {'user_id': user_id, 'fields': 'photo'}
+        )
+        for user_id in [1, 183433824]
+    }
     pool.execute()
 
     for key, value in friends.items():

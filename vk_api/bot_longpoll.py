@@ -138,7 +138,7 @@ class VkBotEvent(object):
         self.group_id = raw['group_id']
 
     def __repr__(self):
-        return '<{}({})>'.format(type(self), self.raw)
+        return f'<{type(self)}({self.raw})>'
 
 
 class VkBotMessageEvent(VkBotEvent):
@@ -283,5 +283,4 @@ class VkBotLongPoll(object):
         """
 
         while True:
-            for event in self.check():
-                yield event
+            yield from self.check()

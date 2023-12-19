@@ -20,9 +20,7 @@ from http.cookiejar import Cookie
 
 def search_re(reg, string):
     """ Поиск по регулярке """
-    s = reg.search(string)
-
-    if s:
+    if s := reg.search(string):
         groups = s.groups()
         return groups[0]
 
@@ -130,6 +128,8 @@ def enable_debug_mode(vk_session, print_content=False):
         print('######### MODULE IS NOT UPDATED!!1 ##########')
         print()
 
+
+
     class DebugHTTPAdapter(requests.adapters.HTTPAdapter):
         def send(self, request, **kwargs):
             start = time.time()
@@ -140,7 +140,7 @@ def enable_debug_mode(vk_session, print_content=False):
 
             body = request.body
             if body and len(body) > 1024:
-                body = body[:1024] + '[STRIPPED]'
+                body = f'{body[:1024]}[STRIPPED]'
 
             print(
                 '{:0.2f} {} {} {} {} {} {}'.format(
@@ -158,6 +158,7 @@ def enable_debug_mode(vk_session, print_content=False):
                 print(response.text)
 
             return response
+
 
     vk_session.http.mount('http://', DebugHTTPAdapter())
     vk_session.http.mount('https://', DebugHTTPAdapter())

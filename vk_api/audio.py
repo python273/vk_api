@@ -123,9 +123,7 @@ class VkAudio(object):
 
             if not response['data'][0]:
                 raise AccessDenied(
-                    'You don\'t have permissions to browse {}\'s albums'.format(
-                        owner_id
-                    )
+                    f"You don\'t have permissions to browse {owner_id}\'s albums"
                 )
 
             ids = scrap_ids(
@@ -134,16 +132,12 @@ class VkAudio(object):
             if not ids:
                 break
 
-            tracks = scrap_tracks(
+            yield from scrap_tracks(
                 ids,
                 self.user_id,
                 self._vk.http,
-                convert_m3u8_links=self.convert_m3u8_links
+                convert_m3u8_links=self.convert_m3u8_links,
             )
-
-            for i in tracks:
-                yield i
-
             if response['data'][0]['hasMore']:
                 offset += offset_diff
             else:
@@ -172,20 +166,14 @@ class VkAudio(object):
 
         while True:
             response = self._vk.http.get(
-                'https://m.vk.com/audio?act=audio_playlists{}'.format(
-                    owner_id
-                ),
-                params={
-                    'offset': offset
-                },
-                allow_redirects=False
+                f'https://m.vk.com/audio?act=audio_playlists{owner_id}',
+                params={'offset': offset},
+                allow_redirects=False,
             )
 
             if not response.text:
                 raise AccessDenied(
-                    'You don\'t have permissions to browse {}\'s albums'.format(
-                        owner_id
-                    )
+                    f"You don\'t have permissions to browse {owner_id}\'s albums"
                 )
 
             albums = scrap_albums(response.text)
@@ -193,9 +181,7 @@ class VkAudio(object):
             if not albums:
                 break
 
-            for i in albums:
-                yield i
-
+            yield from albums
             offset += ALBUMS_PER_USER_PAGE
 
     def get_albums(self, owner_id=None):
@@ -232,9 +218,7 @@ class VkAudio(object):
 
         if not json_response['payload'][1]:
             raise AccessDenied(
-                'You don\'t have permissions to browse {}\'s audio'.format(
-                    owner_id
-                )
+                f"You don\'t have permissions to browse {owner_id}\'s audio"
             )
 
         if json_response['payload'][1][1]['playlists']:
@@ -356,16 +340,12 @@ class VkAudio(object):
                 if offset_left < offset:
                     ids = ids[offset - offset_left:]
 
-                tracks = scrap_tracks(
+                yield from scrap_tracks(
                     ids,
                     self.user_id,
                     convert_m3u8_links=self.convert_m3u8_links,
-                    http=self._vk.http
+                    http=self._vk.http,
                 )
-
-                for track in tracks:
-                    yield track
-
             offset_left += len(ids)
 
             response = self._vk.http.post(
@@ -404,16 +384,12 @@ class VkAudio(object):
             if not ids:
                 break
 
-            tracks = scrap_tracks(
+            yield from scrap_tracks(
                 ids,
                 self.user_id,
                 convert_m3u8_links=self.convert_m3u8_links,
-                http=self._vk.http
+                http=self._vk.http,
             )
-
-            for track in tracks:
-                yield track
-
             if len(updates) < 11:
                 break
 
@@ -447,15 +423,12 @@ class VkAudio(object):
             json_response['sectionData']['recoms']['playlist']['list']
         )
 
-        tracks = scrap_tracks(
+        yield from scrap_tracks(
             ids[offset:] if offset else ids,
             self.user_id,
             convert_m3u8_links=self.convert_m3u8_links,
-            http=self._vk.http
+            http=self._vk.http,
         )
-
-        for track in tracks:
-            yield track
 
     def get_news_iter(self, offset=0):
         """ Искать популярные аудиозаписи  (генератор)
@@ -479,16 +452,12 @@ class VkAudio(object):
         )
 
         if offset_left + len(ids) >= offset:
-            tracks = scrap_tracks(
-                ids if offset_left >= offset else ids[offset - offset_left:],
+            yield from scrap_tracks(
+                ids if offset_left >= offset else ids[offset - offset_left :],
                 self.user_id,
                 convert_m3u8_links=self.convert_m3u8_links,
-                http=self._vk.http
+                http=self._vk.http,
             )
-
-            for track in tracks:
-                yield track
-
         offset_left += len(ids)
 
         while True:
@@ -511,16 +480,12 @@ class VkAudio(object):
                 break
 
             if offset_left + len(ids) >= offset:
-                tracks = scrap_tracks(
-                    ids if offset_left >= offset else ids[offset - offset_left:],
+                yield from scrap_tracks(
+                    ids if offset_left >= offset else ids[offset - offset_left :],
                     self.user_id,
                     convert_m3u8_links=self.convert_m3u8_links,
-                    http=self._vk.http
+                    http=self._vk.http,
                 )
-
-                for track in tracks:
-                    yield track
-
             offset_left += len(ids)
 
     def get_audio_by_id(self, owner_id, audio_id):
@@ -530,8 +495,7 @@ class VkAudio(object):
         :param audio_id: ID аудио
         """
         response = self._vk.http.get(
-            'https://m.vk.com/audio{}_{}'.format(owner_id, audio_id),
-            allow_redirects=False
+            f'https://m.vk.com/audio{owner_id}_{audio_id}', allow_redirects=False
         )
 
         ids = scrap_ids_from_html(
@@ -539,14 +503,12 @@ class VkAudio(object):
             filter_root_el={'class': 'basisDefault'}
         )
 
-        track = scrap_tracks(
+        if track := scrap_tracks(
             ids,
             self.user_id,
             http=self._vk.http,
-            convert_m3u8_links=self.convert_m3u8_links
-        )
-
-        if track:
+            convert_m3u8_links=self.convert_m3u8_links,
+        ):
             return next(track)
         else:
             return []
@@ -557,34 +519,26 @@ class VkAudio(object):
         :param owner_id: ID владельца (отрицательные значения для групп)
         :param post_id: ID поста
         """
-        response = self._vk.http.get(
-            'https://m.vk.com/wall{}_{}'.format(owner_id, post_id)
-        )
+        response = self._vk.http.get(f'https://m.vk.com/wall{owner_id}_{post_id}')
 
         ids = scrap_ids_from_html(
             response.text,
             filter_root_el={'class': 'audios_list'}
         )
 
-        tracks = scrap_tracks(
+        return scrap_tracks(
             ids,
             self.user_id,
             http=self._vk.http,
-            convert_m3u8_links=self.convert_m3u8_links
+            convert_m3u8_links=self.convert_m3u8_links,
         )
-
-        return tracks
 
     def follow_user(self, user_id):
         data = self._vk.http.get(f"https://vk.com/audios{user_id}")
 
         user_hash = RE_USER_AUDIO_HASH.search(data.text)
         if user_hash is None:
-            raise AccessDenied(
-                'You don\'t have permissions to browse {}\'s audio'.format(
-                    user_id
-                )
-            )
+            raise AccessDenied(f"You don\'t have permissions to browse {user_id}\'s audio")
         user_hash = user_hash.groups()[1]
 
         response = self._vk.http.post(
@@ -596,20 +550,14 @@ class VkAudio(object):
                 'hash': user_hash,
             }
         )
-        json_response = json.loads(response.text.replace('<!--', ''))
-
-        return json_response
+        return json.loads(response.text.replace('<!--', ''))
     
     def unfollow_user(self, user_id):
         data = self._vk.http.get(f"https://vk.com/audios{user_id}")
 
         user_hash = RE_USER_AUDIO_HASH.search(data.text)
         if user_hash is None:
-            raise AccessDenied(
-                'You don\'t have permissions to browse {}\'s audio'.format(
-                    user_id
-                )
-            )
+            raise AccessDenied(f"You don\'t have permissions to browse {user_id}\'s audio")
         user_hash = user_hash.groups()[1]
 
         response = self._vk.http.post(
@@ -621,9 +569,7 @@ class VkAudio(object):
                 'hash': user_hash,
             }
         )
-        json_response = json.loads(response.text.replace('<!--', ''))
-
-        return json_response
+        return json.loads(response.text.replace('<!--', ''))
 
 
 def scrap_ids(audio_data):
@@ -646,9 +592,7 @@ def scrap_json(html_page):
     """ Парсинг списка хэшей аудиозаписей новинок или популярных + nextFrom&sessionId """
 
     find_json_pattern = r"new AudioPage\(.*?(\{.*\})"
-    fr = re.search(find_json_pattern, html_page).group(1)
-
-    return fr
+    return re.search(find_json_pattern, html_page).group(1)
 
 
 def scrap_ids_from_html(html, filter_root_el=None):

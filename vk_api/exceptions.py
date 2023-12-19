@@ -57,9 +57,7 @@ class SecurityCheck(AuthError):
 
     def __str__(self):
         if self.phone_prefix and self.phone_postfix:
-            return 'Security check. Enter number: {} ... {}'.format(
-                self.phone_prefix, self.phone_postfix
-            )
+            return f'Security check. Enter number: {self.phone_prefix} ... {self.phone_postfix}'
         else:
             return ('Security check. Phone prefix and postfix are not detected.'
                     ' Please send bugreport (response in self.response)')
@@ -83,8 +81,7 @@ class ApiError(VkApiError):
         return self.vk.method(self.method, self.values, raw=self.raw)
 
     def __str__(self):
-        return '[{}] {}'.format(self.error['error_code'],
-                                self.error['error_msg'])
+        return f"[{self.error['error_code']}] {self.error['error_msg']}"
 
 
 class ApiHttpError(VkApiError):
@@ -104,7 +101,7 @@ class ApiHttpError(VkApiError):
         return self.vk.method(self.method, self.values, raw=self.raw)
 
     def __str__(self):
-        return 'Response code {}'.format(self.response.status_code)
+        return f'Response code {self.response.status_code}'
 
 
 class Captcha(VkApiError):
@@ -128,7 +125,7 @@ class Captcha(VkApiError):
         """ Получить ссылку на изображение капчи """
 
         if not self.url:
-            self.url = 'https://api.vk.com/captcha.php?sid={}'.format(self.sid)
+            self.url = f'https://api.vk.com/captcha.php?sid={self.sid}'
 
         return self.url
 

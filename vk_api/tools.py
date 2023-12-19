@@ -68,10 +68,8 @@ class VkTools(object):
 
             if 'execute_errors' in response:
                 raise VkToolsException(
-                    'Could not load items: {}'.format(
-                        response['execute_errors']
-                    ),
-                    response=response
+                    f"Could not load items: {response['execute_errors']}",
+                    response=response,
                 )
 
             response = response['response']
@@ -79,9 +77,7 @@ class VkTools(object):
             items = response["items"]
             items_count += len(items)
 
-            for item in items:
-                yield item
-
+            yield from items
             if not response['more']:
                 break
 
@@ -170,9 +166,7 @@ class VkTools(object):
             items = response_items[count_diff:]
             items_count += len(items)
 
-            for item in items:
-                yield item
-
+            yield from items
             if len(response_items) < max_count - count_diff:
                 break
 
