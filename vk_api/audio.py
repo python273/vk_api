@@ -118,6 +118,7 @@ class VkAudio(object):
                     'access_hash': access_hash,
                     'is_loading_all': 1
                 },
+                headers={"X-Requested-With": "XMLHttpRequest"},
                 allow_redirects=False
             ).json()
 
@@ -643,7 +644,8 @@ def scrap_tracks(ids, user_id, http, convert_m3u8_links=True):
 
         result = http.post(
             'https://m.vk.com/audio',
-            data={'act': 'reload_audio', 'ids': ','.join(['_'.join(i) for i in ids_group])}
+            data={'act': 'reload_audio', 'ids': ','.join(['_'.join(i) for i in ids_group])},
+            headers={"X-Requested-With": "XMLHttpRequest"},
         ).json()
 
         last_request = time.time()
