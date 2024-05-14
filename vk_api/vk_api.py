@@ -488,10 +488,12 @@ class VkApi(object):
                 if connect_data['type'] != 'okay':
                     raise AuthError('Unknown API auth error')
                 auth_token = connect_data['data']['access_token']
+                auth_user_hash = connect_data['data']['auth_user_hash']
                 response = self.http.post(
                     'https://api.vk.com/method/auth.getOauthToken',
                     {
                         'hash': return_auth_hash,
+                        'auth_user_hash': auth_user_hash,
                         'app_id': self.app_id,
                         'client_id': self.app_id,
                         'scope': self.scope,
