@@ -39,7 +39,7 @@ RE_AUTH_TOKEN_URL = re.compile(r'window\.init = ({.*?});')
 RE_PHONE_PREFIX = re.compile(r'label ta_r">\+(.*?)<')
 RE_PHONE_POSTFIX = re.compile(r'phone_postfix">.*?(\d+).*?<')
 
-DEFAULT_USERAGENT = 'Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0'
+DEFAULT_USERAGENT = 'Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/115.0'
 
 DEFAULT_USER_SCOPE = sum(VkUserPermissions)
 
@@ -188,7 +188,6 @@ class VkApi(object):
             self._auth_cookies(reauth=reauth)
 
     def _auth_cookies(self, reauth=False):
-
         if reauth:
             self.logger.info('Auth forced')
 
@@ -213,7 +212,6 @@ class VkApi(object):
             self.logger.info('access_token from config is valid')
 
     def _auth_token(self, reauth=False):
-
         if not reauth and self._check_token():
             self.logger.info('access_token from config is valid')
             return
@@ -228,6 +226,16 @@ class VkApi(object):
         elif self.password:
             self._vk_login()
             self._api_login()
+
+    def _check_challenge(self, response):
+        if not response.url.startswith('https://vk.com/challenge.html?'):
+            return response
+
+        hash429 = urllib.parse.parse_qs(response.url.split('?', 1)[-1])['hash429'][0]
+        salt = re.search(r"salt\s*=\s*'(.*)'", response.text).group(1)
+        hash429_md5 = md5(hash429.encode('ascii') + b':' + salt.encode('ascii')).hexdigest()
+        response = self.http.get(f'{response.url}&key={hash429_md5}')
+        return response
 
     def _vk_login(self, captcha_sid=None, captcha_key=None):
         """ Авторизация ВКонтакте с получением cookies remixsid
@@ -250,9 +258,12 @@ class VkApi(object):
         response = self.http.get('https://vk.com/login')
 
         if response.url.startswith('https://vk.com/429.html?'):
+            # is this version still used???
             hash429_md5 = md5(self.http.cookies['hash429'].encode('ascii')).hexdigest()
             self.http.cookies.pop('hash429')
             response = self.http.get(f'{response.url}&key={hash429_md5}')
+
+        response = self._check_challenge(response)
 
         headers = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -290,6 +301,8 @@ class VkApi(object):
             data=values,
             headers=headers
         )
+
+        response = self._check_challenge(response)
 
         if 'onLoginCaptcha(' in response.text:
             self.logger.info('Captcha code is required')
