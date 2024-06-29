@@ -44,8 +44,8 @@ class VkFunction(object):
     def __call__(self, vk, *args, **kwargs):
         """
         :param vk: VkApi или VkApiMethod
-        :param \*args:
-        :param \*\*kwargs:
+        :param *args:
+        :param **kwargs:
         """
 
         if not isinstance(vk, (VkApi, VkApiMethod)):
