@@ -31,7 +31,7 @@ setup(
     download_url=f'https://github.com/python273/vk_api/archive/v{version}.zip',
     license='Apache License, Version 2.0, see LICENSE file',
     packages=['vk_api', 'jconfig'],
-    install_requires=['requests'],
+    install_requires=['requests>=2.20.0,<3.0.0'],
     extras_require={
         'vkstreaming': ['websocket-client'],
         'vkaudio': ['beautifulsoup4'],

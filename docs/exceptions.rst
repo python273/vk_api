@@ -1,4 +1,4 @@
-Исключения
+Exceptions
 ==========
 
 .. automodule:: vk_api.exceptions
