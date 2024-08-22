@@ -374,6 +374,39 @@ class VkUpload(object):
             ).json())
             return response
 
+    def thumb_video(self, photo_path=str, owner_id=int, video_id=int):
+        """
+        Загружает обложку для видео и применяет ее.
+
+        :param photo_path: Путь к файлу изображения, которое будет использовано в качестве обложки.
+        :type photo_path: str
+
+        :param owner_id: Идентификатор пользователя (положительное число) или группы (отрицательное число), 
+                        для которой загружается миниатюра.
+        :type owner_id: int
+
+        :param video_id: Идентификатор видео.
+        :type video_id: int
+        """
+        
+        values_get_link = {
+            'owner_id' : owner_id
+        }
+        response = self.vk.video.getThumbUploadUrl(**values_get_link)
+        upload_url = response.pop('upload_url')
+
+        file = {'file': open(photo_path, 'rb')}
+        upload_response = self.http.post(upload_url, files=file)
+        upload_response_json = upload_response.json()
+        json_string = json.dumps(upload_response_json)
+        values = {
+            'owner_id': owner_id,
+            'thumb_json': json_string,
+            'video_id': video_id,
+            'set_thumb': 1
+        }
+        response = self.vk.video.saveUploadedThumb(**values)
+        return response
 
     def document(self, doc, title=None, tags=None, group_id=None,
                  to_wall=False, message_peer_id=None, doc_type=None):
