@@ -7,7 +7,6 @@
 """
 
 import requests
-import json
 
 from .vk_api import VkApi, VkApiMethod
 
@@ -374,7 +373,7 @@ class VkUpload(object):
             ).json())
             return response
 
-    def thumb_video(self, photo_path=str, owner_id=int, video_id=int):
+    def thumb_video(self, photo_path: str, owner_id: int, video_id: int):
         """
         Загружает обложку для видео и применяет ее.
 
@@ -389,23 +388,16 @@ class VkUpload(object):
         :type video_id: int
         """
         
-        values_get_link = {
-            'owner_id' : owner_id
-        }
-        response = self.vk.video.getThumbUploadUrl(**values_get_link)
+        response = self.vk.video.getThumbUploadUrl(owner_id=owner_id)
         upload_url = response.pop('upload_url')
 
-        file = {'file': open(photo_path, 'rb')}
-        upload_response = self.http.post(upload_url, files=file)
-        upload_response_json = upload_response.json()
-        json_string = json.dumps(upload_response_json)
-        values = {
-            'owner_id': owner_id,
-            'thumb_json': json_string,
-            'video_id': video_id,
-            'set_thumb': 1
-        }
-        response = self.vk.video.saveUploadedThumb(**values)
+        with FilesOpener(photo_path, key_format='file') as file:
+            upload_response = self.http.post(upload_url, files=file)
+            
+        response = self.vk.video.saveUploadedThumb(owner_id=owner_id,
+                                                   thumb_json=upload_response.text,
+                                                   video_id=video_id,
+                                                   set_thumb=1)
         return response
 
     def document(self, doc, title=None, tags=None, group_id=None,
