@@ -7,7 +7,7 @@
 """
 
 import requests
-
+import json
 
 from .vk_api import VkApi, VkApiMethod
 
