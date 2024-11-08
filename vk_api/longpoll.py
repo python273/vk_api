@@ -504,7 +504,7 @@ class VkLongPoll(object):
         self.key = None
         self.server = None
         self.ts = None
-        self.pts = mode & VkLongpollMode.GET_PTS
+        self.pts = None
 
         self.session = requests.Session()
 
@@ -529,8 +529,7 @@ class VkLongPoll(object):
 
         if update_ts:
             self.ts = response['ts']
-            if self.pts:
-                self.pts = response['pts']
+            self.pts = response.get('pts')
 
     def check(self):
         """ Получить события от сервера один раз
@@ -554,8 +553,7 @@ class VkLongPoll(object):
 
         if 'failed' not in response:
             self.ts = response['ts']
-            if self.pts:
-                self.pts = response['pts']
+            self.pts = response.get('pts')
 
             events = [
                 self._parse_event(raw_event)
