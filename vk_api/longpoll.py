@@ -516,14 +516,12 @@ class VkLongPoll(object):
     def update_longpoll_server(self, update_ts=True):
         values = {
             'lp_version': '3',
-            'need_pts': self.pts
+            'need_pts': 1
         }
-
         if self.group_id:
             values['group_id'] = self.group_id
 
         response = self.vk.method('messages.getLongPollServer', values)
-
         self.key = response['key']
         self.server = response['server']
 
