@@ -530,9 +530,9 @@ class VkLongPoll(object):
         self.url = f'https://{self.server}'
 
         if update_ts:
-            self.ts = response['ts']
+            self.ts = response.get('ts')
             if self.pts:
-                self.pts = response['pts']
+                self.pts = response.get('pts')
 
     def check(self):
         """ Получить события от сервера один раз
