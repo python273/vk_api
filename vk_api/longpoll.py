@@ -400,20 +400,21 @@ class Event(object):
             self.__setattr__(k, v)
 
     def _parse_peer_id(self):
-        if self.peer_id < 0:  # Сообщение от/для группы
-            self.from_group = True
-            self.group_id = abs(self.peer_id)
-
-        elif self.peer_id > CHAT_START_ID:  # Сообщение из беседы
-            self.from_chat = True
-            self.chat_id = self.peer_id - CHAT_START_ID
-
-            if self.extra_values and 'from' in self.extra_values:
-                self.user_id = int(self.extra_values['from'])
-
-        else:  # Сообщение от/для пользователя
-            self.from_user = True
-            self.user_id = self.peer_id
+        if self.peer_id:
+            if self.peer_id < 0:  # Сообщение от/для группы
+                self.from_group = True
+                self.group_id = abs(self.peer_id)
+    
+            elif self.peer_id > CHAT_START_ID:  # Сообщение из беседы
+                self.from_chat = True
+                self.chat_id = self.peer_id - CHAT_START_ID
+    
+                if self.extra_values and 'from' in self.extra_values:
+                    self.user_id = int(self.extra_values['from'])
+    
+            else:  # Сообщение от/для пользователя
+                self.from_user = True
+                self.user_id = self.peer_id
 
     def _parse_message_flags(self):
         self.message_flags = {x for x in VkMessageFlag if self.flags & x}
