@@ -255,7 +255,7 @@ class VkApi(object):
         self.http.cookies.clear()
 
         # Get cookies
-        response = self.http.get('https://vk.com/login')
+        response = self.http.get('https://vk.com/')
 
         if response.url.startswith('https://vk.com/429.html?'):
             # is this version still used???
@@ -273,34 +273,39 @@ class VkApi(object):
             'Origin': 'https://vk.com',
         }
 
-        values = {
-            'act': 'login',
-            'role': 'al_frame',
-            'expire': '',
-            'to': search_re(RE_LOGIN_TO, response.text),
-            'recaptcha': '',
-            'captcha_sid': '',
-            'captcha_key': '',
-            '_origin': 'https://vk.com',
-            'utf8': '1',
-            'ip_h': search_re(RE_LOGIN_IP_H, response.text),
-            'lg_h': search_re(RE_LOGIN_LG_H, response.text),
-            'lg_domain_h': search_re(RE_LOGIN_LG_DOMAIN_H, response.text),
-            'ul': '',
-            'email': self.login,
-            'pass': self.password
-        }
+        for _ in range(8):  # idk, maybe less is enough
+            values = {
+                'act': 'login',
+                'role': 'al_frame',
+                'expire': '',
+                'to': search_re(RE_LOGIN_TO, response.text),
+                'recaptcha': '',
+                'captcha_sid': '',
+                'captcha_key': '',
+                '_origin': 'https://vk.com',
+                'utf8': '1',
+                'ip_h': search_re(RE_LOGIN_IP_H, response.text),
+                'lg_h': search_re(RE_LOGIN_LG_H, response.text),
+                'lg_domain_h': search_re(RE_LOGIN_LG_DOMAIN_H, response.text),
+                'ul': '',
+                'email': self.login,
+                'pass': self.password
+            }
 
-        if captcha_sid and captcha_key:
-            self.logger.info(f'Using captcha code: {captcha_sid}: {captcha_key}')
-            values['captcha_sid'] = captcha_sid
-            values['captcha_key'] = captcha_key
+            if captcha_sid and captcha_key:
+                self.logger.info(f'Using captcha code: {captcha_sid}: {captcha_key}')
+                values['captcha_sid'] = captcha_sid
+                values['captcha_key'] = captcha_key
 
-        response = self.http.post(
-            'https://login.vk.com/?act=login',
-            data=values,
-            headers=headers
-        )
+            response = self.http.post(
+                'https://login.vk.com/?act=login', data=values, headers=headers)
+            if 'onLoginFailed(7,' in response.text:
+                response = self.http.get('https://vk.com/login?m=7')
+                time.sleep(0.2)
+                continue
+            if 'onLoginDone(' in response.text:
+                self.logger.info('Found "LoginDone"')
+            break
 
         response = self._check_challenge(response)
 
@@ -320,7 +325,7 @@ class VkApi(object):
 
             return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
 
-        if 'onLoginFailed(4' in response.text:
+        if 'onLoginFailed(4,' in response.text:
             raise BadPassword('Bad password')
 
         if 'act=authcheck' in response.text:
@@ -367,9 +372,7 @@ class VkApi(object):
             values['captcha_key'] = captcha_key
 
         response = self.http.post(
-            'https://vk.com/al_login.php?act=a_authcheck_code',
-            values
-        )
+            'https://vk.com/al_login.php?act=a_authcheck_code', values)
         data = json.loads(response.text.lstrip('<!--'))
         status = data['payload'][0]
 
@@ -483,7 +486,6 @@ class VkApi(object):
             if url:
                 response = self.http.get(url)
             elif 'redirect_uri' in response.url:
-                response = self.http.get(response.url)
                 auth_json = json.loads(search_re(RE_AUTH_TOKEN_URL, response.text))
                 return_auth_hash = auth_json['data']['hash']['return_auth']
                 response = self.http.post(
