@@ -273,7 +273,15 @@ class VkApi(object):
             'Origin': 'https://vk.com',
         }
 
-        for _ in range(8):  # idk, maybe less is enough
+        for _ in range(16):
+            lg_domain_h = search_re(RE_LOGIN_LG_DOMAIN_H, response.text)
+            if not lg_domain_h:
+                # a new login form is returned, trying again to get old one
+                # TODO: support new login form, probably this one 'https://login.vk.com/?act=connect_authorize'
+                self.http.cookies.clear()
+                response = self.http.get('https://vk.com/')
+                time.sleep(0.05)
+                continue
             values = {
                 'act': 'login',
                 'role': 'al_frame',
@@ -285,8 +293,7 @@ class VkApi(object):
                 '_origin': 'https://vk.com',
                 'utf8': '1',
                 'ip_h': search_re(RE_LOGIN_IP_H, response.text),
-                'lg_h': search_re(RE_LOGIN_LG_H, response.text),
-                'lg_domain_h': search_re(RE_LOGIN_LG_DOMAIN_H, response.text),
+                'lg_domain_h': lg_domain_h,
                 'ul': '',
                 'email': self.login,
                 'pass': self.password
@@ -300,7 +307,8 @@ class VkApi(object):
             response = self.http.post(
                 'https://login.vk.com/?act=login', data=values, headers=headers)
             if 'onLoginFailed(7,' in response.text:
-                response = self.http.get('https://vk.com/login?m=7')
+                self.http.cookies.clear()
+                response = self.http.get('https://vk.com/')
                 time.sleep(0.2)
                 continue
             if 'onLoginDone(' in response.text:
