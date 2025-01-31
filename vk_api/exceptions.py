@@ -6,12 +6,14 @@
 :copyright: (c) 2019 python273
 """
 
+import typing as t
 
 TWOFACTOR_CODE = -2
 HTTP_ERROR_CODE = -1
 TOO_MANY_RPS_CODE = 6
 CAPTCHA_ERROR_CODE = 14
 NEED_VALIDATION_CODE = 17
+CONFIRMATION_ERROR_CODE = 1110
 
 
 class VkApiError(Exception):
@@ -44,6 +46,23 @@ class AccountBlocked(AuthError):
 
 class TwoFactorError(AuthError):
     pass
+
+
+class ParseError(AuthError):
+    """Любая ошибка при парсинге исходных кодов сайта."""
+
+
+class AuthorizeError(AuthError):
+    """
+    Любая ошибка, которая может возникнуть в момент авторизации
+    существующего пользователя с проверенным кодом подтверждения или паролем.
+    (https://login.vk.com/?act=connect_authorize)
+    """
+    def __init__(self, error: t.Dict[str, t.Any]) -> None:
+        self.error = error
+
+    def __str__(self) -> str:
+        return '[{error_code}] {error_info}'.format(**self.error)
 
 
 class SecurityCheck(AuthError):
