@@ -960,6 +960,7 @@ class VkApi(object):
             captcha = Captcha(
                 vk=self,
                 captcha_sid=response_dict['captcha_sid'],
+                url=response_dict['captcha_img'],
                 func=self.vk_login_method,
                 kwargs={
                     'action': action,
