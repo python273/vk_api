@@ -287,7 +287,6 @@ class VkApi(object):
                 'access_token': '',
             }
         )
-        self.logger.info(account)
 
         credentials.sid = account['sid']
 
@@ -302,13 +301,8 @@ class VkApi(object):
         if not credentials.can_skip_password and not self.password:
             raise PasswordRequired('Password is required to login')
 
-        response = self.http.post(
-            url='https://login.vk.com/?act=connect_authorize',
-            headers={
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'origin': 'https://id.vk.com',
-                'referer': 'https://id.vk.com/',
-            },
+        response_dict = self.vk_login_method(
+            action='connect_authorize',
             data={
                 'username': self.login,
                 'password': self.password,
@@ -322,9 +316,12 @@ class VkApi(object):
                 'save_user': '1',
                 'version': '1',
             },
+            headers={
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'origin': 'https://id.vk.com',
+                'referer': 'https://id.vk.com/',
+            },
         )
-        response_dict = response.json()
-        self.logger.debug(response_dict)
 
         if response_dict['type'] != 'okay':
             if response_dict['error_code'] == 'incorrect_password':
@@ -916,6 +913,64 @@ class VkApi(object):
             raise error
 
         return response if raw else response['response']
+
+    def vk_login_method(
+        self,
+        action: str,
+        data: t.Dict[str, t.Any],
+        headers: t.Optional[t.Dict[str, t.Any]] = None,
+        captcha_sid: t.Optional[str] = None,
+        captcha_key: t.Optional[str] = None,
+    ) -> t.Dict[str, t.Any]:
+        """
+        Вызов действия для https://login.vk.com с обработкой капчи.
+
+        :param action: имя действия, например, connect_authorize или connect_internal
+        :type action: str
+
+        :param data: данные/поля формы
+        :type data: dict
+
+        :param headers: HTTP заголовки
+        :type headers: dict
+
+        :param captcha_sid: id капчи
+        :type captcha_key: str
+
+        :param captcha_key: ответ капчи
+        :type captcha_key: str
+        """
+        if captcha_sid and captcha_key:
+            self.logger.info(f'Using captcha code: {captcha_sid}: {captcha_key}')
+            data['captcha_sid'] = captcha_sid
+            data['captcha_key'] = captcha_key
+
+        response = self.http.post(
+            url=f'https://login.vk.com/?act={action}',
+            data=data,
+            headers=headers,
+        )
+        response_dict = response.json()
+        self.logger.debug(response_dict)
+
+        if response_dict['type'] == 'captcha':
+            captcha_type = response_dict['captcha_type']
+            self.logger.info(f'Captcha code is required ({captcha_type})')
+
+            captcha = Captcha(
+                vk=self,
+                captcha_sid=response_dict['captcha_sid'],
+                func=self.vk_login_method,
+                kwargs={
+                    'action': action,
+                    'data': data,
+                    'headers': headers,
+                },
+            )
+
+            return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
+
+        return response_dict
 
 
 class VkApiGroup(VkApi):
