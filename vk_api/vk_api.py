@@ -284,19 +284,19 @@ class VkApi(object):
                 'auth_token': credentials.access_token,
                 'super_app_token': '',
                 'supported_ways': ','.join(VerificationMethod),
+                'is_switcher_flow': '0',
+                'is_edu_flow': '',
+                'is_registration': '',
                 'access_token': '',
             }
         )
 
         credentials.sid = account['sid']
+        next_step = account.get('next_step')
 
-        verification_method = account['next_step']['verification_method']
-
-        if verification_method != VerificationMethod.PASSWORD:
-            self.logger.info('2FA is required')
-            self._pass_otp(verification_method, credentials)
-        else:
-            time.sleep(0.5)
+        if next_step is not None and next_step['verification_method'] != VerificationMethod.PASSWORD:
+            self.logger.info('Confirmation code is required')
+            self._pass_confirmation_code(next_step['verification_method'], credentials)
 
         if not credentials.can_skip_password and not self.password:
             raise PasswordRequired('Password is required to login')
@@ -437,7 +437,7 @@ class VkApi(object):
         if 'act=blocked' in response.url:
             raise AccountBlocked('Account is blocked')
 
-    def _pass_otp(
+    def _pass_confirmation_code(
         self,
         verification_method: str,
         credentials: WebLoginCredentials,
@@ -451,14 +451,15 @@ class VkApi(object):
         :param verification_method: Имя выбранного способа подтверждения
         :param credentials: Данные для аутентификации
         """
-        need_send_otp = {
-            VerificationMethod.EMAIL,
-            VerificationMethod.PUSH,
-            VerificationMethod.SMS,
+        need_send_map: t.Dict[str, str] = {
+            VerificationMethod.EMAIL: 'Email',
+            VerificationMethod.PUSH: 'Push',
+            VerificationMethod.SMS: 'Sms',
+            VerificationMethod.CALLRESET: 'CallReset',
         }
 
-        if verification_method in need_send_otp:
-            api_method = f'ecosystem.sendOtp{verification_method.title()}'
+        if verification_method in need_send_map:
+            api_method = f"ecosystem.sendOtp{need_send_map[verification_method]}"
             send_code_status = self.method(api_method, {
                 'v': credentials.api_version,
                 'client_id': credentials.app_id,
