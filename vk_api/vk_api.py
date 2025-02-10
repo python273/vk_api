@@ -18,7 +18,11 @@ from hashlib import md5
 import requests
 
 import jconfig
-from .enums import VkUserPermissions
+from .credentials import WebLoginCredentials
+from .enums import (
+    VerificationMethod,
+    VkUserPermissions,
+)
 from .exceptions import *
 from .utils import (
     code_from_number, search_re, clear_string,
@@ -249,9 +253,6 @@ class VkApi(object):
 
         self.logger.info('Logging in...')
 
-        if not self.password:
-            raise PasswordRequired('Password is required to login')
-
         self.http.cookies.clear()
 
         # Get cookies
@@ -265,6 +266,95 @@ class VkApi(object):
 
         response = self._check_challenge(response)
 
+        if search_re(RE_LOGIN_LG_DOMAIN_H, response.text):
+            return self._vk_login_legacy(response, captcha_sid, captcha_key)
+
+        credentials = WebLoginCredentials(self.http)
+        time.sleep(0.5)
+
+        account = self.method(
+            with_cookies=True,
+            method='auth.validateAccount',
+            values={
+                'v': credentials.api_version,
+                'client_id': credentials.app_id,
+                'login': self.login,
+                'sid': credentials.sid,
+                'device_id': credentials.device_id,
+                'auth_token': credentials.access_token,
+                'super_app_token': '',
+                'supported_ways': ','.join(VerificationMethod),
+                'is_switcher_flow': '0',
+                'is_edu_flow': '',
+                'is_registration': '',
+                'access_token': '',
+            }
+        )
+
+        credentials.sid = account['sid']
+        next_step = account.get('next_step')
+
+        if next_step is not None and next_step['verification_method'] != VerificationMethod.PASSWORD:
+            self.logger.info('Confirmation code is required')
+            self._pass_confirmation_code(next_step['verification_method'], credentials)
+
+        if not credentials.can_skip_password and not self.password:
+            raise PasswordRequired('Password is required to login')
+
+        response_dict = self.vk_login_method(
+            action='connect_authorize',
+            data={
+                'username': self.login,
+                'password': self.password,
+                'auth_token': credentials.access_token,
+                'sid': credentials.sid,
+                'uuid': credentials.uuid,
+                'device_id': credentials.device_id,
+                'app_id': credentials.app_id,
+                'v': credentials.api_version,
+                'service_group': '',
+                'save_user': '1',
+                'version': '1',
+            },
+            headers={
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'origin': 'https://id.vk.com',
+                'referer': 'https://id.vk.com/',
+            },
+        )
+
+        if response_dict['type'] != 'okay':
+            if response_dict['error_code'] == 'incorrect_password':
+                raise BadPassword('Bad password')
+            raise AuthorizeError(response_dict)
+
+        if response_dict['data']['is_user_banned']:
+            raise AccountBlocked('Account is blocked')
+
+        if not self._sid:
+            raise AuthError(get_unknown_exc_str('AUTH; no sid'))
+
+        self.logger.info('Got remixsid')
+
+        self.storage.cookies = cookies_to_list(self.http.cookies)
+        self.storage.save()
+
+        # возможно уже не актуально
+        self._pass_security_check(response)
+
+    def _vk_login_legacy(self, response, captcha_sid=None, captcha_key=None):
+        """Авторизация ВКонтакте с получением cookies remixsid для старой версии формы входа.
+
+        :param captcha_sid: id капчи
+        :type captcha_key: int or str
+
+        :param captcha_key: ответ капчи
+        :type captcha_key: str
+        """
+
+        if not self.password:
+            raise PasswordRequired('Password is required to login')
+
         headers = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
@@ -274,14 +364,6 @@ class VkApi(object):
         }
 
         for _ in range(16):
-            lg_domain_h = search_re(RE_LOGIN_LG_DOMAIN_H, response.text)
-            if not lg_domain_h:
-                # a new login form is returned, trying again to get old one
-                # TODO: support new login form, probably this one 'https://login.vk.com/?act=connect_authorize'
-                self.http.cookies.clear()
-                response = self.http.get('https://vk.com/')
-                time.sleep(0.05)
-                continue
             values = {
                 'act': 'login',
                 'role': 'al_frame',
@@ -293,7 +375,7 @@ class VkApi(object):
                 '_origin': 'https://vk.com',
                 'utf8': '1',
                 'ip_h': search_re(RE_LOGIN_IP_H, response.text),
-                'lg_domain_h': lg_domain_h,
+                'lg_domain_h': search_re(RE_LOGIN_LG_DOMAIN_H, response.text),
                 'ul': '',
                 'email': self.login,
                 'pass': self.password
@@ -354,6 +436,64 @@ class VkApi(object):
 
         if 'act=blocked' in response.url:
             raise AccountBlocked('Account is blocked')
+
+    def _pass_confirmation_code(
+        self,
+        verification_method: str,
+        credentials: WebLoginCredentials,
+    ) -> None:
+        """
+        Код подтверждения.
+
+        Используется для 2FA и в новых аккаунтах с отключенным 2FA как одноразовый пароль.
+        В новой форме клиент должен самостоятельно отправить OTP.
+
+        :param verification_method: Имя выбранного способа подтверждения
+        :param credentials: Данные для аутентификации
+        """
+        need_send_map: t.Dict[str, str] = {
+            VerificationMethod.EMAIL: 'Email',
+            VerificationMethod.PUSH: 'Push',
+            VerificationMethod.SMS: 'Sms',
+            VerificationMethod.CALLRESET: 'CallReset',
+        }
+
+        if verification_method in need_send_map:
+            api_method = f"ecosystem.sendOtp{need_send_map[verification_method]}"
+            send_code_status = self.method(api_method, {
+                'v': credentials.api_version,
+                'client_id': credentials.app_id,
+                'sid': credentials.sid,
+                'device_id': credentials.device_id,
+                'anonymous_token': credentials.anonymous_token,
+                'access_token': '',
+            }, with_cookies=True)
+            self.logger.info(
+                'Confirmation code sent via {} to the {info}, status {status}.'
+                .format(verification_method, **send_code_status)
+            )
+
+        while 1:
+            code, _ = self.error_handlers[TWOFACTOR_CODE]()
+
+            try:
+                otp_status = self.method('ecosystem.checkOtp', {
+                    'v': credentials.api_version,
+                    'client_id': credentials.app_id,
+                    'sid': credentials.sid,
+                    'device_id': credentials.device_id,
+                    'code': code,
+                    'verification_method': verification_method,
+                    'anonymous_token': credentials.anonymous_token,
+                    'access_token': '',
+                }, with_cookies=True)
+                break
+            except ApiError as err:
+                if err.code != CONFIRMATION_ERROR_CODE:
+                    raise
+
+        credentials.sid = otp_status['sid']
+        credentials.can_skip_password = otp_status['can_skip_password']
 
     def _pass_twofactor(self, auth_response, captcha_sid=None, captcha_key=None):
         """ Двухфакторная аутентификация
@@ -681,8 +821,15 @@ class VkApi(object):
 
         return VkApiMethod(self)
 
-    def method(self, method, values=None, captcha_sid=None, captcha_key=None,
-               raw=False):
+    def method(
+        self,
+        method,
+        values=None,
+        captcha_sid=None,
+        captcha_key=None,
+        raw=False,
+        with_cookies=False,
+    ):
         """ Вызов метода API
 
         :param method: название метода
@@ -702,6 +849,10 @@ class VkApi(object):
                     (может понадобиться для метода execute для получения
                     execute_errors)
         :type raw: bool
+
+        :param with_cookies: не удалять cookie из запроса
+                             (нужно для вызова "внутренних" методов API)
+        :type raw: bool
         """
 
         values = values.copy() if values else {}
@@ -709,7 +860,7 @@ class VkApi(object):
         if 'v' not in values:
             values['v'] = self.api_version
 
-        if self.token:
+        if 'access_token' not in values and self.token:
             values['access_token'] = self.token['access_token']
 
         if captcha_sid and captcha_key:
@@ -726,7 +877,7 @@ class VkApi(object):
             response = self.http.post(
                 f'https://api.vk.com/method/{method}',
                 values,
-                headers={'Cookie': ''},
+                headers=None if with_cookies else {'Cookie': ''},
             )
             self.last_request = time.time()
 
@@ -751,7 +902,7 @@ class VkApi(object):
                         error.error['captcha_sid'],
                         self.method,
                         (method,),
-                        {'values': values, 'raw': raw},
+                        {'values': values, 'raw': raw, 'with_cookies': with_cookies},
                         error.error['captcha_img']
                     )
 
@@ -763,6 +914,66 @@ class VkApi(object):
             raise error
 
         return response if raw else response['response']
+
+    def vk_login_method(
+        self,
+        action: str,
+        data: t.Dict[str, t.Any],
+        headers: t.Optional[t.Dict[str, t.Any]] = None,
+        captcha_sid: t.Optional[str] = None,
+        captcha_key: t.Optional[str] = None,
+    ) -> t.Dict[str, t.Any]:
+        """
+        Вызов действия для https://login.vk.com с обработкой капчи.
+
+        :param action: имя действия, например, connect_authorize или connect_internal
+        :type action: str
+
+        :param data: данные/поля формы
+        :type data: dict
+
+        :param headers: HTTP заголовки
+        :type headers: dict
+
+        :param captcha_sid: id капчи
+        :type captcha_key: str
+
+        :param captcha_key: ответ капчи
+        :type captcha_key: str
+        """
+        if captcha_sid and captcha_key:
+            self.logger.info(f'Using captcha code: {captcha_sid}: {captcha_key}')
+            data['captcha_sid'] = captcha_sid
+            data['captcha_key'] = captcha_key
+
+        response = self.http.post(
+            url=f'https://login.vk.com/?act={action}',
+            data=data,
+            headers=headers,
+        )
+        response_dict = response.json()
+        self.logger.debug(response_dict)
+
+        if response_dict['type'] == 'captcha':
+            captcha_type = response_dict['captcha_type']
+            self.logger.info(f'Captcha code is required ({captcha_type})')
+
+            captcha = Captcha(
+                vk=self,
+                captcha_sid=response_dict['captcha_sid'],
+                url=response_dict['captcha_img'],
+                func=self.vk_login_method,
+                kwargs={
+                    'action': action,
+                    'data': data,
+                    'headers': headers,
+                },
+            )
+
+            return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
+
+        return response_dict
+
 
 class VkApiGroup(VkApi):
     """Предназначен для авторизации с токеном группы.

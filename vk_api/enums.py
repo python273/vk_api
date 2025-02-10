@@ -6,10 +6,27 @@
 :copyright: (c) 2019 python273
 """
 
-from enum import IntEnum
+import enum
 
 
-class VkUserPermissions(IntEnum):
+class VerificationMethod(enum.StrEnum):
+    """
+    Перечисление способов подтверждения входа в аккаунт.
+
+    EMAIL, SMS и PUSH требуют вызова метода API для отправки.
+    """
+    PUSH = enum.auto()
+    EMAIL = enum.auto()
+    QR_CODE = enum.auto()
+    CODEGEN = enum.auto()
+    SMS = enum.auto()
+    CALLRESET = enum.auto()
+    PASSWORD = enum.auto()
+    RESERVE_CODE = enum.auto()
+    PASSKEY = enum.auto()
+
+
+class VkUserPermissions(enum.IntEnum):
     """
     Перечисление прав пользователя.
     Список прав получается побитовым сложением (x | y) каждого права.

@@ -9,6 +9,8 @@
 from __future__ import print_function
 
 import random
+import secrets
+import string
 
 try:
     import simplejson as json
@@ -166,3 +168,9 @@ def enable_debug_mode(vk_session, print_content=False):
 
     vk_session.logger.setLevel(logging.INFO)
     vk_session.logger.addHandler(logging.StreamHandler(sys.stdout))
+
+
+def generate_device_id(n: int = 21) -> str:
+    """Generates a random string of length n from a given set of characters."""
+    charset = f'{string.digits}{string.ascii_letters}-_'
+    return ''.join(secrets.choice(charset) for _ in range(n))
