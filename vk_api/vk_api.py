@@ -291,19 +291,23 @@ class VkApi(object):
             }
         )
 
+        if 'sid' not in account:
+            raise AuthError('Account not exists')
+
         credentials.sid = account['sid']
         next_step = account.get('next_step')
 
         if next_step is not None and next_step['verification_method'] != VerificationMethod.PASSWORD:
-            self.logger.info('Confirmation code is required')
-            self._pass_confirmation_code(next_step['verification_method'], credentials)
+            if VerificationMethod.PASSWORD not in self._get_allowed_verification_methods(credentials):
+                self.logger.info('Confirmation code is required')
+                self._pass_confirmation_code(next_step['verification_method'], credentials)
 
         if not credentials.can_skip_password and not self.password:
             raise PasswordRequired('Password is required to login')
 
         response_dict = self.vk_login_method(
             action='connect_authorize',
-            data={
+            values={
                 'username': self.login,
                 'password': self.password,
                 'auth_token': credentials.access_token,
@@ -323,12 +327,7 @@ class VkApi(object):
             },
         )
 
-        if response_dict['type'] != 'okay':
-            if response_dict['error_code'] == 'incorrect_password':
-                raise BadPassword('Bad password')
-            raise AuthorizeError(response_dict)
-
-        if response_dict['data']['is_user_banned']:
+        if response_dict['is_user_banned']:
             raise AccountBlocked('Account is blocked')
 
         if not self._sid:
@@ -436,6 +435,22 @@ class VkApi(object):
 
         if 'act=blocked' in response.url:
             raise AccountBlocked('Account is blocked')
+
+    def _get_allowed_verification_methods(self, credentials: WebLoginCredentials) -> t.Set[VerificationMethod]:
+        """Возвращает множество доступных для подтверждения входа методов."""
+        allowed_verification = self.method(
+            with_cookies=True,
+            method='ecosystem.getVerificationMethods',
+            values={
+                'v': credentials.api_version,
+                'client_id': credentials.app_id,
+                'sid': credentials.sid,
+                'device_id': credentials.device_id,
+                'anonymous_token': credentials.anonymous_token,
+                'access_token': '',
+            },
+        )
+        return {VerificationMethod(m['name']) for m in allowed_verification['methods']}
 
     def _pass_confirmation_code(
         self,
@@ -918,7 +933,7 @@ class VkApi(object):
     def vk_login_method(
         self,
         action: str,
-        data: t.Dict[str, t.Any],
+        values: t.Dict[str, t.Any],
         headers: t.Optional[t.Dict[str, t.Any]] = None,
         captcha_sid: t.Optional[str] = None,
         captcha_key: t.Optional[str] = None,
@@ -929,8 +944,8 @@ class VkApi(object):
         :param action: имя действия, например, connect_authorize или connect_internal
         :type action: str
 
-        :param data: данные/поля формы
-        :type data: dict
+        :param values: данные/поля формы
+        :type values: dict
 
         :param headers: HTTP заголовки
         :type headers: dict
@@ -943,16 +958,15 @@ class VkApi(object):
         """
         if captcha_sid and captcha_key:
             self.logger.info(f'Using captcha code: {captcha_sid}: {captcha_key}')
-            data['captcha_sid'] = captcha_sid
-            data['captcha_key'] = captcha_key
+            values['captcha_sid'] = captcha_sid
+            values['captcha_key'] = captcha_key
 
         response = self.http.post(
             url=f'https://login.vk.com/?act={action}',
-            data=data,
+            data=values,
             headers=headers,
         )
         response_dict = response.json()
-        self.logger.debug(response_dict)
 
         if response_dict['type'] == 'captcha':
             captcha_type = response_dict['captcha_type']
@@ -965,14 +979,25 @@ class VkApi(object):
                 func=self.vk_login_method,
                 kwargs={
                     'action': action,
-                    'data': data,
+                    'values': values,
                     'headers': headers,
                 },
             )
 
             return self.error_handlers[CAPTCHA_ERROR_CODE](captcha)
 
-        return response_dict
+        if response_dict['type'] != 'okay':
+            if response_dict['error_code'] == 'incorrect_password':
+                raise BadPassword(response_dict['error_info'])
+
+            if response_dict['error_code']:
+                error_message = '[{error_code}] {error_info}'.format(**response_dict)
+            else:
+                error_message = response_dict['error_info']
+
+            raise AuthError(error_message)
+
+        return response_dict.get('data', response_dict)
 
 
 class VkApiGroup(VkApi):
