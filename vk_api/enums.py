@@ -8,8 +8,15 @@
 
 import enum
 
+try:
+    from enum import StrEnum
+except ImportError:
+    class StrEnum(str, enum.Enum):
+        def _generate_next_value_(name, start, count, last_values):
+            return name.lower()
 
-class VerificationMethod(enum.StrEnum):
+
+class VerificationMethod(StrEnum):
     """
     Перечисление способов подтверждения входа в аккаунт.
 
