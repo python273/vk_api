@@ -298,7 +298,11 @@ class VkApi(object):
         next_step = account.get('next_step')
 
         if next_step is not None and next_step['verification_method'] != VerificationMethod.PASSWORD:
-            if VerificationMethod.PASSWORD not in self._get_allowed_verification_methods(credentials):
+            if (
+                not next_step.get('has_another_verification_methods')
+                or
+                VerificationMethod.PASSWORD not in self._get_allowed_verification_methods(credentials)
+            ):
                 self.logger.info('Confirmation code is required')
                 self._pass_confirmation_code(next_step['verification_method'], credentials)
 
