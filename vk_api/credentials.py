@@ -11,7 +11,7 @@ import typing as t
 
 import requests
 
-from .exceptions import ParseError
+from .exceptions import AuthError
 from .utils import (
     set_cookies_from_list,
     generate_device_id,
@@ -65,7 +65,7 @@ class WebLoginCredentials:
         json_config = search_re(pattern, response.text)
 
         if json_config is None:
-            raise ParseError('Failed to get the value of variable window.init.')
+            raise AuthError('Failed to get the value of variable window.init.')
 
         self._config = json.loads(json_config)
 
