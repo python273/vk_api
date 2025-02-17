@@ -48,23 +48,6 @@ class TwoFactorError(AuthError):
     pass
 
 
-class ParseError(AuthError):
-    """Любая ошибка при парсинге исходных кодов сайта."""
-
-
-class AuthorizeError(AuthError):
-    """
-    Любая ошибка, которая может возникнуть в момент авторизации
-    существующего пользователя с проверенным кодом подтверждения или паролем.
-    (https://login.vk.com/?act=connect_authorize)
-    """
-    def __init__(self, error: t.Dict[str, t.Any]) -> None:
-        self.error = error
-
-    def __str__(self) -> str:
-        return '[{error_code}] {error_info}'.format(**self.error)
-
-
 class SecurityCheck(AuthError):
 
     def __init__(self, phone_prefix=None, phone_postfix=None, response=None):
