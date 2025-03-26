@@ -107,7 +107,7 @@ class VkApi(object):
                  auth_handler=None, captcha_handler=None,
                  config=jconfig.Config, config_filename='vk_config.v2.json',
                  api_version='5.92', app_id=6222115, scope=DEFAULT_USER_SCOPE,
-                 client_secret=None, session=None):
+                 client_secret=None, session=None, need_validation_handler=None):
 
         self.login = login
         self.password = password
@@ -128,7 +128,7 @@ class VkApi(object):
         self.last_request = 0.0
 
         self.error_handlers = {
-            NEED_VALIDATION_CODE: self.need_validation_handler,
+            NEED_VALIDATION_CODE: need_validation_handler or self.need_validation_handler,
             CAPTCHA_ERROR_CODE: captcha_handler or self.captcha_handler,
             TOO_MANY_RPS_CODE: self.too_many_rps_handler,
             TWOFACTOR_CODE: auth_handler or self.auth_handler
@@ -805,7 +805,7 @@ class VkApi(object):
         :param error: исключение
         """
 
-        pass  # TODO: write me
+        raise error
 
     def http_handler(self, error):
         """ Обработчик ошибок соединения
@@ -924,6 +924,14 @@ class VkApi(object):
                         (method,),
                         {'values': values, 'raw': raw, 'with_cookies': with_cookies},
                         error.error['captcha_img']
+                    )
+                if error.code == NEED_VALIDATION_CODE:
+                    error = Need_Validation(
+                        self,
+                        self.method,
+                        (method,),
+                        {'values': values, 'raw': raw},
+                        response['error']
                     )
 
                 response = self.error_handlers[error.code](error)
